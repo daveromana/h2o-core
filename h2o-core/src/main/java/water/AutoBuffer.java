@@ -128,7 +128,7 @@ public final class AutoBuffer {
     }
     _size = _bb.position();
     _bb.flip();                 // Set limit=amount read, and position==0
-    if( addr == null ) {throw new RuntimeException("Unhandled socket type: " + sad);
+    if( addr == null ) throw new RuntimeException("Unhandled socket type: " + sad);
     // Read Inet from socket, port from the stream, figure out H2ONode
     _h2o = H2ONode.intern(addr, getPort());
     _firstPage = true;
