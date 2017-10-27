@@ -79,7 +79,7 @@ public class Frame extends Lockable<Frame> {
   public static void deleteTempFrameAndItsNonSharedVecs(Frame tempFrame, Frame baseFrame) {
     Key[] keys = tempFrame.keys();
     for( int i=0; i<keys.length; i++ )
-      if( baseFrame.find(keys[i]) == -1 ) //only delete vecs that aren't shared
+      if( baseFrame.find(keys[i]) == -1 ) {//only delete vecs that aren't shared
         keys[i].remove();
     DKV.remove(tempFrame._key); //delete the frame header
   }
@@ -102,26 +102,30 @@ public class Frame extends Lockable<Frame> {
           break;
         }
       }
-      if (!skip) frames.add(frame);
+      if (!skip) {
+      	frames.add(frame);
     }
     return frames.toArray(new Frame[frames.size()]);
   }
 
   public boolean hasNAs(){
     for(Vec v:bulkRollups())
-      if(v.naCnt() > 0) return true;
+      if(v.naCnt() > 0){
+      	 return true;
     return false;
   }
 
   public boolean hasInfs() {
     // return if frame contains positive infinity
     for (Vec v : bulkRollups())
-      if (v.pinfs() > 0 || v.ninfs() > 0) return true;
+      if (v.pinfs() > 0 || v.ninfs() > 0){
+      	 return true;
     return false;
   }
   private long _naCnt = -1;
   synchronized public long naCount() {
-    if (_naCnt !=- 1) return _naCnt;
+    if (_naCnt !=- 1) {
+    	return _naCnt;
     _naCnt = 0;
     for(Vec v: vecs()) _naCnt += v.naCnt();
     return _naCnt;
@@ -238,24 +242,25 @@ public class Frame extends Lockable<Frame> {
   public String uniquify( String name ) {
     String n = name;
     int lastName = 0;
-    if( name.length() > 0 && name.charAt(0)=='C' )
+    if( name.length() > 0 && name.charAt(0)=='C' ) {
       lastName = pint(name);
     if( _lastNameBig && _names.length > 0 ) {
       String last = _names[_names.length-1];
-      if( !last.equals("") && last.charAt(0)=='C' && lastName == pint(last)+1 )
+      if( !last.equals("") && last.charAt(0)=='C' && lastName == pint(last)+1 ) {
         return name;
     }
     int cnt=0, again, max=0;
     do {
       again = cnt;
       for( String s : _names ) {
-        if( lastName > 0 && s.charAt(0)=='C' )
+        if( lastName > 0 && s.charAt(0)=='C' ) {
           max = Math.max(max,pint(s));
-        if( n.equals(s) )
+        if( n.equals(s) ) {
           n = name+(cnt++);
       }
     } while( again != cnt );
-    if( lastName == max+1 ) _lastNameBig = true;
+    if( lastName == max+1 ) {
+    	_lastNameBig = true;
     return n;
   }
 
@@ -263,15 +268,17 @@ public class Frame extends Lockable<Frame> {
    *  sharded using same number of rows per chunk, and all names are unique.
    *  Throw an IAE if something does not match.  */
   private void checkCompatibility(String name, Vec vec ) {
-    if( vec instanceof AppendableVec ) return; // New Vectors are endlessly compatible
+    if( vec instanceof AppendableVec ) {
+    	return; // New Vectors are endlessly compatible
     Vec v0 = anyVec();
-    if( v0 == null ) return; // No fixed-size Vecs in the Frame
+    if( v0 == null ) {
+    	return; // No fixed-size Vecs in the Frame
     // Vector group has to be the same, or else the layout has to be the same,
     // or else the total length has to be small.
     if( !v0.isCompatibleWith(vec) ) {
-      if(!Vec.VectorGroup.sameGroup(v0,vec))
+      if(!Vec.VectorGroup.sameGroup(v0,vec)) {
         Log.err("Unexpected incompatible vector group, " + v0.group() + " != " + vec.group());
-      if(!Arrays.equals(v0.espc(), vec.espc()))
+      if(!Arrays.equals(v0.espc(), vec.espc())) {
         Log.err("Unexpected incompatible espc, " + Arrays.toString(v0.espc()) + " != " + Arrays.toString(vec.espc()));
       throw new IllegalArgumentException("Vec " + name + " is not compatible with the rest of the frame");
     }
@@ -279,9 +286,10 @@ public class Frame extends Lockable<Frame> {
 
   /** Frames are compatible if they have the same layout (number of rows and chunking) and the same vector group (chunk placement).. */
   public boolean isCompatible( Frame fr ) {
-    if( numRows() != fr.numRows() ) return false;
+    if( numRows() != fr.numRows() ) {
+    	return false;
     for( int i=0; i<vecs().length; i++ )
-      if( !vecs()[i].isCompatibleWith(fr.vecs()[i]) )
+      if( !vecs()[i].isCompatibleWith(fr.vecs()[i]) ) {
         return false;
     return true;
   }
@@ -297,7 +305,8 @@ public class Frame extends Lockable<Frame> {
    *  @return the first readable Vec */
   public final Vec anyVec() {
     Vec c0 = _col0; // single read
-    if( c0 != null ) return c0;
+    if( c0 != null ) {
+    	return c0;
     for( Vec v : vecs() )
       if( v.readable() )
         return (_col0 = v);
@@ -376,11 +385,12 @@ public class Frame extends Lockable<Frame> {
   /**   Finds the column index with a matching name, or -1 if missing
    *  @return the column index with a matching name, or -1 if missing */
   public int find( String name ) {
-    if( name == null ) return -1;
+    if( name == null ) {
+    	return -1;
     assert _names != null;
     // TODO: add a hashtable: O(n) is just stupid.
     for( int i=0; i<_names.length; i++ )
-      if( name.equals(_names[i]) )
+      if( name.equals(_names[i]) ) {
         return i;
     return -1;
   }
@@ -400,7 +410,7 @@ public class Frame extends Lockable<Frame> {
    *  @return the matching column index, or -1 if missing */
   public int find( Key key ) {
     for( int i=0; i<_keys.length; i++ )
-      if( key.equals(_keys[i]) )
+      if( key.equals(_keys[i]) ) {
         return i;
     return -1;
   }
@@ -408,7 +418,8 @@ public class Frame extends Lockable<Frame> {
   /** Bulk {@link #find(String)} api
    *  @return An array of column indices matching the {@code names} array */
   public int[] find(String[] names) {
-    if( names == null ) return null;
+    if( names == null ) {
+    	return null;
     int[] res = new int[names.length];
     for(int i = 0; i < names.length; ++i)
       res[i] = find(names[i]);
@@ -441,9 +452,11 @@ public class Frame extends Lockable<Frame> {
 
     public Vec vec() {
       Value v = DKV.get(_frame);
-      if (null == v) return null;
+      if (null == v){
+      	 return null;
       Frame f = v.get();
-      if (null == f) return null;
+      if (null == f) {
+      	return null;
       return f.vec(_column_name);
     }
   }
@@ -571,7 +584,8 @@ public class Frame extends Lockable<Frame> {
     bulkAdd(names, vecs);
   }
   public void add( String[] names, Vec[] vecs, int cols ) {
-    if (null == vecs || null == names) return;
+    if (null == vecs || null == names) {
+    	return;
     if (cols == names.length && cols == vecs.length) {
       bulkAdd(names, vecs);
     } else {
@@ -631,11 +645,12 @@ public class Frame extends Lockable<Frame> {
 
   /** Insert a named column as the first column */
   public Frame prepend( String name, Vec vec ) {
-    if( find(name) != -1 ) throw new IllegalArgumentException("Duplicate name '"+name+"' in Frame");
+    if( find(name) != -1 ) {
+    	throw new IllegalArgumentException("Duplicate name '"+name+"' in Frame");
     if( _vecs.length != 0 ) {
-      if( !anyVec().group().equals(vec.group()) && !Arrays.equals(anyVec().espc(),vec.espc()) )
+      if( !anyVec().group().equals(vec.group()) && !Arrays.equals(anyVec().espc(),vec.espc()) ) {
         throw new IllegalArgumentException("Vector groups differs - adding vec '"+name+"' into the frame " + Arrays.toString(_names));
-      if( numRows() != vec.length() )
+      if( numRows() != vec.length() ) {
         throw new IllegalArgumentException("Vector lengths differ - adding vec '"+name+"' into the frame " + Arrays.toString(_names));
     }
     final int len = _names != null ? _names.length : 0;
@@ -660,7 +675,8 @@ public class Frame extends Lockable<Frame> {
   public void swap( int lo, int hi ) {
     assert 0 <= lo && lo < _keys.length;
     assert 0 <= hi && hi < _keys.length;
-    if( lo==hi ) return;
+    if( lo==hi ) {
+    	return;
     Vec vecs[] = vecs();
     Vec v   = vecs [lo]; vecs  [lo] = vecs  [hi]; vecs  [hi] = v;
     Key<Vec> k = _keys[lo]; _keys[lo] = _keys[hi]; _keys[hi] = k;
@@ -677,8 +693,10 @@ public class Frame extends Lockable<Frame> {
     // Move the desired ones first
     for (int i=0; i<cols.length; i++) {
       int w = cols[i];
-      if (colsMoved[w]) throw new IllegalArgumentException("Duplicates in column numbers passed in");
-      if (w<0 || w>=_keys.length) throw new IllegalArgumentException("column number out of 0-based range");
+      if (colsMoved[w]){
+      	 throw new IllegalArgumentException("Duplicates in column numbers passed in");
+      if (w<0 || w>=_keys.length) {
+      	throw new IllegalArgumentException("column number out of 0-based range");
       colsMoved[w] = true;
       tmpvecs[i] = _vecs[w];
       tmpkeys[i] = _keys[w];
@@ -731,7 +749,8 @@ public class Frame extends Lockable<Frame> {
     HashMap<String, Integer> map = new HashMap<>((int) ((names.length/0.75f)+1)); // avoid rehashing by set up initial capacity
     for(int i = 0; i < _names.length; ++i) map.put(_names[i], i);
     for(int i = 0; i < names.length; ++i)
-      if(map.containsKey(names[i])) vecs[i] = _vecs[map.get(names[i])];
+      if(map.containsKey(names[i])){
+      	 vecs[i] = _vecs[map.get(names[i])];
       else if (replaceBy) {
         Log.warn("Column " + names[i] + " is missing, filling it in with " + c);
         cnames[ccv] = names[i];
@@ -755,7 +774,8 @@ public class Frame extends Lockable<Frame> {
    *  @return the original Futures, for flow-coding */
   @Override protected Futures remove_impl(Futures fs) {
     final Key[] keys = _keys;
-    if( keys.length==0 ) return fs;
+    if( keys.length==0 ) {
+    	return fs;
 
     // Get the nChunks without calling anyVec - which loads all Vecs eagerly,
     // only to delete them.  Supports Frames with some Vecs already deleted, as
@@ -763,16 +783,16 @@ public class Frame extends Lockable<Frame> {
     Vec v = _col0;
     if (v == null) {
       Vec[] vecs = _vecs;       // Read once, in case racily being cleared
-      if (vecs != null)
+      if (vecs != null) {
         for (Vec vec : vecs)
-          if ((v = vec) != null) // Stop on finding the 1st Vec
+          if ((v = vec) != null) { // Stop on finding the 1st Vec
             break;
     }
-    if (v == null)             // Ok, now do DKV gets
+    if (v == null) {            // Ok, now do DKV gets
       for (Key<Vec> _key1 : _keys)
-        if ((v = _key1.get()) != null)
+        if ((v = _key1.get()) != null) {
           break;                // Stop on finding the 1st Vec
-    if (v == null)
+    if (v == null) {
       return fs;
 
     _vecs = new Vec[0];
@@ -844,7 +864,7 @@ public class Frame extends Lockable<Frame> {
    *  @return an array of the removed columns */
   public Vec[] remove( int[] idxs ) {
     for( int i : idxs )
-      if(i < 0 || i >= vecs().length)
+      if(i < 0 || i >= vecs().length) {
         throw new ArrayIndexOutOfBoundsException();
     Arrays.sort(idxs);
     Vec[] res = new Vec[idxs.length];
@@ -876,9 +896,11 @@ public class Frame extends Lockable<Frame> {
    *  @return the removed column */
   public final Vec remove( int idx ) {
     int len = _names.length;
-    if( idx < 0 || idx >= len ) return null;
+    if( idx < 0 || idx >= len ) {
+    	return null;
     Vec v = vecs()[idx];
-    if( v == _col0 ) _col0 = null;
+    if( v == _col0 ) {
+    	_col0 = null;
     _vecs = ArrayUtils.remove(_vecs, idx);
     setNames(ArrayUtils.remove(_names, idx));
     _keys = ArrayUtils.remove(_keys, idx);
@@ -944,7 +966,8 @@ public class Frame extends Lockable<Frame> {
   // Make an initial Frame & lock it for writing.  Build Vec Keys.
   void preparePartialFrame( String[] names ) {
     // Nuke any prior frame (including freeing storage) & lock this one
-    if( _keys != null ) delete_and_lock();
+    if( _keys != null ) {
+    	delete_and_lock();
     else write_lock();
     _keys = new Vec.VectorGroup().addVecs(names.length);
     setNamesNoCheck(names);
@@ -1024,14 +1047,15 @@ public class Frame extends Lockable<Frame> {
   public Frame deepSlice( Object orows, Object ocols ) {
     // ocols is either a long[] or a Frame-of-1-Vec
     long[] cols;
-    if( ocols == null ) cols = null;
+    if( ocols == null ) {
+    	cols = null;
     else if (ocols instanceof long[]) cols = (long[])ocols;
     else if (ocols instanceof Frame) {
       Frame fr = (Frame) ocols;
-      if (fr.numCols() != 1)
+      if (fr.numCols() != 1) {
         throw new IllegalArgumentException("Columns Frame must have only one column (actually has " + fr.numCols() + " columns)");
       long n = fr.anyVec().length();
-      if (n > MAX_EQ2_COLS)
+      if (n > MAX_EQ2_COLS) {
         throw new IllegalArgumentException("Too many requested columns (requested " + n +", max " + MAX_EQ2_COLS + ")");
       cols = new long[(int)n];
       Vec.Reader v = fr.anyVec().new Reader();
@@ -1055,14 +1079,15 @@ public class Frame extends Lockable<Frame> {
       c2 = new int[numCols()-cols.length];
       int j=0;
       for( int i=0; i<numCols(); i++ ) {
-        if( j >= cols.length || i < (-(1+cols[j])) ) c2[i-j] = i;
+        if( j >= cols.length || i < (-(1+cols[j])) ){
+        	 c2[i-j] = i;
         else j++;
       }
     }
     for (int aC2 : c2)
-      if (aC2 >= numCols())
+      if (aC2 >= numCols()) {
         throw new IllegalArgumentException("Trying to select column " + (aC2 + 1) + " but only " + numCols() + " present.");
-    if( c2.length==0 )
+    if( c2.length==0 ) {
       throw new IllegalArgumentException("No columns selected (did you try to select column 0 instead of column 1?)");
 
     // Do Da Slice
@@ -1072,7 +1097,7 @@ public class Frame extends Lockable<Frame> {
         @Override public void map(Chunk[] chks, NewChunk[] nchks) { for (NewChunk nc : nchks) nc.addNA(); }
       }.doAll(types(c2), this).outputFrame(names(c2), domains(c2));
     }
-    if (orows == null)
+    if (orows == null) {
       return new DeepSlice(null,c2,vecs()).doAll(types(c2),this).outputFrame(names(c2),domains(c2));
     else if (orows instanceof long[]) {
       final long CHK_ROWS=1000000;
@@ -1086,9 +1111,11 @@ public class Frame extends Lockable<Frame> {
           Vec v = new MRTask() {
             @Override public void map(Chunk cs) {
               for (long er : rows) {
-                if (er >= 0) continue;
+                if (er >= 0){
+                	 continue;
                 er = Math.abs(er);
-                if (er < cs._start || er > (cs._len + cs._start - 1)) continue;
+                if (er < cs._start || er > (cs._len + cs._start - 1)) {
+                	continue;
                 cs.set((int) (er - cs._start), 1);
               }
             }
@@ -1159,7 +1186,8 @@ public class Frame extends Lockable<Frame> {
       for (int i = 0; i < ix[0]._len; i++) {
         // select one row
         r = ix[0].at8(i);   // next row to select
-        if (r < 0) continue;
+        if (r < 0) {
+        	continue;
         if (r >= nrow) {
           for (int c = 0; c < vecs.length; c++) ncs[c].addNA();
         } else {
@@ -1289,7 +1317,8 @@ public class Frame extends Lockable<Frame> {
         if (_rows != null) {   // Got a row selector?
           if (rx >= _rows.length) break; // All done with row selections
           long r = _rows[rx++];// Next row selector
-          if (r < rstart) continue;
+          if (r < rstart){
+          	 continue;
           rlo = (int) (r - rstart);
           rhi = rlo + 1;        // Stop at the next row
           while (rx < _rows.length && (_rows[rx] - rstart) == rhi && rhi < rlen) {
@@ -1303,7 +1332,8 @@ public class Frame extends Lockable<Frame> {
         for (int i = 0; i < _cols.length; i++)
           chks[_cols[i]].extractRows(nchks[i], rlo,rhi);
         rlo = rhi;
-        if (_rows == null) break;
+        if (_rows == null){
+        	 break;
       }
     }
   }
@@ -1360,7 +1390,8 @@ public class Frame extends Lockable<Frame> {
   }
 
   private String [] names(int [] cols){
-    if(_names == null)return null;
+    if(_names == null){
+    	return null;
     String [] res = new String[cols.length];
     for(int i = 0; i < cols.length; ++i)
       res[i] = _names[cols[i]];
@@ -1382,13 +1413,14 @@ public class Frame extends Lockable<Frame> {
    *  @return This Frame's data in an array of Vectors that is compatible with {@code f}. */
   public Vec[] makeCompatible( Frame f, boolean force) {
     // Small data frames are always "compatible"
-    if (anyVec() == null)      // Or it is small
+    if (anyVec() == null) {     // Or it is small
       return f.vecs();                 // Then must be compatible
     Vec v1 = anyVec();
     Vec v2 = f.anyVec();
-    if (v1 != null && v2 != null && v1.length() != v2.length())
+    if (v1 != null && v2 != null && v1.length() {
+    	!= v2.length())
       throw new IllegalArgumentException("Can not make vectors of different length compatible!");
-    if (v1 == null || v2 == null || (!force && v1.isCompatibleWith(v2)))
+    if (v1 == null || v2 == null || (!force && v1.isCompatibleWith(v2))) {
       return f.vecs();
     // Ok, here make some new Vecs with compatible layout
     Key k = Key.make();
@@ -1457,7 +1489,8 @@ public class Frame extends Lockable<Frame> {
     }
 
     public CSVStream(Chunk[] chks, String[] names, int nChunks, boolean hex_string) {
-      if (chks == null) nChunks = 0;
+      if (chks == null) {
+      	nChunks = 0;
       _lastChkIdx = (chks != null) ? chks[0].cidx() + nChunks - 1 : -1;
       _hex_string = hex_string;
       StringBuilder sb = new StringBuilder();
@@ -1483,7 +1516,8 @@ public class Frame extends Lockable<Frame> {
       BufferedString tmpStr = new BufferedString();
       for (int i = 0; i < _curChks.length; i++ ) {
         Vec v = _curChks[i]._vec;
-        if(i > 0) sb.append(',');
+        if(i > 0){
+        	 sb.append(',');
         if(!_curChks[i].isNA(_chkRow)) {
           if( v.isCategorical() ) sb.append('"').append(v.factor(_curChks[i].at8(_chkRow))).append('"');
           else if( v.isUUID() ) sb.append(PrettyPrint.UUID(_curChks[i].at16l(_chkRow), _curChks[i].at16h(_chkRow)));
