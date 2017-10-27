@@ -108,21 +108,25 @@ public class PackedDomains {
         decodeAsInt(sizeA, data, wordPos);
         shared++;
       } else if (comp < 0) { // output word A
-        while (pA < endA)
+        while (pA < endA){
           data[pos++] = as[pA++];
+        }
         decodeAsInt(sizeA, data, wordPos);
         pB = wB;
       } else { // output word B
-        while (pB < endB)
+        while (pB < endB){
           data[pos++] = bs[pB++];
+        }
         decodeAsInt(sizeB, data, wordPos);
         pA = wA;
       }
     }
-    while (pA < as.length)
+    while (pA < as.length){
       data[pos++] = as[pA++];
-    while (pB < bs.length)
+    }
+    while (pB < bs.length){
       data[pos++] = bs[pB++];
+    }
     int len = encodeAsInt(as, 0) + encodeAsInt(bs, 0) - shared;
     decodeAsInt(len, data, 0);
     return data;

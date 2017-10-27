@@ -166,8 +166,9 @@ public class Rapids {
   private AstExec parseFunctionApplication() {
     eatChar('(');
     ArrayList<AstRoot> asts = new ArrayList<>();
-    while (skipWS() != ')')
+    while (skipWS() != ')'){
       asts.add(parseNext());
+    }
     eatChar(')');
     AstExec res = new AstExec(asts);
     if (peek(0) == '-') {
@@ -298,7 +299,9 @@ public class Rapids {
    */
   private char skipWS() {
     char c = ' ';
-    while (_x < _str.length() && isWS(c = peek(0))) _x++;
+    while (_x < _str.length() && isWS(c = peek(0))) {
+    	_x++;
+    }
     return c;
   }
 
@@ -310,7 +313,9 @@ public class Rapids {
    */
   private String token() {
     int start = _x;
-    while (!invalidTokenCharacters.contains(peek(0))) _x++;
+    while (!invalidTokenCharacters.contains(peek(0))){
+    	_x++;
+    }
     if (start == _x) throw new IllegalASTException("Missing token");
     return _str.substring(start, _x);
   }
@@ -320,7 +325,9 @@ public class Rapids {
    */
   private double number() {
     int start = _x;
-    while (validNumberCharacters.contains(peek(0))) _x++;
+    while (validNumberCharacters.contains(peek(0))){ 
+    	_x++;
+    }
     if (start == _x) throw new IllegalASTException("Missing a number");
     String s = _str.substring(start, _x);
     if (s.toLowerCase().equals("nan")) return Double.NaN;

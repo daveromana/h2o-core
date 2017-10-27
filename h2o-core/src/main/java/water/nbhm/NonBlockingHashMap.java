@@ -1,3 +1,4 @@
+
 package water.nbhm;
 import sun.misc.Unsafe;
 
@@ -388,7 +389,7 @@ public class NonBlockingHashMap<TypeK, TypeV>
   public void clear() {         // Smack a new empty table down
     Object[] newkvs = new NonBlockingHashMap(MIN_SIZE)._kvs;
     while( !CAS_kvs(_kvs,newkvs) ) // Spin until the clear works
-      ;
+    {};
   }
 
   /** Returns <tt>true</tt> if this Map maps one or more keys to the specified
@@ -827,7 +828,7 @@ public class NonBlockingHashMap<TypeK, TypeV>
       AtomicReferenceFieldUpdater.newUpdater(CHM.class,Object[].class, "_newkvs");
     // Set the _next field if we can.
     boolean CAS_newkvs( Object[] newkvs ) {
-      while( _newkvs == null )
+      while( _newkvs == null ){}
         if( _newkvsUpdater.compareAndSet(this,null,newkvs) )
           return true;
       return false;
@@ -938,8 +939,9 @@ public class NonBlockingHashMap<TypeK, TypeV>
       // handful - lest we have 750 threads all trying to allocate a giant
       // resized array.
       long r = _resizers;
-      while( !_resizerUpdater.compareAndSet(this,r,r+1) )
+      while( !_resizerUpdater.compareAndSet(this,r,r+1) ){
         r = _resizers;
+      }
       // Size calculation: 2 words (K+V) per table entry, plus a handful.  We
       // guess at 64-bit pointers; 32-bit pointers screws up the size calc by
       // 2x but does not screw up the heuristic very much.
@@ -1026,8 +1028,9 @@ public class NonBlockingHashMap<TypeK, TypeV>
         // thread counts trying to copy the table often 'panic'.
         if( panic_start == -1 ) { // No panic?
           copyidx = (int)_copyIdx;
-          while( !_copyIdxUpdater.compareAndSet(this,copyidx,copyidx+MIN_COPY_WORK) )
+          while( !_copyIdxUpdater.compareAndSet(this,copyidx,copyidx+MIN_COPY_WORK) ){
             copyidx = (int)_copyIdx;      // Re-read
+          }
           if( !(copyidx < (oldlen<<1)) )  // Panic!
             panic_start = copyidx;        // Record where we started to panic-copy
         }
@@ -1124,8 +1127,9 @@ public class NonBlockingHashMap<TypeK, TypeV>
       // because our correctness stems from box'ing the Value field.  Slamming
       // the Key field is a minor speed optimization.
       Object key;
-      while( (key=key(oldkvs,idx)) == null )
+      while( (key=key(oldkvs,idx)) == null ){
         CAS_key(oldkvs,idx, null, TOMBSTONE);
+      }
 
       // ---
       // Prevent new values from appearing in the old table.
@@ -1170,8 +1174,9 @@ public class NonBlockingHashMap<TypeK, TypeV>
       // forever hide the old-table value by slapping a TOMBPRIME down.  This
       // will stop other threads from uselessly attempting to copy this slot
       // (i.e., it's a speed optimization not a correctness issue).
-      while( oldval != TOMBPRIME && !CAS_val(oldkvs,idx,oldval,TOMBPRIME) )
+      while( oldval != TOMBPRIME && !CAS_val(oldkvs,idx,oldval,TOMBPRIME) ){
         oldval = val(oldkvs,idx);
+      }
 
       return oldval != TOMBPRIME; // True if we slammed the TOMBPRIME down
     } // end copy_slot

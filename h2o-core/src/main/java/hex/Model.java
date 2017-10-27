@@ -93,11 +93,11 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
    * @return threshold in 0...1
    */
   public double defaultThreshold() {
-    if (_output.nclasses() != 2 || _output._training_metrics == null)
+    if (_output.nclasses() != 2 || _output._training_metrics == null) {
       return 0.5;
-    if (_output._validation_metrics != null && ((ModelMetricsBinomial)_output._validation_metrics)._auc != null)
+    if (_output._validation_metrics != null && ((ModelMetricsBinomial)_output._validation_metrics)._auc != null) {
       return ((ModelMetricsBinomial)_output._validation_metrics)._auc.defaultThreshold();
-    if (((ModelMetricsBinomial)_output._training_metrics)._auc != null)
+    if (((ModelMetricsBinomial)_output._training_metrics)._auc != null) {
       return ((ModelMetricsBinomial)_output._training_metrics)._auc.defaultThreshold();
     return 0.5;
   }
@@ -109,9 +109,9 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
    * @return default sort-by
    */
   public GridSortBy getDefaultGridSortBy() {
-    if (! isSupervised())
+    if (! isSupervised()) {
       return null;
-    else if (_output.nclasses() > 1)
+    else if (_output.nclasses() > 1) {
       return GridSortBy.LOGLOSS;
     else
       return GridSortBy.RESDEV;
@@ -292,9 +292,9 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     /** Read-Lock both training and validation User frames. */
     public void read_lock_frames(Job job) {
       Frame tr = train();
-      if (tr != null)
+      if (tr != null) {
         tr.read_lock(job._key);
-      if (_valid != null && !_train.equals(_valid))
+      if (_valid != null && !_train.equals(_valid)) {
         _valid.get().read_lock(job._key);
     }
 
@@ -303,8 +303,9 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
      *  are not actually locked. */
     public void read_unlock_frames(Job job) {
       Frame tr = train();
-      if( tr != null ) tr.unlock(job._key,false);
-      if( _valid != null && !_train.equals(_valid) )
+      if( tr != null ) {
+      	tr.unlock(job._key,false);
+      if( _valid != null && !_train.equals(_valid) ) {
         valid().unlock(job._key,false);
     }
 
@@ -405,7 +406,8 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
   static void incrementModelMetrics(Output out, Key k) {
     synchronized(out) {
       for (Key key : out._model_metrics)
-        if (k.equals(key)) return;
+        if (k.equals(key)) {
+        	return;
       out._model_metrics = Arrays.copyOf(out._model_metrics, out._model_metrics.length + 1);
       out._model_metrics[out._model_metrics.length - 1] = k;
     }
@@ -467,7 +469,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
      *  many classes. */
     public Output(ModelBuilder b) {
       _isSupervised = b.isSupervised();
-      if (b.error_count() > 0)
+      if (b.error_count() > 0) {
         throw new IllegalArgumentException(b.validationErrors());
       // Capture the data "shape" the model is valid on
       setNames(b._train != null ? b._train.names() : new String[0]);
@@ -548,25 +550,30 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     public String[] interactions() { return null; }
     // Vec layout is  [c1,c2,...,cn,w?,o?,r], cn are predictor cols, r is response, w and o are weights and offset, both are optional
     public int weightsIdx() {
-      if(!_hasWeights) return -1;
+      if(!_hasWeights){
+      	 return -1;
       return _names.length - (isSupervised()?1:0) - (hasOffset()?1:0) - 1 - (hasFold()?1:0);
     }
     public int offsetIdx() {
-      if(!_hasOffset) return -1;
+      if(!_hasOffset) {
+      	return -1;
       return _names.length - (isSupervised()?1:0) - (hasFold()?1:0) - 1;
     }
     public int foldIdx() {
-      if(!_hasFold) return -1;
+      if(!_hasFold) {
+      	return -1;
       return _names.length - (isSupervised()?1:0) - 1;
     }
     public int responseIdx() {
-      if(!isSupervised()) return -1;
+      if(!isSupervised()) {
+      	return -1;
       return _names.length-1;
     }
 
     /** Names of levels for a categorical response column. */
     public String[] classNames() {
-      if (_domains == null || _domains.length == 0 || !isSupervised()) return null;
+      if (_domains == null || _domains.length == 0 || !isSupervised()) {
+      	return null;
       return _domains[_domains.length - 1];
     }
 
@@ -584,7 +591,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
 
     // Note: some algorithms MUST redefine this method to return other model categories
     public ModelCategory getModelCategory() {
-      if (isSupervised())
+      if (isSupervised()) {
         return (isClassifier() ?
                 (nclasses() > 2 ? ModelCategory.Multinomial : ModelCategory.Binomial) :
                 ModelCategory.Regression);
@@ -609,7 +616,8 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
           try {
             TwoDimTable t = (TwoDimTable) f.get(this);
             f.setAccessible(true);
-            if (t != null) sb.append(t.toString(1,false /*don't print the full table if too long*/));
+            if (t != null){
+            	 sb.append(t.toString(1,false /*don't print the full table if too long*/));
           } catch (IllegalAccessException e) {
             e.printStackTrace();
           }
@@ -619,9 +627,12 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
 
     @Override public String toString() {
       StringBuilder sb = new StringBuilder();
-      if (_training_metrics!=null) sb.append(_training_metrics.toString());
-      if (_validation_metrics!=null) sb.append(_validation_metrics.toString());
-      if (_cross_validation_metrics!=null) sb.append(_cross_validation_metrics.toString());
+      if (_training_metrics!=null) {
+      	sb.append(_training_metrics.toString());
+      if (_validation_metrics!=null) {
+      	sb.append(_validation_metrics.toString());
+      if (_cross_validation_metrics!=null) {
+      	sb.append(_cross_validation_metrics.toString());
       printTwoDimTables(sb, this);
       return sb.toString();
     }
@@ -639,7 +650,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     assert parms != null;
     _parms = parms;
     _output = output;  // Output won't be set if we're assert output != null;
-    if (_output != null)
+    if (_output != null) {
       _output.startClock();
     _dist = isSupervised() && _output.nclasses() == 1 ? new Distribution(_parms) : null;
   }
@@ -710,21 +721,24 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
   } // loss()
 
   public int compareTo(M o) {
-    if (o._output.isClassifier() != _output.isClassifier())
+    if (o._output.isClassifier() {
+    	!= _output.isClassifier())
       throw new UnsupportedOperationException("Cannot compare classifier against regressor.");
     if (o._output.isClassifier()) {
-      if (o._output.nclasses() != _output.nclasses())
+      if (o._output.nclasses() {
+      	!= _output.nclasses())
         throw new UnsupportedOperationException("Cannot compare models with different number of classes.");
     }
     return (loss() < o.loss() ? -1 : loss() > o.loss() ? 1 : 0);
   }
 
   public double classification_error() {
-    if (scoringInfo != null)
+    if (scoringInfo != null) {
       return last_scored().cross_validation ? last_scored().scored_xval._classError : last_scored().validation ? last_scored().scored_valid._classError : last_scored().scored_train._classError;
 
     ModelMetrics mm = _output._cross_validation_metrics != null ? _output._cross_validation_metrics : _output._validation_metrics != null ? _output._validation_metrics : _output._training_metrics;
-    if (mm == null) return Double.NaN;
+    if (mm == null) {
+    	return Double.NaN;
 
     if (mm instanceof ModelMetricsBinomial) {
       return ((ModelMetricsBinomial)mm)._auc.defaultErr();
@@ -735,61 +749,67 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
   }
 
   public double mse() {
-    if (scoringInfo != null)
+    if (scoringInfo != null) {
       return last_scored().cross_validation ? last_scored().scored_xval._mse : last_scored().validation ? last_scored().scored_valid._mse : last_scored().scored_train._mse;
 
     ModelMetrics mm = _output._cross_validation_metrics != null ? _output._cross_validation_metrics : _output._validation_metrics != null ? _output._validation_metrics : _output._training_metrics;
-    if (mm == null) return Double.NaN;
+    if (mm == null) {
+    	return Double.NaN;
 
     return mm.mse();
   }
 
   public double mae() {
-    if (scoringInfo != null)
+    if (scoringInfo != null) {
       return last_scored().cross_validation ? last_scored().scored_xval._mae : last_scored().validation ? last_scored().scored_valid._mae : last_scored().scored_train._mae;
 
     ModelMetrics mm = _output._cross_validation_metrics != null ? _output._cross_validation_metrics : _output._validation_metrics != null ? _output._validation_metrics : _output._training_metrics;
-    if (mm == null) return Double.NaN;
+    if (mm == null) {
+    	return Double.NaN;
 
     return ((ModelMetricsRegression)mm).mae();
   }
 
   public double rmsle() {
-    if (scoringInfo != null)
+    if (scoringInfo != null) {
       return last_scored().cross_validation ? last_scored().scored_xval._rmsle : last_scored().validation ? last_scored().scored_valid._rmsle : last_scored().scored_train._rmsle;
 
     ModelMetrics mm = _output._cross_validation_metrics != null ? _output._cross_validation_metrics : _output._validation_metrics != null ? _output._validation_metrics : _output._training_metrics;
-    if (mm == null) return Double.NaN;
+    if (mm == null) {
+    	return Double.NaN;
 
     return ((ModelMetricsRegression)mm).rmsle();
   }
 
   public double auc() {
-    if (scoringInfo != null)
+    if (scoringInfo != null) {
       return last_scored().cross_validation ? last_scored().scored_xval._AUC : last_scored().validation ? last_scored().scored_valid._AUC : last_scored().scored_train._AUC;
 
     ModelMetrics mm = _output._cross_validation_metrics != null ? _output._cross_validation_metrics : _output._validation_metrics != null ? _output._validation_metrics : _output._training_metrics;
-    if (mm == null) return Double.NaN;
+    if (mm == null) {
+    	return Double.NaN;
 
     return ((ModelMetricsBinomial)mm)._auc._auc;
   }
 
   public double deviance() {
-    if (scoringInfo != null)
+    if (scoringInfo != null) {
       return last_scored().cross_validation ? last_scored().scored_xval._mean_residual_deviance: last_scored().validation ? last_scored().scored_valid._mean_residual_deviance : last_scored().scored_train._mean_residual_deviance;
 
     ModelMetrics mm = _output._cross_validation_metrics != null ? _output._cross_validation_metrics : _output._validation_metrics != null ? _output._validation_metrics : _output._training_metrics;
-    if (mm == null) return Double.NaN;
+    if (mm == null) {
+    	return Double.NaN;
 
     return ((ModelMetricsRegression)mm)._mean_residual_deviance;
   }
 
   public double logloss() {
-    if (scoringInfo != null)
+    if (scoringInfo != null) {
       return last_scored().cross_validation ? last_scored().scored_xval._logloss : last_scored().validation ? last_scored().scored_valid._logloss : last_scored().scored_train._logloss;
 
     ModelMetrics mm = _output._cross_validation_metrics != null ? _output._cross_validation_metrics : _output._validation_metrics != null ? _output._validation_metrics : _output._training_metrics;
-    if (mm == null) return Double.NaN;
+    if (mm == null) {
+    	return Double.NaN;
 
     if (mm instanceof ModelMetricsBinomial) {
       return ((ModelMetricsBinomial)mm).logloss();
@@ -800,11 +820,12 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
   }
 
   public double mean_per_class_error() {
-    if (scoringInfo != null)
+    if (scoringInfo != null) {
       return last_scored().cross_validation ? last_scored().scored_xval._mean_per_class_error : last_scored().validation ? last_scored().scored_valid._mean_per_class_error : last_scored().scored_train._mean_per_class_error;
 
     ModelMetrics mm = _output._cross_validation_metrics != null ? _output._cross_validation_metrics : _output._validation_metrics != null ? _output._validation_metrics : _output._training_metrics;
-    if (mm == null) return Double.NaN;
+    if (mm == null) {
+    	return Double.NaN;
 
     if (mm instanceof ModelMetricsBinomial) {
       return ((ModelMetricsBinomial)mm).mean_per_class_error();
@@ -815,11 +836,12 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
   }
 
   public double lift_top_group() {
-    if (scoringInfo != null)
+    if (scoringInfo != null) {
       return last_scored().cross_validation ? last_scored().scored_xval._lift : last_scored().validation ? last_scored().scored_valid._lift : last_scored().scored_train._lift;
 
     ModelMetrics mm = _output._cross_validation_metrics != null ? _output._cross_validation_metrics : _output._validation_metrics != null ? _output._validation_metrics : _output._training_metrics;
-    if (mm == null) return Double.NaN;
+    if (mm == null) {
+    	return Double.NaN;
 
     if (mm instanceof ModelMetricsBinomial) {
       GainsLift gl = ((ModelMetricsBinomial)mm)._gainsLift;
@@ -898,12 +920,14 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
                                            Parameters parms, boolean expensive, boolean computeMetrics, String[] interactions, ToEigenVec tev,
                                            IcedHashMap<Key, String> toDelete, boolean catEncoded) throws IllegalArgumentException {
     String[] msg = new String[0];
-    if (test == null) return msg;
-    if (catEncoded && origNames==null) return msg;
+    if (test == null) {
+    	return msg;
+    if (catEncoded && origNames==null) {
+    	return msg;
 
     // test frame matches the training frame (after categorical encoding, if applicable)
     String[][] tdomains = test.domains();
-    if (names == test._names && domains == tdomains || (Arrays.equals(names, test._names) && Arrays.deepEquals(domains, tdomains)) )
+    if (names == test._names && domains == tdomains || (Arrays.equals(names, test._names) && Arrays.deepEquals(domains, tdomains)) ) {
       return msg;
 
     String[] backupNames = names;
@@ -929,7 +953,8 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
         // We could be lenient here and fill missing columns with NA, but then it gets difficult to decide whether this frame is pre/post encoding, if a certain fraction of columns mismatch...
         for (String s : origNames) {
           match &= ArrayUtils.contains(test.names(), s);
-          if (!match) break;
+          if (!match){
+          	 break;
         }
       }
       // still have work to do below, make sure we set the names/domains to the original user-given values such that we can do the int->enum mapping and cat. encoding below (from scratch)
@@ -963,9 +988,9 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
       boolean isFold = fold != null && names[i].equals(fold);
       // If a training set column is missing in the test set, complain (if it's ok, fill in with NAs (or 0s if it's a fold-column))
       if (vec == null) {
-        if (isResponse && computeMetrics)
+        if (isResponse && computeMetrics) {
           throw new IllegalArgumentException("Test/Validation dataset is missing response column '" + response + "'");
-        else if (isOffset)
+        else if (isOffset) {
           throw new IllegalArgumentException("Test/Validation dataset is missing offset column '" + offset + "'");
         else if (isWeights && computeMetrics) {
           if (expensive) {
@@ -977,13 +1002,14 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
           String str = "Test/Validation dataset is missing column '" + names[i] + "': substituting in a column of " + (isFold ? 0 : missing);
           vec = test.anyVec().makeCon(isFold ? 0 : missing);
           toDelete.put(vec._key, "adapted missing vectors");
-          if (!isFold) convNaN++;
+          if (!isFold) {
+          	convNaN++;
           msgs.add(str);
         }
       }
       if( vec != null ) {          // I have a column with a matching name
         if( domains[i] != null ) { // Model expects an categorical
-          if (vec.isString())
+          if (vec.isString()) {
             vec = VecUtils.stringToCategorical(vec); //turn a String column into a categorical column (we don't delete the original vec here)
           if( expensive && vec.domain() != domains[i] && !Arrays.equals(vec.domain(),domains[i]) ) { // Result needs to be the same categorical
             Vec evec;
@@ -995,9 +1021,10 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
             }
             String[] ds = evec.domain();
             assert ds != null && ds.length >= domains[i].length;
-            if( isResponse && vec.domain() != null && ds.length == domains[i].length+vec.domain().length )
+            if( isResponse && vec.domain(){
+            	 != null && ds.length == domains[i].length+vec.domain().length )
               throw new IllegalArgumentException("Test/Validation dataset has a categorical response column '"+names[i]+"' with no levels in common with the model");
-            if (ds.length > domains[i].length)
+            if (ds.length > domains[i].length) {
               msgs.add("Test/Validation dataset column '" + names[i] + "' has levels not trained on: " + Arrays.toString(Arrays.copyOfRange(ds, domains[i].length, ds.length)));
             vec = evec;
           }
@@ -1014,16 +1041,20 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
       }
       vvecs[i] = vec;
     }
-    if( good == names.length || (response != null && test.find(response) == -1 && good == names.length - 1) )  // Only update if got something for all columns
+    if( good == names.length || (response != null && test.find(response) == -1 && good == names.length - 1) ) {  // Only update if got something for all columns
       test.restructure(names,vvecs,good);
 
     boolean haveCategoricalPredictors = false;
     if (expensive && checkCategoricals && !catEncoded) {
       for (int i=0; i<test.numCols(); ++i) {
-        if (test.names()[i].equals(response)) continue;
-        if (test.names()[i].equals(weights)) continue;
-        if (test.names()[i].equals(offset)) continue;
-        if (test.names()[i].equals(fold)) continue;
+        if (test.names()[i].equals(response)) {
+        	continue;
+        if (test.names()[i].equals(weights)) {
+        	continue;
+        if (test.names()[i].equals(offset)) {
+        	continue;
+        if (test.names()[i].equals(fold)) {
+        	continue;
         // either the column of the test set is categorical (could be a numeric col that's already turned into a factor)
         if (test.vec(i).cardinality() > 0) {
           haveCategoricalPredictors = true;
@@ -1046,7 +1077,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
       msgs.addAll(Arrays.asList(msg2));
       return msgs.toArray(new String[msgs.size()]);
     }
-    if( good == convNaN )
+    if( good == convNaN ) {
       throw new IllegalArgumentException("Test/Validation dataset has no columns in common with the training set");
 
     return msgs.toArray(new String[msgs.size()]);
@@ -1141,7 +1172,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
       Vec actual = fr.vec(_output.responseName());
       if( actual != null ) {  // Predict does not have an actual, scoring does
         String sdomain[] = actual.domain(); // Scored/test domain; can be null
-        if (sdomain != null && mdomain != sdomain && !Arrays.equals(mdomain, sdomain))
+        if (sdomain != null && mdomain != sdomain && !Arrays.equals(mdomain, sdomain)) {
           output.replace(0, new CategoricalWrappedVec(actual.group().addVec(), actual._rowLayout, sdomain, predicted._key));
       }
     }
@@ -1160,7 +1191,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     assert (_parms._response_column!=null) : "response column can't be null";
     assert valid.find(_parms._response_column)>=0 : "validation frame must contain a response column";
     predictions.add(_parms._response_column, valid.vec(_parms._response_column));
-    if (valid.find(_parms._weights_column)>=0)
+    if (valid.find(_parms._weights_column)>=0) {
       predictions.add(_parms._weights_column, valid.vec(_parms._weights_column));
     final int respIdx=predictions.find(_parms._response_column);
     final int weightIdx=predictions.find(_parms._weights_column);
@@ -1247,7 +1278,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     // Score the dataset, building the class distribution & predictions
     BigScore bs = makeBigScoreTask(domains, names, adaptFrm, computeMetrics, true, j).doAll(names.length, Vec.T_NUM, adaptFrm);
 
-    if (computeMetrics)
+    if (computeMetrics) {
       bs._mb.makeModelMetrics(this, fr, adaptFrm, bs.outputFrame());
     Frame predictFr = bs.outputFrame(Key.<Frame>make(destination_key), names, domains);
     return postProcessPredictions(predictFr);
@@ -1293,7 +1324,8 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     }
 
     @Override public void map( Chunk chks[], NewChunk cpreds[] ) {
-      if (isCancelled() || _j != null && _j.stop_requested()) return;
+      if (isCancelled() || _j != null && _j.stop_requested()){
+      	 return;
       Chunk weightsChunk = _hasWeights && _computeMetrics ? chks[_output.weightsIdx()] : null;
       Chunk offsetChunk = _output.hasOffset() ? chks[_output.offsetIdx()] : null;
       Chunk responseChunk = null;
@@ -1342,8 +1374,14 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
         closeBigScorePredict();
       }
     }
-    @Override public void reduce( BigScore bs ) { if(_mb != null )_mb.reduce(bs._mb); }
-    @Override protected void postGlobal() { if(_mb != null)_mb.postGlobal(); }
+    @Override public void reduce( BigScore bs ) {
+    	if(_mb != null ){
+    }
+    	_mb.reduce(bs._mb); }
+    @Override protected void postGlobal() { 
+    	if(_mb != null){
+    }
+    	_mb.postGlobal(); }
   }
 
   protected void setupBigScorePredict() {}
@@ -1372,7 +1410,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
       // Correct probabilities obtained from training on oversampled data back to original distribution
       // C.f. http://gking.harvard.edu/files/0s.pdf Eq.(27)
       if( _output.isClassifier()) {
-        if (_parms._balance_classes)
+        if (_parms._balance_classes) {
           GenModel.correctProbabilities(scored, _output._priorClassDist, _output._modelClassDist);
         //assign label at the very end (after potentially correcting probabilities)
         scored[0] = hex.genmodel.GenModel.getPrediction(scored, _output._priorClassDist, tmp, defaultThreshold());
@@ -1396,7 +1434,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
   public double score(double[] data){ return ArrayUtils.maxIndex(score0(data, new double[_output.nclasses()]));  }
 
   @Override protected Futures remove_impl( Futures fs ) {
-    if (_output._model_metrics != null)
+    if (_output._model_metrics != null) {
       for( Key k : _output._model_metrics )
         k.remove(fs);
     cleanUp(_toDelete);
@@ -1405,13 +1443,13 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
 
   /** Write out K/V pairs, in this case model metrics. */
   @Override protected AutoBuffer writeAll_impl(AutoBuffer ab) {
-    if (_output._model_metrics != null)
+    if (_output._model_metrics != null) {
       for( Key k : _output._model_metrics )
         ab.putKey(k);
     return super.writeAll_impl(ab);
   }
   @Override protected Keyed readAll_impl(AutoBuffer ab, Futures fs) {
-    if (_output._model_metrics != null)
+    if (_output._model_metrics != null) {
       for( Key k : _output._model_metrics )
         ab.getKey(k,fs);        // Load model metrics
     return super.readAll_impl(ab,fs);
@@ -1573,8 +1611,10 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
       final String[] dom = domains[i];
       final String colInfoClazz = modelName+"_ColInfo_"+i;
       sb.i(1).p("/* ").p(_output._names[i]).p(" */ ");
-      if (dom != null) sb.p(colInfoClazz).p(".VALUES"); else sb.p("null");
-      if (i!=domains.length-1) sb.p(',');
+      if (dom != null) {
+      	sb.p(colInfoClazz).p(".VALUES"); else sb.p("null");
+      if (i!=domains.length-1){
+      	 sb.p(',');
       sb.nl();
       // Right now do not generate the class representing column
       // since it does not hold any interesting information except String array holding domain
@@ -1700,7 +1740,8 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
 
         // Compare predictions, counting mis-predicts
         for (int row=0; row<fr.numRows(); row++) { // For all rows, single-threaded
-          if (rnd.nextDouble() >= fraction) continue;
+          if (rnd.nextDouble() >= fraction) {
+          	continue;
           num_total++;
 
           // Native Java API
@@ -1709,9 +1750,10 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
           genmodel.score0(features, predictions);            // POJO predictions
           for (int col = _output.isClassifier() ? 1 : 0; col < pvecs.length; col++) { // Compare predictions
             double d = pvecs[col].at(row);                  // Load internal scoring predictions
-            if (col == 0 && omap != null) d = omap[(int) d];  // map categorical response to scoring domain
+            if (col == 0 && omap != null) {
+            	d = omap[(int) d];  // map categorical response to scoring domain
             if (!MathUtils.compare(predictions[col], d, abs_epsilon, rel_epsilon)) {
-              if (num_errors++ < 10)
+              if (num_errors++ < 10) {
                 System.err.println("Predictions mismatch, row " + row + ", col " + model_predictions._names[col] + ", internal prediction=" + d + ", POJO prediction=" + predictions[col]);
               break;
             }
@@ -1721,8 +1763,10 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
 
       // EasyPredict API with POJO and/or MOJO
       for (int i = 0; i < 2; ++i) {
-        if (i == 0 && !havePojo) continue;
-        if (i == 1 && !haveMojo) continue;
+        if (i == 0 && !havePojo) {
+        	continue;
+        if (i == 1 && !haveMojo){
+        	 continue;
         if (i == 1) {  // MOJO
           final String filename = modelName + ".zip";
           StreamingSchema ss = new StreamingSchema(getMojo(), filename);
@@ -1737,7 +1781,8 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
             throw H2O.fail("Internal MOJO loading failed", e1);
           } finally {
             boolean deleted = new File(filename).delete();
-            if (!deleted) Log.warn("Failed to delete the file");
+            if (!deleted) {
+            	Log.warn("Failed to delete the file");
           }
         }
 
@@ -1747,8 +1792,10 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
         RowData rowData = new RowData();
         BufferedString bStr = new BufferedString();
         for (int row = 0; row < fr.numRows(); row++) { // For all rows, single-threaded
-          if (rnd.nextDouble() >= fraction) continue;
-          if (genmodel.getModelCategory() == ModelCategory.AutoEncoder) continue;
+          if (rnd.nextDouble() >= fraction){
+          	 continue;
+          if (genmodel.getModelCategory() == ModelCategory.AutoEncoder){
+          	 continue;
 
           // Generate input row
           for (int col = 0; col < features.length; col++) {
@@ -1782,7 +1829,8 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
           double[] actual_preds = new double[pvecs.length];
           for (int col = 0; col < pvecs.length; col++) { // Compare predictions
             double d = pvecs[col].at(row); // Load internal scoring predictions
-            if (col == 0 && omap != null) d = omap[(int) d]; // map categorical response to scoring domain
+            if (col == 0 && omap != null) {
+            	d = omap[(int) d]; // map categorical response to scoring domain
             double d2 = Double.NaN;
             switch (genmodel.getModelCategory()) {
               case Clustering:
@@ -1822,7 +1870,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
           }
         }
       }
-      if (num_errors != 0)
+      if (num_errors != 0) {
         System.err.println("Number of errors: " + num_errors + (num_errors > 20 ? " (only first 20 are shown)": "") +
                            " out of " + num_total + " rows tested.");
       return num_errors == 0;
@@ -1835,7 +1883,8 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     if (_output._cross_validation_models != null) {
       for (Key k : _output._cross_validation_models) {
         Model m = DKV.getGet(k);
-        if (m!=null) m.delete(); //delete all subparts
+        if (m!=null) {
+        	m.delete(); //delete all subparts
       }
     }
   }
@@ -1916,10 +1965,12 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
       _hash=17;
       _hash = 31*_hash + _v1;
       _hash = 31*_hash + _v2;
-      if( _v1Enums==null ) _hash = 31*_hash;
+      if( _v1Enums==null ) {
+      	_hash = 31*_hash;
       else
         for( String s:_v1Enums ) _hash = 31*_hash + s.hashCode();
-      if( _v2Enums==null ) _hash = 31*_hash;
+      if( _v2Enums==null ) {
+      	_hash = 31*_hash;
       else
         for( String s:_v2Enums ) _hash = 31*_hash + s.hashCode();
     }
@@ -1931,7 +1982,7 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
      * @return An array of interaction pairs.
      */
     public static InteractionPair[] generatePairwiseInteractions(int from, int to) {
-      if( 1==(to-from) )
+      if( 1==(to-from) ) {
         throw new IllegalArgumentException("Illegal range of values, must be greater than a single value. Got: " + from + "<" + to);
       InteractionPair[] res = new InteractionPair[ ((to-from-1)*(to-from)) >> 1];  // n*(n+1) / 2
       int idx=0;
@@ -1947,9 +1998,11 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
      * @return An array of interaction pairs
      */
     public static InteractionPair[] generatePairwiseInteractionsFromList(int... indexes) {
-      if( null==indexes ) return null;
+      if( null==indexes ) {
+      	return null;
       if( indexes.length < 2 ) {
-        if( indexes.length==1 && indexes[0]==-1 ) return null;
+        if( indexes.length==1 && indexes[0]==-1 ){
+        	 return null;
         throw new IllegalArgumentException("Must supply 2 or more columns.");
       }
       InteractionPair[] res = new InteractionPair[ (indexes.length-1)*(indexes.length)>>1]; // n*(n+1) / 2
@@ -1973,7 +2026,8 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     public static int isInteraction(int i, InteractionPair[] ips) {
       int idx = 0;
       for (InteractionPair ip: ips) {
-        if (i == ip.vecIdx) return idx;
+        if (i == ip.vecIdx){
+        	 return idx;
         else               idx++;
       }
       return -1;
@@ -1996,11 +2050,13 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
       HashSet<InteractionPair> res=new HashSet<>();
       int v1 = parseNum();    // parse the first int
       String[] v1Enums=parseEnums();  // shared
-      if( i.charAt(_p)!=':' || _p>=i.length() ) throw new IllegalArgumentException("Error");
+      if( i.charAt(_p)!=':' || _p>=i.length() ){
+      	 throw new IllegalArgumentException("Error");
       while( _p++<i.length() ) {
         int v2=parseNum();
         String[] v2Enums=parseEnums();
-        if( v1 == v2 ) continue; // don't interact on self!
+        if( v1 == v2 ) {
+        	continue; // don't interact on self!
         res.add(new InteractionPair(v1,v2,v1Enums,v2Enums));
       }
       return res;
@@ -2017,7 +2073,8 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
     }
 
     private String[] parseEnums() {
-      if( _p>=_str.length() || _str.charAt(_p)!='[' ) return null;
+      if( _p>=_str.length() || _str.charAt(_p)!='[' ){
+      	 return null;
       ArrayList<String> enums = new ArrayList<>();
       while( _str.charAt(_p++)!=']' ) {
         int start=_p++;

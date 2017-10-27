@@ -82,7 +82,10 @@ public class CStrChunk extends Chunk {
   public byte byteAt(int i) { return _mem[_valstart+i]; }
   public int lengthAtOffset(int off) {
     int len = 0;
-    while (byteAt(off + len) != 0) len++;
+    while (byteAt(off + len) != 0){
+    		len++;
+    	}
+    }
     return len;
   }
   
@@ -181,9 +184,13 @@ public class CStrChunk extends Chunk {
       int off = UnsafeUtils.get4(_mem,idx(i));
       if (off != NA) {
         //UTF chars will appear as negative values. In Java spec, space is any char 0x20 and lower
-        while( _mem[_valstart+off+j] > 0 && _mem[_valstart+off+j] < 0x21) j++;
+        while( _mem[_valstart+off+j] > 0 && _mem[_valstart+off+j] < 0x21){
+        		j++;
+        }
         if (j > 0) nc.set_is(i,off + j);
-        while( _mem[_valstart+off+j] != 0 ) j++; //Find end
+        while( _mem[_valstart+off+j] != 0 ){
+        	j++; //Find end
+        }
         j--;
         while( _mem[_valstart+off+j] > 0 && _mem[_valstart+off+j] < 0x21) { //March back to find first non-space
           nc._ss[off+j] = 0; //Set new end
@@ -212,7 +219,9 @@ public class CStrChunk extends Chunk {
       int off = UnsafeUtils.get4(_mem, idx(i));
       if (off != NA) {
         int len = 0;
-        while (_mem[_valstart + off + len] != 0) len++; //Find length
+        while (_mem[_valstart + off + len] != 0){
+        	len++; //Find length
+        }
         nc.set_is(i,startIndex < len ? off + startIndex : off + len);
         for (; len > endIndex - 1; len--) {
           nc._ss[off + len] = 0; //Set new end
@@ -239,7 +248,9 @@ public class CStrChunk extends Chunk {
       int off = UnsafeUtils.get4(_mem,idx(i));
       int len = 0;
       if (off != NA) {
-        while (_mem[_valstart + off + len] != 0) len++;
+        while (_mem[_valstart + off + len] != 0){
+        	len++;
+        }
         nc.addNum(len, 0);
       } else nc.addNA();
     }
@@ -290,7 +301,9 @@ public class CStrChunk extends Chunk {
     for(int i=0; i < _len; i++) {
       int off = intAt(i);
       if (off != NA) {
-        while (set.contains(byteAt(off))) off++;
+        while (set.contains(byteAt(off))){
+        	off++;
+        }
         int len = lengthAtOffset(off);
         nc.addStr(new BufferedString(_mem, _valstart+off, len));
       } else nc.addNA();
@@ -305,7 +318,7 @@ public class CStrChunk extends Chunk {
       int off = intAt(i);
       if (off != NA) {
         int pos = off + lengthAtOffset(off);
-        while (pos --> off && set.contains(byteAt(pos)));
+        while (pos --> off && set.contains(byteAt(pos))){};
         nc.addStr(new BufferedString(_mem, _valstart+off, pos - off + 1));
       } else nc.addNA();
     }

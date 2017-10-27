@@ -378,7 +378,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
   public void clear() {         // Smack a new empty table down
     Object[] newkvs = new NonBlockingIdentityHashMap(MIN_SIZE)._kvs;
     while( !CAS_kvs(_kvs,newkvs) ) // Spin until the clear works
-      ;
+    {};
   }
 
   /** Returns <tt>true</tt> if this Map maps one or more keys to the specified
@@ -722,12 +722,13 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       AtomicReferenceFieldUpdater.newUpdater(CHM.class,Object[].class, "_newkvs");
     // Set the _next field if we can.
     boolean CAS_newkvs( Object[] newkvs ) {
-      while( _newkvs == null )
+      while( _newkvs == null ){
         if( _newkvsUpdater.compareAndSet(this,null,newkvs) )
           return true;
+      }
       return false;
     }
-    // Sometimes many threads race to create a new very large table.  Only 1
+    // 	Sometimes many threads race to create a new very large table.  Only 1
     // wins the race, but the losers all allocate a junk large table with
     // hefty allocation costs.  Attempt to control the overkill here by
     // throttling attempts to create a new table.  I cannot really block here
@@ -818,8 +819,9 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       // handful - lest we have 750 threads all trying to allocate a giant
       // resized array.
       long r = _resizers;
-      while( !_resizerUpdater.compareAndSet(this,r,r+1) )
+      while( !_resizerUpdater.compareAndSet(this,r,r+1) ){
         r = _resizers;
+      }
       // Size calculation: 2 words (K+V) per table entry, plus a handful.  We
       // guess at 32-bit pointers; 64-bit pointers screws up the size calc by
       // 2x but does not screw up the heuristic very much.
@@ -909,8 +911,9 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
         if( panic_start == -1 ) { // No panic?
           copyidx = (int)_copyIdx;
           while( copyidx < (oldlen<<1) && // 'panic' check
-                 !_copyIdxUpdater.compareAndSet(this,copyidx,copyidx+MIN_COPY_WORK) )
+                 !_copyIdxUpdater.compareAndSet(this,copyidx,copyidx+MIN_COPY_WORK) ){
             copyidx = (int)_copyIdx;      // Re-read
+          }
           if( !(copyidx < (oldlen<<1)) )  // Panic!
             panic_start = copyidx;        // Record where we started to panic-copy
         }
@@ -1009,8 +1012,9 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       // because our correctness stems from box'ing the Value field.  Slamming
       // the Key field is a minor speed optimization.
       Object key;
-      while( (key=key(oldkvs,idx)) == null )
+      while( (key=key(oldkvs,idx)) == null ){
         CAS_key(oldkvs,idx, null, TOMBSTONE);
+      }
 
       // ---
       // Prevent new values from appearing in the old table.
@@ -1052,8 +1056,9 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       // forever hide the old-table value by slapping a TOMBPRIME down.  This
       // will stop other threads from uselessly attempting to copy this slot
       // (i.e., it's a speed optimization not a correctness issue).
-      while( !CAS_val(oldkvs,idx,oldval,TOMBPRIME) )
+      while( !CAS_val(oldkvs,idx,oldval,TOMBPRIME) ){
         oldval = val(oldkvs,idx);
+      }
 
       return copied_into_new;
     } // end copy_slot

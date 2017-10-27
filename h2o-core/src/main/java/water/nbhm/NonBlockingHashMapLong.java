@@ -328,7 +328,7 @@ public class NonBlockingHashMapLong<TypeV>
   public void clear() {         // Smack a new empty table down
     CHM newchm = new CHM(this,new ConcurrentAutoTable(),MIN_SIZE_LOG);
     while( !CAS(_chm_offset,_chm,newchm) ) // Spin until the clear works
-      ;
+    {};
     CAS(_val_1_offset,_val_1,TOMBSTONE);
   }
 
@@ -737,8 +737,9 @@ public class NonBlockingHashMapLong<TypeV>
       // handful - lest we have 750 threads all trying to allocate a giant
       // resized array.
       long r = _resizers;
-      while( !_resizerUpdater.compareAndSet(this,r,r+1) )
+      while( !_resizerUpdater.compareAndSet(this,r,r+1) ){
         r = _resizers;
+      }
       // Size calculation: 2 words (K+V) per table entry, plus a handful.  We
       // guess at 32-bit pointers; 64-bit pointers screws up the size calc by
       // 2x but does not screw up the heuristic very much.
@@ -824,8 +825,9 @@ public class NonBlockingHashMapLong<TypeV>
         if( panic_start == -1 ) { // No panic?
           copyidx = (int)_copyIdx;
           while( copyidx < (oldlen<<1) && // 'panic' check
-                 !_copyIdxUpdater.compareAndSet(this,copyidx,copyidx+MIN_COPY_WORK) )
+                 !_copyIdxUpdater.compareAndSet(this,copyidx,copyidx+MIN_COPY_WORK) ){
             copyidx = (int)_copyIdx;     // Re-read
+          }
           if( !(copyidx < (oldlen<<1)) ) // Panic!
             panic_start = copyidx;       // Record where we started to panic-copy
         }
@@ -924,9 +926,10 @@ public class NonBlockingHashMapLong<TypeV>
       // results here, because our correctness stems from box'ing the Value
       // field.  Slamming the Key field is a minor speed optimization.
       long key;
-      while( (key=_keys[idx]) == NO_KEY )
+      while( (key=_keys[idx]) == NO_KEY ){
         CAS_key(idx, NO_KEY, (idx+_keys.length)/*a non-zero key which hashes here*/);
-
+      }
+      
       // ---
       // Prevent new values from appearing in the old table.
       // Box what we see in the old table, to prevent further updates.
@@ -966,8 +969,9 @@ public class NonBlockingHashMapLong<TypeV>
       // forever hide the old-table value by slapping a TOMBPRIME down.  This
       // will stop other threads from uselessly attempting to copy this slot
       // (i.e., it's a speed optimization not a correctness issue).
-      while( !CAS_val(idx,oldval,TOMBPRIME) )
+      while( !CAS_val(idx,oldval,TOMBPRIME) ){
         oldval = _vals[idx];
+      }
 
       return copied_into_new;
     } // end copy_slot
@@ -1119,8 +1123,9 @@ public class NonBlockingHashMapLong<TypeV>
     long[] dom = new long[size()];
     IteratorLong i=(IteratorLong)keySet().iterator();
     int j=0;
-    while( j < dom.length && i.hasNext() )
+    while( j < dom.length && i.hasNext() ){
       dom[j++] = i.nextLong();
+    }
     return dom;
   }
 

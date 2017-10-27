@@ -88,7 +88,7 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     _parms = parms;
     init(false); // Default cheap init
     String base = getClass().getSimpleName().toLowerCase();
-    if( ArrayUtils.find(ALGOBASES,base) != -1 )
+    if( ArrayUtils.find(ALGOBASES,base) != -1 ) {
       throw H2O.fail("Only called once at startup per ModelBuilder, and "+base+" has already been called");
     // FIXME: this is not thread safe!
     ALGOBASES = Arrays.copyOf(ALGOBASES,ALGOBASES.length+1);
@@ -174,7 +174,8 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
       } finally {
         setFinalState();
         _parms.read_unlock_frames(_job);
-        if (!_parms._is_cv_model) cleanUp(); //cv calls cleanUp on its own terms
+        if (!_parms._is_cv_model) {
+            cleanUp(); //cv calls cleanUp on its own terms
         Scope.exit();
       }
       tryComplete();
@@ -184,7 +185,8 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
 
   private void setFinalState() {
     Key<M> reskey = dest();
-    if (reskey == null) return;
+    if (reskey == null){
+         return;
     M res = reskey.get();
     if (res != null && res._output != null) {
       res._output._job = _job;
@@ -194,10 +196,10 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
 
   /** Method to launch training of a Model, based on its parameters. */
   final public Job<M> trainModel() {
-    if (error_count() > 0)
+    if (error_count() > 0) {
       throw H2OModelBuilderIllegalArgumentException.makeFromBuilder(this);
     _start_time = System.currentTimeMillis();
-    if( !nFoldCV() )
+    if( !nFoldCV() ) {
       return _job.start(trainModelImpl(), _parms.progressUnits(), _parms._max_runtime_secs);
 
     // cross-validation needs to be forked off to allow continuous (non-blocking) progress bar
@@ -221,12 +223,13 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
    *   Example: Outer job rebalances dataset and then calls nested job. To avoid needless second reblance, pass in the (already rebalanced) working copy.
    * */
   final public M trainModelNested(Frame fr) {
-    if(fr != null) // Use the working copy (e.g. rebalanced) instead of the original K/V store version
+    if(fr != null) { // Use the working copy (e.g. rebalanced) instead of the original K/V store version
       setTrain(fr);
-    if (error_count() > 0)
+    if (error_count() > 0) {
       throw H2OModelBuilderIllegalArgumentException.makeFromBuilder(this);
     _start_time = System.currentTimeMillis();
-    if( !nFoldCV() ) trainModelImpl().compute2();
+    if( !nFoldCV() ){
+         trainModelImpl().compute2();
     else computeCrossValidation();
     return _result.get();
   }
@@ -242,14 +245,17 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
    * @return How many models to train in parallel during cross-validation
    */
   protected int nModelsInParallel() {
-    if (!_parms._parallelize_cross_validation || _parms._max_runtime_secs != 0) return 1; //user demands serial building (or we need to honor the time constraints for all CV models equally)
-    if (_train.byteSize() < 1e6) return _parms._nfolds; //for small data, parallelize over CV models
+    if (!_parms._parallelize_cross_validation || _parms._max_runtime_secs != 0) {
+        return 1; //user demands serial building (or we need to honor the time constraints for all CV models equally)
+    if (_train.byteSize() < 1e6) {
+        return _parms._nfolds; //for small data, parallelize over CV models
     return 1; //safe fallback
   }
 
   // Work for each requested fold
   protected int nFoldWork() {
-    if( _parms._fold_column == null ) return _parms._nfolds;
+    if( _parms._fold_column == null ) {
+        return _parms._nfolds;
     Vec f = _parms._train.get().vec(_parms._fold_column);
     Vec fc = VecUtils.toCategoricalVec(f);
     int N = fc.domain().length;
@@ -313,7 +319,7 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     if( fold != null ) {
       if( !fold.isInt() ||
           (!(fold.min() == 0 && fold.max() == N-1) &&
-           !(fold.min() == 1 && fold.max() == N  ) )) // Allow 0 to N-1, or 1 to N
+           !(fold.min() == 1 && fold.max() == N  ) )) {// Allow 0 to N-1, or 1 to N
         throw new H2OIllegalArgumentException("Fold column must be either categorical or contiguous integers from 0..N-1 or 1..N");
       return fold;
     }
@@ -347,13 +353,15 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
           }
         }
       }.doAll(2*N,Vec.T_NUM,folds_and_weights).outputFrame().vecs();
-    if (_parms._keep_cross_validation_fold_assignment)
+    if (_parms._keep_cross_validation_fold_assignment) {
       DKV.put(new Frame(Key.<Frame>make("cv_fold_assignment_" + _result.toString()), new String[]{"fold_assignment"}, new Vec[]{foldAssignment.makeCopy()}));
-    if( _parms._fold_column == null && !_parms._keep_cross_validation_fold_assignment) foldAssignment.remove();
-    if( origWeightsName == null ) origWeight.remove(); // Cleanup temp
+    if( _parms._fold_column == null && !_parms._keep_cross_validation_fold_assignment) {
+        foldAssignment.remove();
+    if( origWeightsName == null ) {
+        origWeight.remove(); // Cleanup temp
 
     for( Vec weight : weights )
-      if( weight.isConst() )
+      if( weight.isConst() ) {
         throw new H2OIllegalArgumentException("Not enough data to create " + N + " random cross-validation splits. Either reduce nfolds, specify a larger dataset (or specify another random number seed, if applicable).");
     return weights;
   }
@@ -364,10 +372,12 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     final String origDest = _result.toString();
 
     final String weightName = "__internal_cv_weights__";
-    if (train().find(weightName) != -1) throw new H2OIllegalArgumentException("Frame cannot contain a Vec called '" + weightName + "'.");
+    if (train().find(weightName) != -1) {
+        throw new H2OIllegalArgumentException("Frame cannot contain a Vec called '" + weightName + "'.");
 
     Frame cv_fr = new Frame(train().names(),train().vecs());
-    if( _parms._weights_column!=null ) cv_fr.remove( _parms._weights_column ); // The CV frames will have their own private weight column
+    if( _parms._weights_column!=null ) {
+        cv_fr.remove( _parms._weights_column ); // The CV frames will have their own private weight column
 
     ModelBuilder<M, P, O>[] cvModelBuilders = new ModelBuilder[N];
     List<Frame> cvFramesForFailedModels = new ArrayList<>();
@@ -446,31 +456,38 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     int nRunning=0;
     RuntimeException rt = null;
     for( int i=0; i<N; ++i ) {
-      if (job.stop_requested() ) break; // Stop launching but still must block for all async jobs
+      if (job.stop_requested() ) {
+          break; // Stop launching but still must block for all async jobs
       Log.info("Building " + modelType + " model " + (i + 1) + " / " + N + ".");
       modelBuilders[i]._start_time = System.currentTimeMillis();
       submodel_tasks[i] = H2O.submitTask(modelBuilders[i].trainModelImpl());
       if(++nRunning == parallelization) { //piece-wise advance in training the models
         while (nRunning > 0) try {
           submodel_tasks[i + 1 - nRunning--].join();
-          if (updateInc > 0) job.update(updateInc); // One job finished
+          if (updateInc > 0) {
+              job.update(updateInc); // One job finished
         } catch (RuntimeException t) {
-          if (rt == null) rt = t;
+          if (rt == null) {
+              rt = t;
         }
-        if(rt != null) throw rt;
+        if(rt != null) {
+            throw rt;
       }
     }
     for( int i=0; i<N; ++i ) //all sub-models must be completed before the main model can be built
       try {
         submodel_tasks[i].join();
       } catch(RuntimeException t){
-        if(rt == null) rt = t;
+        if(rt == null) {
+            rt = t;
       }
-    if(rt != null) throw rt;
+    if(rt != null) {
+        throw rt;
   }
 
   private void buildMainModel() {
-    if (_job.stop_requested()) return;
+    if (_job.stop_requested()){
+         return;
     assert _job.isRunning();
     Log.info("Building main model.");
     _start_time = System.currentTimeMillis();
@@ -480,11 +497,13 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
 
   // Step 5: Score the CV models
   public ModelMetrics.MetricBuilder[] cv_scoreCVModels(int N, Vec[] weights, ModelBuilder<M, P, O>[] cvModelBuilders) {
-    if( _job.stop_requested() ) return null;
+    if( _job.stop_requested() ) {
+        return null;
     ModelMetrics.MetricBuilder[] mbs = new ModelMetrics.MetricBuilder[N];
     Futures fs = new Futures();
     for (int i=0; i<N; ++i) {
-      if( _job.stop_requested() ) return null; //don't waste time scoring if the CV run is stopped
+      if( _job.stop_requested() ) {
+          return null; //don't waste time scoring if the CV run is stopped
       Frame cvValid = cvModelBuilders[i].valid();
       Frame adaptFr = new Frame(cvValid);
       M cvModel = cvModelBuilders[i].dest().get();
@@ -513,7 +532,8 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
 
   // Step 6: Combine cross-validation scores; compute main model x-val scores; compute gains/lifts
   public void cv_mainModelScores(int N, ModelMetrics.MetricBuilder mbs[], ModelBuilder<M, P, O> cvModelBuilders[]) {
-    if( _job.stop_requested() ) return;
+    if( _job.stop_requested() ){
+         return;
     assert _job.isRunning();
 
     M mainModel = _result.get();
@@ -525,7 +545,8 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     mainModel._output._cross_validation_predictions = _parms._keep_cross_validation_predictions ? predKeys : null;
 
     for (int i = 0; i < N; ++i) {
-      if (i > 0) mbs[0].reduce(mbs[i]);
+      if (i > 0) {
+          mbs[0].reduce(mbs[i]);
       Key<M> cvModelKey = cvModelBuilders[i]._result;
       mainModel._output._cross_validation_models[i] = cvModelKey;
       predKeys[i] = Key.make("prediction_" + cvModelKey.toString()); //must be the same as in cv_scoreCVModels above
@@ -533,27 +554,29 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     Frame holdoutPreds = null;
     if (_parms._keep_cross_validation_predictions || (nclasses()==2 /*GainsLift needs this*/ || _parms._distribution == DistributionFamily.huber)) {
       Key<Frame> cvhp = Key.make("cv_holdout_prediction_" + mainModel._key.toString());
-      if (_parms._keep_cross_validation_predictions) //only show the user if they asked for it
+      if (_parms._keep_cross_validation_predictions) { //only show the user if they asked for it
         mainModel._output._cross_validation_holdout_predictions_frame_id = cvhp;
       holdoutPreds = combineHoldoutPredictions(predKeys, cvhp);
     }
     if (_parms._keep_cross_validation_fold_assignment) {
       mainModel._output._cross_validation_fold_assignment_frame_id = Key.make("cv_fold_assignment_" + _result.toString());
       Frame xvalidation_fold_assignment_frame = mainModel._output._cross_validation_fold_assignment_frame_id.get();
-      if (xvalidation_fold_assignment_frame != null)
+      if (xvalidation_fold_assignment_frame != null) {
         Scope.untrack(xvalidation_fold_assignment_frame.keysList());
     }
     // Keep or toss predictions
     for (Key<Frame> k : predKeys) {
       Frame fr = DKV.getGet(k);
       if( fr != null ) {
-        if (_parms._keep_cross_validation_predictions) Scope.untrack(fr.keysList());
+        if (_parms._keep_cross_validation_predictions){
+             Scope.untrack(fr.keysList());
         else fr.remove();
       }
     }
     mainModel._output._cross_validation_metrics = mbs[0].makeModelMetrics(mainModel, _parms.train(), null, holdoutPreds);
     if (holdoutPreds != null) {
-      if (_parms._keep_cross_validation_predictions) Scope.untrack(holdoutPreds.keysList());
+      if (_parms._keep_cross_validation_predictions) {
+          Scope.untrack(holdoutPreds.keysList());
       else holdoutPreds.remove();
     }
     mainModel._output._cross_validation_metrics._description = N + "-fold cross-validation on training data (Metrics computed for combined holdout predictions)";
@@ -611,9 +634,12 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
   public String[] specialColNames() {
     String[] n = new String[numSpecialCols()];
     int i=0;
-    if (hasOffsetCol()) n[i++]=_parms._offset_column;
-    if (hasWeightCol()) n[i++]=_parms._weights_column;
-    if (hasFoldCol())   n[i++]=_parms._fold_column;
+    if (hasOffsetCol()) {
+        n[i++]=_parms._offset_column;
+    if (hasWeightCol()) {
+        n[i++]=_parms._weights_column;
+    if (hasFoldCol())   {
+        n[i++]=_parms._fold_column;
     return n;
   }
   // no hasResponse, call isSupervised instead (response is mandatory if isSupervised is true)
@@ -635,17 +661,17 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     int res = 0;
     if(_parms._weights_column != null) {
       Vec w = _train.remove(_parms._weights_column);
-      if(w == null)
+      if(w == null) {
         error("_weights_column","Weights column '" + _parms._weights_column  + "' not found in the training frame");
       else {
         if(!w.isNumeric())
           error("_weights_column","Invalid weights column '" + _parms._weights_column  + "', weights must be numeric");
         _weights = w;
-        if(w.naCnt() > 0)
+        if(w.naCnt() > 0) {
           error("_weights_columns","Weights cannot have missing values.");
-        if(w.min() < 0)
+        if(w.min() < 0) {
           error("_weights_columns","Weights must be >= 0");
-        if(w.max() == 0)
+        if(w.max() == 0) {
           error("_weights_columns","Max. weight must be > 0");
         _train.add(_parms._weights_column, w);
         ++res;
@@ -656,15 +682,15 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     }
     if(_parms._offset_column != null) {
       Vec o = _train.remove(_parms._offset_column);
-      if(o == null)
+      if(o == null) {
         error("_offset_column","Offset column '" + _parms._offset_column  + "' not found in the training frame");
       else {
-        if(!o.isNumeric())
+        if(!o.isNumeric()) {
           error("_offset_column","Invalid offset column '" + _parms._offset_column  + "', offset must be numeric");
         _offset = o;
-        if(o.naCnt() > 0)
+        if(o.naCnt() > 0) {
           error("_offset_column","Offset cannot have missing values.");
-        if(_weights == _offset)
+        if(_weights == _offset) {
           error("_offset_column", "Offset must be different from weights");
         _train.add(_parms._offset_column, o);
         ++res;
@@ -675,14 +701,14 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     }
     if(_parms._fold_column != null) {
       Vec f = _train.remove(_parms._fold_column);
-      if(f == null)
+      if(f == null) {
         error("_fold_column","Fold column '" + _parms._fold_column  + "' not found in the training frame");
       else {
-        if(!f.isInt() && !f.isCategorical())
+        if(!f.isInt() && !f.isCategorical()) {
           error("_fold_column","Invalid fold column '" + _parms._fold_column  + "', fold must be integer or categorical");
-        if(f.min() < 0)
+        if(f.min() < 0) {
           error("_fold_column","Invalid fold column '" + _parms._fold_column  + "', fold must be non-negative");
-        if(f.isConst())
+        if(f.isConst()) {
           error("_fold_column","Invalid fold column '" + _parms._fold_column  + "', fold cannot be constant");
         _fold = f;
         if(f.naCnt() > 0)
@@ -701,14 +727,14 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     if(isSupervised() && _parms._response_column != null) {
       _response = _train.remove(_parms._response_column);
       if (_response == null) {
-        if (isSupervised())
+        if (isSupervised()) {
           error("_response_column", "Response column '" + _parms._response_column + "' not found in the training frame");
       } else {
-        if(_response == _offset)
+        if(_response == _offset) {
           error("_response_column", "Response column must be different from offset_column");
-        if(_response == _weights)
+        if(_response == _weights) {
           error("_response_column", "Response column must be different from weights_column");
-        if(_response == _fold)
+        if(_response == _fold) {
           error("_response_column", "Response column must be different from fold_column");
         _train.add(_parms._response_column, _response);
         ++res;
@@ -729,7 +755,7 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
    */
   protected void ignoreBadColumns(int npredictors, boolean expensive){
     // Drop all-constant and all-bad columns.
-    if(_parms._ignore_const_cols)
+    if(_parms._ignore_const_cols) {
       new FilterCols(npredictors) {
         @Override protected boolean filter(Vec v) {
           boolean isBad = v.isBad();
@@ -756,7 +782,9 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
    * if necessary.
    */
   protected void checkMemoryFootPrint() {
-    if (Boolean.getBoolean(H2O.OptArgs.SYSTEM_PROP_PREFIX + "debug.noMemoryCheck")) return; // skip check if disabled
+    if (Boolean.getBoolean(H2O.OptArgs.SYSTEM_PROP_PREFIX + "debug.noMemoryCheck")) {
+    	return; // skip check if disabled
+    }
     checkMemoryFootPrint_impl();
   }
 
@@ -789,14 +817,15 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     _messages = Arrays.copyOf(_messages, _messages.length + 1);
     _messages[_messages.length - 1] = new ValidationMessage(log_level, field_name, message);
 
-    if (log_level == Log.ERRR) _error_count++;
+    if (log_level == Log.ERRR) {
+    	_error_count++;
   }
 
  /** Get a string representation of only the ERROR ValidationMessages (e.g., to use in an exception throw). */
   public String validationErrors() {
     StringBuilder sb = new StringBuilder();
     for( ValidationMessage vm : _messages )
-      if( vm._log_level == Log.ERRR )
+      if( vm._log_level == Log.ERRR ) {
         sb.append(vm.toString()).append("\n");
     return sb.toString();
   }
@@ -845,12 +874,14 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     clearInitState();
     assert _parms != null;      // Parms must already be set in
     if( _parms._train == null ) {
-      if (expensive)
+      if (expensive) {
         error("_train", "Missing training frame");
       return;
     }
     Frame tr = _train != null?_train:_parms.train();
-    if( tr == null ) { error("_train", "Missing training frame: "+_parms._train); return; }
+    if( tr == null ) { 
+    	error("_train", "Missing training frame: "+_parms._train); return; }
+    }
     setTrain(new Frame(null /* not putting this into KV */, tr._names.clone(), tr.vecs().clone()));
     if (expensive) {
       _parms.getOrMakeRealSeed();
@@ -901,7 +932,8 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     // Drop explicitly dropped columns
     if( _parms._ignored_columns != null ) {
       _train.remove(_parms._ignored_columns);
-      if( expensive ) Log.info("Dropping ignored columns: "+Arrays.toString(_parms._ignored_columns));
+      if( expensive ) {
+      	Log.info("Dropping ignored columns: "+Arrays.toString(_parms._ignored_columns));
     }
     // Rebalance train and valid datasets
     if (expensive && error_count() == 0 && _parms._auto_rebalance) {
@@ -916,7 +948,7 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     ignoreBadColumns(separateFeatureVecs(), expensive);
     ignoreInvalidColumns(separateFeatureVecs(), expensive);
     // Check that at least some columns are not-constant and not-all-NAs
-    if( _train.numCols() == 0 )
+    if( _train.numCols() == 0 ) {
       error("_train","There are no usable columns to generate model");
 
     if(isSupervised()) {
@@ -927,20 +959,21 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
         if (_parms._distribution != DistributionFamily.quantile) {
           hide("_quantile_alpha", "Quantile (alpha) is only used for Quantile regression.");
         }
-        if (expensive) checkDistributions();
+        if (expensive){
+        	 checkDistributions();
         _nclass = _response.isCategorical() ? _response.cardinality() : 1;
-        if (_response.isConst())
+        if (_response.isConst()) {
           error("_response","Response cannot be constant.");
       }
-      if (! _parms._balance_classes)
+      if (! _parms._balance_classes) {
         hide("_max_after_balance_size", "Balance classes is false, hide max_after_balance_size");
-      else if (_parms._weights_column != null && _weights != null && !_weights.isBinary())
+      else if (_parms._weights_column != null && _weights != null && !_weights.isBinary()) {
         error("_balance_classes", "Balance classes and observation weights are not currently supported together.");
-      if( _parms._max_after_balance_size <= 0.0 )
+      if( _parms._max_after_balance_size <= 0.0 ) {
         error("_max_after_balance_size","Max size after balancing needs to be positive, suggest 1.0f");
 
       if( _train != null ) {
-        if (_train.numCols() <= 1)
+        if (_train.numCols() <= 1) {
           error("_train", "Training data must have at least 2 features (incl. response).");
         if( null == _parms._response_column) {
           error("_response_column", "Response column parameter not set.");
@@ -1016,7 +1049,8 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
       Vec[] vecs = _train.vecs();
       for (int j = 0; j < vecs.length; ++j) {
         Vec v = vecs[j];
-        if (v == _response || v == _fold) continue;
+        if (v == _response || v == _fold){
+        	 continue;
         if (v.isCategorical() && shouldReorder(v)) {
           final int len = v.domain().length;
           Log.info("Reordering categorical column " + _train.name(j) + " (" + len + " levels) based on the mean (weighted) response per level.");
@@ -1043,7 +1077,7 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
           restructured = true;
         }
       }
-      if (restructured)
+      if (restructured) {
         _train.restructure(_train.names(), vecs);
     }
     assert (!expensive || _valid==null || Arrays.equals(_train._names, _valid._names) || _parms._categorical_encoding == Model.Parameters.CategoricalEncodingScheme.Binary);
@@ -1063,9 +1097,9 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
       error("_stopping_tolerance", "Stopping tolerance must be < 1.");
     }
     if (_parms._stopping_rounds == 0) {
-      if (_parms._stopping_metric != ScoreKeeper.StoppingMetric.AUTO)
+      if (_parms._stopping_metric != ScoreKeeper.StoppingMetric.AUTO) {
         warn("_stopping_metric", "Stopping metric is ignored for _stopping_rounds=0.");
-      if (_parms._stopping_tolerance != _parms.defaultStoppingTolerance())
+      if (_parms._stopping_tolerance != _parms.defaultStoppingTolerance()) {
         warn("_stopping_tolerance", "Stopping tolerance is ignored for _stopping_rounds=0.");
     } else if (_parms._stopping_rounds < 0) {
       error("_stopping_rounds", "Stopping rounds must be >= 0.");
@@ -1105,18 +1139,19 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
    */
   protected Frame init_adaptFrameToTrain(Frame fr, String frDesc, String field, boolean expensive) {
     Frame adapted = adaptFrameToTrain(fr, frDesc, field, expensive);
-    if (expensive)
+    if (expensive) {
       adapted = encodeFrameCategoricals(adapted, true);
     return adapted;
   }
 
   private Frame adaptFrameToTrain(Frame fr, String frDesc, String field, boolean expensive) {
-    if (fr.numRows()==0) error(field, frDesc + " must have > 0 rows.");
+    if (fr.numRows()==0) {
+    	error(field, frDesc + " must have > 0 rows.");
     Frame adapted = new Frame(null /* not putting this into KV */, fr._names.clone(), fr.vecs().clone());
     try {
       String[] msgs = Model.adaptTestForTrain(adapted, null, null, _train._names, _train.domains(), _parms, expensive, true, null, getToEigenVec(), _toDelete, false);
       Vec response = adapted.vec(_parms._response_column);
-      if (response == null && _parms._response_column != null)
+      if (response == null && _parms._response_column != null) {
         error(field, frDesc + " must have a response column '" + _parms._response_column + "'.");
       if (expensive) {
         for (String s : msgs) {
@@ -1135,7 +1170,7 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     Frame encoded = FrameUtils.categoricalEncoder(fr, skipCols, _parms._categorical_encoding, getToEigenVec(), _parms._max_categorical_levels);
     if (encoded != fr) {
       assert encoded._key != null;
-      if (scopeTrack)
+      if (scopeTrack) {
         Scope.track(encoded);
       else
         _toDelete.put(encoded._key, Arrays.toString(Thread.currentThread().getStackTrace()));
@@ -1152,10 +1187,11 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
    */
 
   protected Frame rebalance(final Frame original_fr, boolean local, final String name) {
-    if (original_fr == null) return null;
+    if (original_fr == null){
+    	 return null;
     int chunks = desiredChunks(original_fr, local);
     if (original_fr.anyVec().nChunks() >= chunks) {
-      if (chunks>1)
+      if (chunks>1) {
         Log.info(name.substring(name.length()-5)+ " dataset already contains " + original_fr.anyVec().nChunks() +
               " chunks. No need to rebalance.");
       return original_fr;
@@ -1179,21 +1215,21 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
 
   public void checkDistributions() {
     if (_parms._distribution == DistributionFamily.poisson) {
-      if (_response.min() < 0)
+      if (_response.min() < 0) {
         error("_response", "Response must be non-negative for Poisson distribution.");
     } else if (_parms._distribution == DistributionFamily.gamma) {
-      if (_response.min() < 0)
+      if (_response.min() < 0) {
         error("_response", "Response must be non-negative for Gamma distribution.");
     } else if (_parms._distribution == DistributionFamily.tweedie) {
-      if (_parms._tweedie_power >= 2 || _parms._tweedie_power <= 1)
+      if (_parms._tweedie_power >= 2 || _parms._tweedie_power <= 1) {
         error("_tweedie_power", "Tweedie power must be between 1 and 2.");
-      if (_response.min() < 0)
+      if (_response.min() < 0) {
         error("_response", "Response must be non-negative for Tweedie distribution.");
     } else if (_parms._distribution == DistributionFamily.quantile) {
-      if (_parms._quantile_alpha > 1 || _parms._quantile_alpha < 0)
+      if (_parms._quantile_alpha > 1 || _parms._quantile_alpha < 0) {
         error("_quantile_alpha", "Quantile alpha must be between 0 and 1.");
     } else if (_parms._distribution == DistributionFamily.huber) {
-      if (_parms._huber_alpha <0 || _parms._huber_alpha>1)
+      if (_parms._huber_alpha <0 || _parms._huber_alpha>1)      {
         error("_huber_alpha", "Huber alpha must be between 0 and 1.");
     }
   }
@@ -1208,7 +1244,8 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     public void doIt( Frame f, String msg, boolean expensive ) {
       List<Integer> rmcolsList = new ArrayList<>();
       for( int i = 0; i < f.vecs().length - _specialVecs; i++ )
-        if( filter(f.vec(i)) ) rmcolsList.add(i);
+        if( filter(f.vec(i)) ) {
+        	rmcolsList.add(i);
       if( !rmcolsList.isEmpty() ) {
         _removedCols = new HashSet<>(rmcolsList.size());
         int[] rmcols = new int[rmcolsList.size()];
@@ -1219,7 +1256,8 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
         f.remove(rmcols); //bulk-remove
         msg += _removedCols.toString();
         warn("_train", msg);
-        if (expensive) Log.info(msg);
+        if (expensive) {
+        	Log.info(msg);
       }
     }
   }
@@ -1252,7 +1290,8 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
   }
 
   private TwoDimTable makeCrossValidationSummaryTable(Key[] cvmodels) {
-    if (cvmodels == null || cvmodels.length == 0) return null;
+    if (cvmodels == null || cvmodels.length == 0) {
+    	return null;
     int N = cvmodels.length;
     int extra_length=2; //mean/sigma/cv1/cv2/.../cvN
     String[] colTypes = new String[N+extra_length];
@@ -1281,7 +1320,8 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
       if (mm != null) {
 
         for (Method meth : mm.getClass().getMethods()) {
-          if (excluded.contains(meth.getName())) continue;
+          if (excluded.contains(meth.getName())) {
+          	continue;
           try {
             double c = (double) meth.invoke(mm);
             methods.add(meth);
@@ -1291,7 +1331,8 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
         ConfusionMatrix cm = mm.cm();
         if (cm != null) {
           for (Method meth : cm.getClass().getMethods()) {
-            if (excluded.contains(meth.getName())) continue;
+            if (excluded.contains(meth.getName())){
+            	 continue;
             try {
               double c = (double) meth.invoke(cm);
               methods.add(meth);
@@ -1324,17 +1365,20 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     int i = 0;
     for (Key<Model> km : cvmodels) {
       Model m = DKV.getGet(km);
-      if (m==null) continue;
+      if (m==null){
+      	 continue;
       ModelMetrics mm = m._output._validation_metrics;
       int j=0;
       for (Method meth : meths) {
-        if (excluded.contains(meth.getName())) continue;
+        if (excluded.contains(meth.getName())) {
+        	continue;
         try {
           double val = (double) meth.invoke(mm);
           vals[i][j] = val;
           table.set(j++, i+extra_length, (float)val);
         } catch (Throwable e) { }
-        if (mm.cm()==null) continue;
+        if (mm.cm()==null) {
+        	continue;
         try {
           double val = (double) meth.invoke(mm.cm());
           vals[i][j] = val;

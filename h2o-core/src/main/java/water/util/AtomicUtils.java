@@ -15,19 +15,22 @@ public abstract class AtomicUtils {
     }
     static public void setMin( float fs[], int i, float min ) {
       float old = fs[i];
-      while( min < old && !_unsafe.compareAndSwapInt(fs,rawIndex(fs,i), Float.floatToRawIntBits(old), Float.floatToRawIntBits(min) ) )
+      while( min < old && !_unsafe.compareAndSwapInt(fs,rawIndex(fs,i), Float.floatToRawIntBits(old), Float.floatToRawIntBits(min) ) ){
         old = fs[i];
+      }
     }
     static public void setMax( float fs[], int i, float max ) {
       float old = fs[i];
-      while( max > old && !_unsafe.compareAndSwapInt(fs,rawIndex(fs,i), Float.floatToRawIntBits(old), Float.floatToRawIntBits(max) ) )
+      while( max > old && !_unsafe.compareAndSwapInt(fs,rawIndex(fs,i), Float.floatToRawIntBits(old), Float.floatToRawIntBits(max) ) ){
         old = fs[i];
+      }
     }
     static public void add( float ds[], int i, float y ) {
       long adr = rawIndex(ds,i);
       float old = ds[i];
-      while( !_unsafe.compareAndSwapInt(ds,adr, Float.floatToRawIntBits(old), Float.floatToRawIntBits(old+y) ) )
+      while( !_unsafe.compareAndSwapInt(ds,adr, Float.floatToRawIntBits(old), Float.floatToRawIntBits(old+y) ) ){
         old = ds[i];
+      }
     }
     static public String toString( float fs[] ) {
       SB sb = new SB();
@@ -53,15 +56,15 @@ public abstract class AtomicUtils {
       
     static public void add( double ds[], int i, double y ) {
       double old;
-      while( !CAS(ds,i,old=ds[i],old+y) ) ;
+      while( !CAS(ds,i,old=ds[i],old+y) ) {};
     }
     static public void min( double ds[], int i, double min ) {
       double old;
-      while( !CAS(ds,i,old=ds[i],Math.min(old,min)) ) ;
+      while( !CAS(ds,i,old=ds[i],Math.min(old,min)) ) {};
     }
     static public void max( double ds[], int i, double max ) {
       double old;
-      while( !CAS(ds,i,old=ds[i],Math.max(old,max)) ) ;
+      while( !CAS(ds,i,old=ds[i],Math.max(old,max)) ){} ;
     }
   }
 
@@ -79,8 +82,9 @@ public abstract class AtomicUtils {
     static public void add( long ls[], int i, long x ) {
       long adr = rawIndex(ls,i);
       long old = ls[i];
-      while( !_unsafe.compareAndSwapLong(ls,adr, old, old+x) )
+      while( !_unsafe.compareAndSwapLong(ls,adr, old, old+x) ){
         old = ls[i];
+      }
     }
   }
   // Atomically-updated int array.  Instead of using the similar JDK pieces,
@@ -97,8 +101,9 @@ public abstract class AtomicUtils {
     static public void add( int is[], int i, int x ) {
       long adr = rawIndex(is,i);
       int old = is[i];
-      while( !_unsafe.compareAndSwapInt(is,adr, old, old+x) )
+      while( !_unsafe.compareAndSwapInt(is,adr, old, old+x) ){
         old = is[i];
+      }
     }
   }
 }

@@ -104,7 +104,9 @@ class ARFFParser extends CsvParser {
   private static int readArffHeader(int offset, ArrayList<String> header, byte[] bits, boolean singleQuotes) {
     while (offset < bits.length) {
       int lineStart = offset;
-      while (offset < bits.length && !CsvParser.isEOL(bits[offset])) ++offset;
+      while (offset < bits.length && !CsvParser.isEOL(bits[offset])){
+    	  ++offset;
+      }
       int lineEnd = offset;
       ++offset;
       // For Windoze, skip a trailing LF after CR
@@ -177,7 +179,9 @@ class ARFFParser extends CsvParser {
           throw new ParseDataset.H2OParseException("Unexpected line, type not recognized. Attribute specification: " + type);
 
         // remove the whitespaces separating the label and the type specification
-        while ((sepIdx > 0) && (spec.charAt(sepIdx - 1) == ' ')) sepIdx--;
+        while ((sepIdx > 0) && (spec.charAt(sepIdx - 1) == ' ')){
+        	sepIdx--;
+        }
         String label = line[1].substring(0, sepIdx); // use the raw string before whitespace normalization
 
         // remove quotes
