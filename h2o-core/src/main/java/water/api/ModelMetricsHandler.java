@@ -34,12 +34,18 @@ class ModelMetricsHandler extends Handler {
       final Key[] modelMetricsKeys = KeySnapshot.globalSnapshot().filter(new KeySnapshot.KVFilter() {
         @Override public boolean filter(KeySnapshot.KeyInfo k) {
           try {
-            if( !Value.isSubclassOf(k._type, ModelMetrics.class) ) return false; // Fast-path cutout
+            if( !Value.isSubclassOf(k._type, ModelMetrics.class) ) {
+            	return false; // Fast-path cutout
+            }
             ModelMetrics mm = DKV.getGet(k._key);
             // If we're filtering by model filter by Model.  :-)
-            if( _model != null && !mm.isForModel((Model)DKV.getGet(_model._key)) ) return false;
+            if( _model != null && !mm.isForModel((Model)DKV.getGet(_model._key)) ) {
+            	return false;
+            }
             // If we're filtering by frame filter by Frame.  :-)
-            if( _frame != null && !mm.isForFrame((Frame)DKV.getGet(_frame._key)) ) return false;
+            if( _frame != null && !mm.isForFrame((Frame)DKV.getGet(_frame._key)) ) {
+            	return false;
+            }
           } catch( NullPointerException | ClassCastException ex ) {
             return false;       // Handle all kinds of broken racey key updates
           }
@@ -188,15 +194,15 @@ class ModelMetricsHandler extends Handler {
 
   // TODO: almost identical to ModelsHandler; refactor
   public static ModelMetrics getFromDKV(Key key) {
-    if (null == key)
+    if (null == key) {
       throw new IllegalArgumentException("Got null key.");
 
     Value v = DKV.get(key);
-    if (null == v)
+    if (null == v) {
       throw new IllegalArgumentException("Did not find key: " + key.toString());
 
     Iced ice = v.get();
-    if (! (ice instanceof ModelMetrics))
+    if (! (ice instanceof ModelMetrics)) {
       throw new IllegalArgumentException("Expected a Model for key: " + key.toString() + "; got a: " + ice.getClass());
 
     return (ModelMetrics)ice;
@@ -226,11 +232,19 @@ class ModelMetricsHandler extends Handler {
   @SuppressWarnings("unused") // called through reflection by RequestServer
   public ModelMetricsListSchemaV3 score(int version, ModelMetricsListSchemaV3 s) {
     // parameters checking:
-    if (null == s.model) throw new H2OIllegalArgumentException("model", "predict", s.model);
-    if (null == DKV.get(s.model.name)) throw new H2OKeyNotFoundArgumentException("model", "predict", s.model.name);
+    if (null == s.model) {
+    	throw new H2OIllegalArgumentException("model", "predict", s.model);
+    }
+    if (null == DKV.get(s.model.name)) {
+    	throw new H2OKeyNotFoundArgumentException("model", "predict", s.model.name);
+    }
 
-    if (null == s.frame) throw new H2OIllegalArgumentException("frame", "predict", s.frame);
-    if (null == DKV.get(s.frame.name)) throw new H2OKeyNotFoundArgumentException("frame", "predict", s.frame.name);
+    if (null == s.frame) {
+    	throw new H2OIllegalArgumentException("frame", "predict", s.frame);
+    }
+    if (null == DKV.get(s.frame.name)) {
+    	throw new H2OKeyNotFoundArgumentException("frame", "predict", s.frame.name);
+    }
 
     ModelMetricsList parms = s.createAndFillImpl();
     parms._model.score(parms._frame, parms._predictions_name).remove(); // throw away predictions, keep metrics as a side-effect
@@ -238,7 +252,7 @@ class ModelMetricsHandler extends Handler {
 
     // TODO: for now only binary predictors write an MM object.
     // For the others cons one up here to return the predictions frame.
-    if (null == mm)
+    if (null == mm) {
       mm = new ModelMetricsListSchemaV3();
 
     if (null == mm.model_metrics || 0 == mm.model_metrics.length) {
@@ -279,13 +293,19 @@ class ModelMetricsHandler extends Handler {
   @SuppressWarnings("unused") // called through reflection by RequestServer
   public ModelMetricsMakerSchemaV3 make(int version, ModelMetricsMakerSchemaV3 s) {
     // parameters checking:
-    if (null == s.predictions_frame) throw new H2OIllegalArgumentException("predictions_frame", "make", s.predictions_frame);
+    if (null == s.predictions_frame) {
+    	throw new H2OIllegalArgumentException("predictions_frame", "make", s.predictions_frame);
+    }
     Frame pred = DKV.getGet(s.predictions_frame);
-    if (null == pred) throw new H2OKeyNotFoundArgumentException("predictions_frame", "make", s.predictions_frame);
+    if (null == pred) {
+    	throw new H2OKeyNotFoundArgumentException("predictions_frame", "make", s.predictions_frame);
+    }
 
     if (null == s.actuals_frame) throw new H2OIllegalArgumentException("actuals_frame", "make", s.actuals_frame);
     Frame act = DKV.getGet(s.actuals_frame);
-    if (null == act) throw new H2OKeyNotFoundArgumentException("actuals_frame", "make", s.actuals_frame);
+    if (null == act) {
+    	throw new H2OKeyNotFoundArgumentException("actuals_frame", "make", s.actuals_frame);
+    }
 
     if (s.domain ==null) {
       if (pred.numCols()!=1) {
@@ -317,13 +337,23 @@ class ModelMetricsHandler extends Handler {
   @SuppressWarnings("unused") // called through reflection by RequestServer
   public JobV3 predictAsync(int version, final ModelMetricsListSchemaV3 s) {
     // parameters checking:
-    if (null == s.model) throw new H2OIllegalArgumentException("model", "predict", s.model);
-    if (null == DKV.get(s.model.name)) throw new H2OKeyNotFoundArgumentException("model", "predict", s.model.name);
+    if (null == s.model) {
+    	throw new H2OIllegalArgumentException("model", "predict", s.model);
+    }
+    if (null == DKV.get(s.model.name)) {
+    	throw new H2OKeyNotFoundArgumentException("model", "predict", s.model.name);
+    }
 
-    if (null == s.frame) throw new H2OIllegalArgumentException("frame", "predict", s.frame);
-    if (null == DKV.get(s.frame.name)) throw new H2OKeyNotFoundArgumentException("frame", "predict", s.frame.name);
+    if (null == s.frame) {
+    	throw new H2OIllegalArgumentException("frame", "predict", s.frame);
+    }
+    if (null == DKV.get(s.frame.name)) {
+    	throw new H2OKeyNotFoundArgumentException("frame", "predict", s.frame.name);
+    }
 
-    if (s.deviances || null != s.deviances_frame) throw new H2OIllegalArgumentException("deviances", "not supported for async", s.deviances_frame);
+    if (s.deviances || null != s.deviances_frame) {
+    	throw new H2OIllegalArgumentException("deviances", "not supported for async", s.deviances_frame);
+    }
 
     final ModelMetricsList parms = s.createAndFillImpl();
 
@@ -331,7 +361,7 @@ class ModelMetricsHandler extends Handler {
     //predict2 can handle deeplearning: deepfeatures and predict
 
     if (s.deep_features_hidden_layer > 0 || s.deep_features_hidden_layer_name != null) {
-      if (null == parms._predictions_name)
+      if (null == parms._predictions_name) {
         parms._predictions_name = "deep_features" + Key.make().toString().substring(0, 5) + "_" +
                 parms._model._key.toString() + "_on_" + parms._frame._key.toString();
     } else if (null == parms._predictions_name) {
@@ -386,13 +416,21 @@ class ModelMetricsHandler extends Handler {
   @SuppressWarnings("unused") // called through reflection by RequestServer
   public ModelMetricsListSchemaV3 predict(int version, ModelMetricsListSchemaV3 s) {
     // parameters checking:
-    if (s.model == null) throw new H2OIllegalArgumentException("model", "predict", null);
-    if (DKV.get(s.model.name) == null) throw new H2OKeyNotFoundArgumentException("model", "predict", s.model.name);
+    if (s.model == null) {
+    	throw new H2OIllegalArgumentException("model", "predict", null);
+    }
+    if (DKV.get(s.model.name) == null) {
+    	throw new H2OKeyNotFoundArgumentException("model", "predict", s.model.name);
+    }
 
     // Aggregator doesn't need a Frame to 'predict'
     if (s.exemplar_index < 0) {
-      if (s.frame == null) throw new H2OIllegalArgumentException("frame", "predict", null);
-      if (DKV.get(s.frame.name) == null) throw new H2OKeyNotFoundArgumentException("frame", "predict", s.frame.name);
+      if (s.frame == null) {
+    	  throw new H2OIllegalArgumentException("frame", "predict", null);
+      }
+      if (DKV.get(s.frame.name) == null) {
+    	  throw new H2OKeyNotFoundArgumentException("frame", "predict", s.frame.name);
+      }
     }
 
     ModelMetricsList parms = s.createAndFillImpl();
@@ -401,30 +439,30 @@ class ModelMetricsHandler extends Handler {
     Frame deviances = null;
     if (!s.reconstruction_error && !s.reconstruction_error_per_feature && s.deep_features_hidden_layer < 0 &&
         !s.project_archetypes && !s.reconstruct_train && !s.leaf_node_assignment && s.exemplar_index < 0) {
-      if (null == parms._predictions_name)
+      if (null == parms._predictions_name) {
         parms._predictions_name = "predictions" + Key.make().toString().substring(0,5) + "_" + parms._model._key.toString() + "_on_" + parms._frame._key.toString();
       predictions = parms._model.score(parms._frame, parms._predictions_name);
       if (s.deviances) {
-        if (!parms._model.isSupervised())
+        if (!parms._model.isSupervised()) {
           throw new H2OIllegalArgumentException("Deviances can only be computed for supervised models.");
-        if (null == parms._deviances_name)
+        if (null == parms._deviances_name) {
           parms._deviances_name = "deviances" + Key.make().toString().substring(0, 5) + "_" + parms._model._key.toString() + "_on_" + parms._frame._key.toString();
         deviances = parms._model.computeDeviances(parms._frame, predictions, parms._deviances_name);
       }
     } else {
-      if (s.deviances)
+      if (s.deviances) {
         throw new H2OIllegalArgumentException("Cannot compute deviances in combination with other special predictions.");
       if (Model.DeepFeatures.class.isAssignableFrom(parms._model.getClass())) {
         if (s.reconstruction_error || s.reconstruction_error_per_feature) {
-          if (s.deep_features_hidden_layer >= 0)
+          if (s.deep_features_hidden_layer >= 0) {
             throw new H2OIllegalArgumentException("Can only compute either reconstruction error OR deep features.", "");
-          if (null == parms._predictions_name)
+          if (null == parms._predictions_name) {
             parms._predictions_name = "reconstruction_error" + Key.make().toString().substring(0,5) + "_" + parms._model._key.toString() + "_on_" + parms._frame._key.toString();
           predictions = ((Model.DeepFeatures) parms._model).scoreAutoEncoder(parms._frame, Key.make(parms._predictions_name), parms._reconstruction_error_per_feature);
         } else {
-          if (s.deep_features_hidden_layer < 0)
+          if (s.deep_features_hidden_layer < 0) {
             throw new H2OIllegalArgumentException("Deep features hidden layer index must be >= 0.", "");
-          if (null == parms._predictions_name)
+          if (null == parms._predictions_name) {
             parms._predictions_name = "deep_features" + Key.make().toString().substring(0,5) + "_" + parms._model._key.toString() + "_on_" + parms._frame._key.toString();
           predictions = ((Model.DeepFeatures) parms._model).scoreDeepFeatures(parms._frame, s.deep_features_hidden_layer);
         }
@@ -432,23 +470,23 @@ class ModelMetricsHandler extends Handler {
         DKV.put(predictions._key, predictions);
       } else if(Model.GLRMArchetypes.class.isAssignableFrom(parms._model.getClass())) {
         if(s.project_archetypes) {
-          if (parms._predictions_name == null)
+          if (parms._predictions_name == null) {
             parms._predictions_name = "reconstructed_archetypes_" + Key.make().toString().substring(0, 5) + "_" + parms._model._key.toString() + "_of_" + parms._frame._key.toString();
           predictions = ((Model.GLRMArchetypes) parms._model).scoreArchetypes(parms._frame, Key.<Frame>make(parms._predictions_name), s.reverse_transform);
         } else {
           assert s.reconstruct_train;
-          if (parms._predictions_name == null)
+          if (parms._predictions_name == null) {
             parms._predictions_name = "reconstruction_" + Key.make().toString().substring(0, 5) + "_" + parms._model._key.toString() + "_of_" + parms._frame._key.toString();
           predictions = ((Model.GLRMArchetypes) parms._model).scoreReconstruction(parms._frame, Key.<Frame>make(parms._predictions_name), s.reverse_transform);
         }
       } else if(s.leaf_node_assignment) {
         assert(Model.LeafNodeAssignment.class.isAssignableFrom(parms._model.getClass()));
-        if (null == parms._predictions_name)
+        if (null == parms._predictions_name) {
           parms._predictions_name = "leaf_node_assignment" + Key.make().toString().substring(0, 5) + "_" + parms._model._key.toString() + "_on_" + parms._frame._key.toString();
         predictions = ((Model.LeafNodeAssignment) parms._model).scoreLeafNodeAssignment(parms._frame, Key.<Frame>make(parms._predictions_name));
       } else if(s.exemplar_index >= 0) {
         assert(Model.ExemplarMembers.class.isAssignableFrom(parms._model.getClass()));
-        if (null == parms._predictions_name)
+        if (null == parms._predictions_name) {
           parms._predictions_name = "members_" + parms._model._key.toString() + "_for_exemplar_" + parms._exemplar_index;
         predictions = ((Model.ExemplarMembers) parms._model).scoreExemplarMembers(Key.<Frame>make(parms._predictions_name), parms._exemplar_index);
       }
@@ -459,13 +497,13 @@ class ModelMetricsHandler extends Handler {
 
     // TODO: for now only binary predictors write an MM object.
     // For the others cons one up here to return the predictions frame.
-    if (null == mm)
+    if (null == mm) {
       mm = new ModelMetricsListSchemaV3();
 
     mm.predictions_frame = new KeyV3.FrameKeyV3(predictions._key);
-    if (parms._leaf_node_assignment) //don't show metrics in leaf node assignments are made
+    if (parms._leaf_node_assignment) {//don't show metrics in leaf node assignments are made
       mm.model_metrics = null;
-    if (deviances !=null)
+    if (deviances !=null) {
       mm.deviances_frame = new KeyV3.FrameKeyV3(deviances._key);
 
     if (null == mm.model_metrics || 0 == mm.model_metrics.length) {

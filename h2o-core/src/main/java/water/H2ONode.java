@@ -152,8 +152,9 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
     H2ONode old = INTERN.putIfAbsent(key,h2o);
     if( old != null ) return old;
     synchronized(H2O.class) {
-      while( idx >= IDX.length )
+      while( idx >= IDX.length ){
         IDX = Arrays.copyOf(IDX,IDX.length<<1);
+      }
       IDX[idx] = h2o;
     }
     h2o._sendThread = h2o.new UDP_TCP_SendThread(); // Launch the UDP send thread
@@ -256,8 +257,11 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
     // Under lock, claim an existing open socket if possible
     synchronized(this) {
       // Limit myself to the number of open sockets from node-to-node
-      while( _socksAvail == 0 )
-        try { wait(1000); } catch( InterruptedException ignored ) { }
+      while( _socksAvail == 0 ){
+        try { wait(1000); } catch( InterruptedException ignored ) { 
+        	System.out.println("The error is: " + ignored);
+        }
+      }
       // Claim an open socket
       ByteChannel sock = _socks[--_socksAvail];
       if( sock != null ) {
@@ -398,12 +402,20 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
               bb = _msgQ.poll();  // Go get more, same batch
             }
             sendBuffer();         // Send final trailing BBs
-          } catch (IllegalMonitorStateException imse) { /* ignore */
-          } catch (InterruptedException e) { /*ignore*/ }
+          } catch (IllegalMonitorStateException imse) { 
+        	  System.out.println("The error is: " + imse);/* ignore */
+          } catch (InterruptedException e) {
+        	  System.out.println("The error is: " + e); /*ignore*/ 
+        	  }
         }
-      } catch(Throwable t) { throw Log.throwErr(t); }
+      } catch(Throwable t) { 
+    	  throw Log.throwErr(t); 
+    	  System.out.println("The error is: " + t);
+      }
       if(_chan != null) {
-        try {_chan.close();} catch (IOException e) {}
+        try {_chan.close();} catch (IOException e) {
+        	System.out.println("The error is: " + e);
+        }
         _chan = null;
       }
     }
@@ -427,11 +439,15 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
             retries = 150;      // Throttle the pace of error msgs
           }
           if( _chan != null )
-            try { _chan.close(); } catch (Throwable t) {/*ignored*/}
+            try { _chan.close(); } catch (Throwable t) {
+            	System.out.println("The error is: " + t);/*ignored*/
+            	}
           _chan = null;
           retries++;
           final int sleep = Math.min(5000,retries << 1);
-          try {Thread.sleep(sleep);} catch (InterruptedException e) {/*ignored*/}
+          try {Thread.sleep(sleep);} catch (InterruptedException e) {
+        	  System.out.println("The error is: " + e);/*ignored*/
+        	  }
         }
       }
       _bb.clear();            // Position set to 0; limit to capacity
@@ -604,7 +620,9 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
         }
         long timeElapsed = System.currentTimeMillis()-currenTime;
         if(timeElapsed < 1000)
-          try {Thread.sleep(1000-timeElapsed);} catch (InterruptedException e) {/*comment to stop ideaj warning*/}
+          try {Thread.sleep(1000-timeElapsed);} catch (InterruptedException e) {
+        	  System.out.println("The error is: " + e);/*comment to stop ideaj warning*/
+        	  }
       }
     }
   }

@@ -97,7 +97,8 @@ final class RollupStats extends Iced {
       _checksum = (c.hasFloat()?Double.doubleToRawLongBits(d):(long)d)*c._len;
       Arrays.fill(_mins, d);
       Arrays.fill(_maxs, d);
-      if( d == Double.POSITIVE_INFINITY) _pinfs++;
+      if( d == Double.POSITIVE_INFINITY){
+      	 _pinfs++;
       else if( d == Double.NEGATIVE_INFINITY) _ninfs++;
       else {
         if( Double.isNaN(d)) _naCnt=c._len;
@@ -125,7 +126,8 @@ final class RollupStats extends Iced {
       int nans = 0;
       // Hard-count sparse-but-zero (weird case of setting a zero over a non-zero)
       for( int i=c.nextNZ(-1); i< c._len; i=c.nextNZ(i) )
-        if( c.isNA(i) ) nans++;
+        if( c.isNA(i) ){
+        	 nans++;
         else if( c.at8(i)==0 ) zs++;
       int os = c._len-zs-nans;  // Ones
       _nzCnt += os;
@@ -142,13 +144,14 @@ final class RollupStats extends Iced {
     // Walk the non-zeros
     if( isUUID ) {   // UUID columns do not compute min/max/mean/sigma
       for( int i=c.nextNZ(-1); i< c._len; i=c.nextNZ(i) ) {
-        if( c.isNA(i) ) _naCnt++;
+        if( c.isNA(i) ){
+        	 _naCnt++;
         else {
           long lo = c.at16l(i), hi = c.at16h(i);
           if (lo != 0 || hi != 0) _nzCnt++;
           l = lo ^ 37*hi;
         }
-        if(l != 0) // ignore 0s in checksum to be consistent with sparse chunks
+        if(l != 0) { // ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start+i)) ^ 23*l;
       }
 
@@ -159,12 +162,12 @@ final class RollupStats extends Iced {
           _nzCnt++;
           l = c.atStr(tmpStr, i).hashCode();
         }
-        if (l != 0) // ignore 0s in checksum to be consistent with sparse chunks
+        if (l != 0) {// ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start + i)) ^ 23 * l;
       }
     } else {
       // Work off all numeric rows, or only the nonzeros for sparse
-      if (c instanceof C1Chunk)
+      if (c instanceof C1Chunk) {
         checksum=new RollupStatsHelpers(this).numericChunkRollup((C1Chunk) c, start, checksum);
       else if (c instanceof C1SChunk)
         checksum=new RollupStatsHelpers(this).numericChunkRollup((C1SChunk) c, start, checksum);
@@ -241,14 +244,14 @@ final class RollupStats extends Iced {
   double min( double d ) {
     assert(!Double.isNaN(d));
     for( int i=0; i<_mins.length; i++ )
-      if( d < _mins[i] )
+      if( d < _mins[i] ){
         { double tmp = _mins[i];  _mins[i] = d;  d = tmp; }
     return _mins[_mins.length-1];
   }
   double max( double d ) {
     assert(!Double.isNaN(d));
     for( int i=0; i<_maxs.length; i++ )
-      if( d > _maxs[i] )
+      if( d > _maxs[i] ){
         { double tmp = _maxs[i];  _maxs[i] = d;  d = tmp; }
     return _maxs[_maxs.length-1];
   }
@@ -264,12 +267,14 @@ final class RollupStats extends Iced {
     @Override public void map( Chunk c ) { _rs = new RollupStats(0).map(c); }
     @Override public void reduce( Roll roll ) { _rs.reduce(roll._rs); }
     @Override public void postGlobal() {
-      if( _rs == null )
+      if( _rs == null ) {
         _rs = new RollupStats(0);
       else {
         _rs._sigma = Math.sqrt(_rs._sigma/(_rs._rows-1));
-        if (_rs._rows == 1) _rs._sigma = 0;
-        if (_rs._rows < 5) for (int i=0; i<5-_rs._rows; i++) {  // Fix PUBDEV-150 for files under 5 rows
+        if (_rs._rows == 1){
+        	 _rs._sigma = 0;
+        if (_rs._rows < 5) {
+        	for (int i=0; i<5-_rs._rows; i++) {  // Fix PUBDEV-150 for files under 5 rows
           _rs._maxs[4-i] = Double.NaN;
           _rs._mins[4-i] = Double.NaN;
         }
@@ -277,12 +282,12 @@ final class RollupStats extends Iced {
       // mean & sigma not allowed on more than 2 classes; for 2 classes the assumption is that it's true/false
       Vec vec = _fr.anyVec();
       String[] ss = vec.domain();
-      if( vec.isCategorical() && ss.length > 2 )
+      if( vec.isCategorical() && ss.length > 2 ) {
         _rs._mean = _rs._sigma = Double.NaN;
       if( ss != null ) {
         long dsz = (2/*hdr*/+1/*len*/+ss.length)*8;  // Size of base domain array
         for( String s : vec.domain() )
-          if( s != null )
+          if( s != null ) {
             dsz += 2*s.length() + (2/*hdr*/+1/*value*/+1/*hash*/+2/*hdr*/+1/*len*/)*8;
         _rs._size += dsz;             // Account for domain size in Vec size
         // Account for Chunk key size
@@ -301,13 +306,15 @@ final class RollupStats extends Iced {
   }
 
   static void start(final Vec vec, Futures fs, boolean computeHisto) {
-    if( vec instanceof InteractionWrappedVec ) return;
-    if( DKV.get(vec._key)== null )
+    if( vec instanceof InteractionWrappedVec ){
+    	 return;
+    if( DKV.get(vec._key)== null ) {
       throw new RuntimeException("Rollups not possible, because Vec was deleted: "+vec._key);
-    if( vec.isString() ) computeHisto = false; // No histogram for string columns
+    if( vec.isString() ){
+    	 computeHisto = false; // No histogram for string columns
     final Key rskey = vec.rollupStatsKey();
     RollupStats rs = getOrNull(vec,rskey);
-    if(rs == null || (computeHisto && !rs.hasHisto()))
+    if(rs == null || (computeHisto && !rs.hasHisto())) {
       fs.add(new RPC(rskey.home_node(),new ComputeRollupsTask(vec,computeHisto)).addCompleter(new H2OCallback() {
         @Override public void callback(H2OCountedCompleter h2OCountedCompleter) {
           DKV.get(rskey); // fetch new results via DKV to enable caching of the results.
@@ -327,7 +334,7 @@ final class RollupStats extends Iced {
     final Key rskey = vec.rollupStatsKey();
     RollupStats rs = DKV.getGet(rskey);
     while(rs == null || (!rs.isReady() || (computeHisto && !rs.hasHisto()))){
-      if(rs != null && rs.isMutating())
+      if(rs != null && rs.isMutating()) {
         throw new IllegalArgumentException("Can not compute rollup stats while vec is being modified. (1)");
       // 1. compute only once
       try {
@@ -353,7 +360,7 @@ final class RollupStats extends Iced {
   // Fetch if present, but do not compute
   static RollupStats getOrNull(Vec vec, final Key rskey ) {
     Value val = DKV.get(rskey);
-    if( val == null )           // No rollup stats present?
+    if( val == null )    {       // No rollup stats present?
       return vec.length() > 0 ? /*not computed*/null : /*empty vec*/new RollupStats(0);
     RollupStats rs = val.get(RollupStats.class);
     return rs.isReady() ? rs : null;
@@ -373,10 +380,11 @@ final class RollupStats extends Iced {
       _bins = new long[_nbins];
       for( int i=c.nextNZ(-1); i< c._len; i=c.nextNZ(i) ) {
         double d = c.atd(i);
-        if( !Double.isNaN(d) ) _bins[idx(d)]++;
+        if( !Double.isNaN(d) ){
+        	 _bins[idx(d)]++;
       }
       // Sparse?  We skipped all the zeros; do them now
-      if( c.isSparseZero() )
+      if( c.isSparseZero() ) {
         _bins[idx(0.0)] += (c._len - c.sparseLenZero());
     }
     private int idx( double d ) { int idx = (int)((d-_base)/_stride); return Math.min(idx,_bins.length-1); }
@@ -407,7 +415,8 @@ final class RollupStats extends Iced {
     private Value makeComputing(){
       RollupStats newRs = RollupStats.makeComputing();
       CountedCompleter cc = getCompleter(); // should be null or RPCCall
-      if(cc != null) assert cc.getCompleter() == null;
+      if(cc != null) {
+      	assert cc.getCompleter() == null;
       newRs._tsk = cc == null?this:cc;
       return new Value(_rsKey,newRs);
     }
@@ -415,7 +424,7 @@ final class RollupStats extends Iced {
       Futures fs = new Futures();
       Value old = DKV.DputIfMatch(_rsKey, new Value(_rsKey, rs), nnn, fs);
       assert rs.isReady();
-      if(old != nnn)
+      if(old != nnn) {
         throw new IllegalArgumentException("Can not compute rollup stats while vec is being modified. (2)");
       fs.blockForPending();
     }
@@ -438,7 +447,8 @@ final class RollupStats extends Iced {
           if (rs.isReady()) {
             if (_computeHisto && !rs.hasHisto()) { // a.2 => compute rollups
               CountedCompleter cc = getCompleter(); // should be null or RPCCall
-              if(cc != null) assert cc.getCompleter() == null;
+              if(cc != null) {
+              	assert cc.getCompleter() == null;
               // note: if cc == null then onExceptionalCompletion tasks waiting on this may be woken up before exception handling iff exception is thrown.
               Value nnn = makeComputing();
               Futures fs = new Futures();
@@ -464,7 +474,7 @@ final class RollupStats extends Iced {
               Roll r = new Roll(null, _rsKey).doAll(vec);
               // computed the stats, now compute histo if needed and install the response and quit
               r._rs._checksum ^= vec.length();
-              if (_computeHisto)
+              if (_computeHisto) {
                 computeHisto(r._rs, vec, nnn);
               else
                 installResponse(nnn, r._rs);
@@ -540,7 +550,8 @@ final class RollupStats extends Iced {
           // linearly interpolate between adjacent non-zero bins
           //      i) pint is the last of (j-1)'s bin count (>1 when either duplicates exist in input, or stride makes dups at lower accuracy)
           // AND ii) h>0 so we do need to find the next non-zero bin
-          if (k < j) k = j; // if j jumped over the k needed for the last P, catch k up to j
+          if (k < j){
+          	 k = j; // if j jumped over the k needed for the last P, catch k up to j
           // Saves potentially winding k forward over the same zero stretch many times
           while (rs._bins[k] == 0) k++;  // find the next non-zero bin
           rs._pctiles[i] += h * stride * (k - j + 1);

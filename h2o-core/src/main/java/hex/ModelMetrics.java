@@ -54,7 +54,9 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
     try {
       PojoUtils.setField(this, "_frame_checksum", frame.checksum());
     }
-    catch (Throwable t) { }
+    catch (Throwable t) { 
+    	System.out.println("The error is: " + t);
+    }
   }
 
   public final ModelMetrics withModelAndFrame(Model model, Frame frame) {
@@ -63,7 +65,9 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
     _model_checksum = model == null ? 0 : model.checksum();
 
     _frameKey = frame == null ? null : frame._key;
-    try { _frame_checksum = frame == null ? 0 : frame.checksum(); } catch (Throwable t) { }
+    try { _frame_checksum = frame == null ? 0 : frame.checksum(); } catch (Throwable t) {
+    	System.out.println("The error is: " + t);
+    }
 
     _key = buildKey(model, frame);
     return this;
@@ -130,7 +134,8 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
       method = mm.getClass().getMethod(criterion.toLowerCase());
     }
     catch (Exception e) {
-      // fall through
+    	System.out.println("The error is: " + e);
+    	// fall through
     }
 
     if (null == method && null != cm) {
@@ -138,7 +143,7 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
         method = cm.getClass().getMethod(criterion.toLowerCase());
       }
       catch (Exception e) {
-        // fall through
+    	  System.out.println("The error is: " + e);// fall through
       }
     }
     if (null == method)
@@ -252,6 +257,7 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
           double c = (double) meth.invoke(m);
           res.add(meth.getName().toLowerCase());
         } catch (Exception e) {
+        	System.out.println("The error is: " + e);
           // fall through
         }
       }
@@ -263,6 +269,7 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
           double c = (double) meth.invoke(cm);
           res.add(meth.getName().toLowerCase());
         } catch (Exception e) {
+        	System.out.println("The error is: " + e);
           // fall through
         }
       }

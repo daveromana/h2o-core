@@ -140,7 +140,7 @@ public class IcedWrapper extends Iced {
       }
     }
 
-    if (null == t)
+    if (null == t) {
       throw new H2OIllegalArgumentException("o", "IcedWrapper", o);
   }
 
@@ -201,19 +201,19 @@ public class IcedWrapper extends Iced {
     if (null == t) {
       return "(null)";
     } else if (is_array) {
-      if (t.equals("I"))
+      if (t.equals("I")) {
         return Arrays.toString(i_ar);
-      else if (t.equals("L"))
+      else if (t.equals("L")) {
         return Arrays.toString(l_ar);
-      else if (t.equals("F"))
+      else if (t.equals("F")) {
         return Arrays.toString(f_ar);
-      else if (t.equals("D"))
+      else if (t.equals("D")) {
         return Arrays.toString(d_ar);
-      else if (t.equals("S"))
+      else if (t.equals("S")) {
         return Arrays.toString(s_ar);
-      else if (t.equals("E"))
+      else if (t.equals("E")) {
         return Arrays.toString(e_ar);
-      else if (t.equals("K"))
+      else if (t.equals("K")) {
         return Arrays.toString(k_ar);
     } else if (t.equals("B")) {
       return "" + i;
@@ -242,44 +242,44 @@ public class IcedWrapper extends Iced {
   /** Write JSON for the wrapped value without putting it inside a JSON object. */
   public AutoBuffer writeUnwrappedJSON( AutoBuffer ab ) {
     if (is_array) {
-      if (t.equals("B"))
+      if (t.equals("B")) {
         return ab.putJSONA4(i_ar); // NOTE: upcast
-      else if (t.equals("I"))
+      else if (t.equals("I")) {
         return ab.putJSONA4(i_ar);
-      else if (t.equals("L"))
+      else if (t.equals("L")) {
         return ab.putJSONA8(l_ar);
-      else if (t.equals("F"))
+      else if (t.equals("F")) {
         return ab.putJSONA4f(f_ar);
-      else if (t.equals("D"))
+      else if (t.equals("D")) {
         return ab.putJSONA8d(d_ar);
-      else if (t.equals("Bo"))
+      else if (t.equals("Bo")) {
         return ab.putJSONAStr(null); // TODO: BROKEN
-      else if (t.equals("S"))
+      else if (t.equals("S")) {
         return ab.putJSONAStr(s_ar);
-      else if (t.equals("E"))
+      else if (t.equals("E")) {
         return ab.putJSONAStr(e_ar);
-      else if (t.equals("K"))
+      else if (t.equals("K")) {
         return ab.putJSONA(k_ar);
-      else if (t.equals("Iced"))
+      else if (t.equals("Iced")) {
         return ab.putJSONA(iced_ar);
     } else {
-      if (t.equals("B"))
+      if (t.equals("B")) {
         return ab.putJSON1((byte)i);
-      else if (t.equals("I"))
+      else if (t.equals("I")) {
         return ab.putJSON4(i);
-      else if (t.equals("L"))
+      else if (t.equals("L")) {
         return ab.putJSON8(l);
-      else if (t.equals("F"))
+      else if (t.equals("F")) {
         return ab.putJSON4f(f);
-      else if (t.equals("D"))
+      else if (t.equals("D")) {
         return ab.putJSON8d(d);
-      else if (t.equals("Bo"))
+      else if (t.equals("Bo")) {
         return ab.putJSONStrUnquoted(b ? "true" : "false");
-      else if (t.equals("S"))
+      else if (t.equals("S")) {
         return ab.putJSONName(s);
-      else if (t.equals("E"))
+      else if (t.equals("E")) {
         return ab.putJSONName(e);
-      else if (t.equals("K"))
+      else if (t.equals("K")) {
         return ab.putJSON(k);
     }
 

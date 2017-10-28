@@ -128,7 +128,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
   // so completion is signaled after the remote comes back.
   private void handleCompleter( CountedCompleter cc ) {
     assert cc instanceof H2OCountedCompleter;
-    if( _fjtasks == null || !_fjtasks.contains(cc) )
+    if( _fjtasks == null || !_fjtasks.contains(cc) ) {
       addCompleter((H2OCountedCompleter)cc);
     _dt.setCompleter(null);
   }
@@ -146,7 +146,9 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
         }
         @Override public boolean onExceptionalCompletion(Throwable ex, CountedCompleter dt) {
           synchronized(RPC.this) { // Might be called several times
-            if( _done ) return true; // Filter down to 1st exceptional completion
+            if( _done ) {
+            	return true; // Filter down to 1st exceptional completion
+            }
             _dt.setException(ex);
             // must be the last set before notify call cause the waiting thread
             // can wake up at any moment independently on notify
@@ -168,18 +170,26 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
       // Any Completer will not be carried over to remote; add it to the RPC call
       // so completion is signaled after the remote comes back.
     CountedCompleter cc = _dt.getCompleter();
-    if( cc != null )  handleCompleter(cc);
+    if( cc != null )  {
+    	handleCompleter(cc);
+    }
 
     // If running on self, just submit to queues & do locally
-    if( _target==H2O.SELF ) return handleLocal();
+    if( _target==H2O.SELF ) {
+    	return handleLocal();
+    }
 
     // Keep a global record, for awhile
-    if( _target != null ) _target.taskPut(_tasknum,this);
+    if( _target != null ) {
+    	_target.taskPut(_tasknum,this);
+    }
     try {
       if( _nack ) return this; // Racing Nack rechecked under lock; no need to send retry
       // We could be racing timeouts-vs-replies.  Blow off timeout if we have an answer.
       if( isDone() ) {
-        if( _target != null ) _target.taskRemove(_tasknum);
+        if( _target != null ) {
+        	_target.taskRemove(_tasknum);
+        }
         return this;
       }
       // Default strategy: (re)fire the packet and (re)start the timeout.  We
@@ -237,7 +247,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
 
   private V result() {
     Throwable t = _dt.getDException();
-    if( t != null )
+    if( t != null ) {
       throw (t instanceof DistributedException)?new DistributedException(t.getMessage(),t.getCause()):new DistributedException(t);
     return _dt;
   }
@@ -250,11 +260,15 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
     int priority = (cThr instanceof FJWThr) ? ((FJWThr)cThr)._priority : -1;
     assert _dt.priority() > priority || (_dt.priority() == priority && _dt instanceof MRTask)
       : "*** Attempting to block on task (" + _dt.getClass() + ") with equal or lower priority. Can lead to deadlock! " + _dt.priority() + " <=  " + priority;
-    if( _done ) return result(); // Fast-path shortcut, or throw if exception
+    if( _done ) {
+    	return result(); // Fast-path shortcut, or throw if exception
+    }
     // Use FJP ManagedBlock for this blocking-wait - so the FJP can spawn
     // another thread if needed.
     try { ForkJoinPool.managedBlock(this); } catch( InterruptedException ignore ) { }
-    if( _done ) return result(); // Fast-path shortcut or throw if exception
+    if( _done ) {
+    	return result(); // Fast-path shortcut or throw if exception
+    }
     assert isCancelled();
     return null;
   }
@@ -269,7 +283,9 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
   }
 
   @Override public final V get(long timeout, TimeUnit unit) {
-    if( _done ) return _dt;     // Fast-path shortcut
+    if( _done ) {
+    	return _dt;     // Fast-path shortcut
+    }
     throw H2O.fail();
   }
 
@@ -324,7 +340,9 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
       _dt = dt;
       _client = client;
       _tsknum = tsknum;
-      if( _dt == null ) _computedAndReplied = true; // Only for Golden Completed Tasks (see H2ONode.java)
+      if( _dt == null ) {
+    	  _computedAndReplied = true; // Only for Golden Completed Tasks (see H2ONode.java)
+      }
       _started = System.currentTimeMillis(); // for nack timeout
       _retry = RETRY_MS >> 1; // half retry for sending nack
     }
@@ -353,9 +371,13 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
     // send it back to the caller.  Can be called lots of times (e.g., once per
     // MRTask.map call that throws).
     @Override public boolean onExceptionalCompletion( Throwable ex, CountedCompleter caller ) {
-      if( _computed ) return false;
+      if( _computed ) {
+    	  return false;
+      }
       synchronized(this) {    // Filter dup calls to onExCompletion
-        if( _computed ) return false;
+        if( _computed ) {
+        	return false;
+        }
         _computed = true;
       }
       _dt.setException(ex);
@@ -385,10 +407,10 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
           _computedAndReplied = true;   // After the final handshake, set computed+replied bit
           break;                        // Break out of retry loop
         } catch( AutoBuffer.AutoBufferException e ) {
-          if( !_client._heartbeat._client ) // Report on servers only; clients allowed to be flaky
+          if( !_client._heartbeat._client ) { // Report on servers only; clients allowed to be flaky
             Log.info("IOException during ACK, "+e._ioe.getMessage()+", t#"+_tsknum+" AB="+ab+", waiting and retrying...");
           ab.drainClose();
-          if( _client._heartbeat._client ) // Dead client will not accept a TCP ACK response?
+          if( _client._heartbeat._client ) {// Dead client will not accept a TCP ACK response?
             this.CAS_DT(dt,null);          // cancel the ACK
           try { Thread.sleep(100); } catch (InterruptedException ignore) {}
         } catch( Throwable e ) { // Custom serializer just barfed?
@@ -396,10 +418,10 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
           ab.drainClose();
         }
       }  // end of while(true)
-      if( dt == null )
+      if( dt == null ) {
         Log.info("Cancelled remote task#"+_tsknum+" "+origDt.getClass()+" to "+_client + " has been cancelled by remote");
       else {
-        if( dt instanceof MRTask && dt.logVerbose() )
+        if( dt instanceof MRTask && dt.logVerbose() ) {
           Log.debug("Done remote task#"+_tsknum+" "+dt.getClass()+" to "+_client);
         _client.record_task_answer(this); // Setup for retrying Ack & AckAck, if not canceled
       }
@@ -414,11 +436,15 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
     final void resend_ack() {
       assert _computedAndReplied : "Found RPCCall not computed "+_tsknum;
       DTask dt = _dt;
-      if( dt == null ) return;  // Received ACKACK already
+      if( dt == null ) {
+    	  return;  // Received ACKACK already
+      }
       UDP.udp udp = dt.priority()==H2O.FETCH_ACK_PRIORITY ? UDP.udp.fetchack : UDP.udp.ack;
       AutoBuffer rab = new AutoBuffer(_client,dt.priority()).putTask(udp,_tsknum);
       boolean wasTCP = dt._repliedTcp;
-      if( wasTCP )  rab.put1(RPC.SERVER_TCP_SEND) ; // Original reply sent via TCP
+      if( wasTCP ) {
+    	  rab.put1(RPC.SERVER_TCP_SEND) ; // Original reply sent via TCP
+      }
       else {
         rab.put1(RPC.SERVER_UDP_SEND); // Original reply sent via UDP
         assert rab.position() == 1+2+4+1;
@@ -494,11 +520,13 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
       }
       RPCCall rpc2 = ab._h2o.record_task(rpc);
       if( rpc2==null ) {        // Atomically insert (to avoid double-work)
-        if( rpc._dt instanceof MRTask && rpc._dt.logVerbose() )
+        if( rpc._dt instanceof MRTask && rpc._dt.logVerbose() ) {
           Log.debug("Start remote task#"+task+" "+rpc._dt.getClass()+" from "+ab._h2o);
         H2O.submitTask(rpc);    // And execute!
       } else {                  // Else lost the task-insertion race
-        if(ab.hasTCP())  ab.drainClose();
+        if(ab.hasTCP())  {
+        	ab.drainClose();
+        }
         // DROP PACKET
       }
 
@@ -521,7 +549,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
       }
       if(old._dt != null) { // already ackacked
         ++old._ackResendCnt;
-        if (old._ackResendCnt % 10 == 0)
+        if (old._ackResendCnt % 10 == 0) {
           Log.err("Possibly broken network, can not send ack through, got " + old._ackResendCnt + " for task # " + old._tsknum + ", dt == null?" + (old._dt == null));
         old.resend_ack();
       }
@@ -584,11 +612,13 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
       ab.drainClose();
     } else {
       int flag = ab.getFlag();       // Must read flag also, to advance ab
-      if (flag == SERVER_TCP_SEND) return ackack(ab, _tasknum); // Ignore UDP packet for a TCP reply
+      if (flag == SERVER_TCP_SEND) {
+    	  return ackack(ab, _tasknum); // Ignore UDP packet for a TCP reply
+      }
       assert flag == SERVER_UDP_SEND:"flag = " + flag;
       synchronized (this) {             // Install the answer under lock
         if (_done) {
-          if(!ab.hasTCP())
+          if(!ab.hasTCP()) {
             return ackack(ab, _tasknum); // Ignore duplicate response packet
           ab.drainClose();
         } else {
@@ -596,13 +626,13 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
           _dt.read(ab);             // Read the answer (under lock?)
           _size_rez = ab.size();    // Record received size
           ab.close();               // Also finish the read (under lock?  even if canceled, since need to drain TCP)
-          if (!isCancelled())       // Can be canceled already (locally by MRTask while recieving remote answer)
+          if (!isCancelled())  {     // Can be canceled already (locally by MRTask while recieving remote answer)
             _dt.onAck();            // One time only execute (before sending ACKACK)
           _done = true;             // Only read one (of many) response packets
           ab._h2o.taskRemove(_tasknum); // Flag as task-completed, even if the result is null
           notifyAll();              // And notify in any case
         }
-        if (!isCancelled())  // Can be canceled already
+        if (!isCancelled()) { // Can be canceled already
           doAllCompletions(); // Send all tasks needing completion to the work queues
       }
     }
@@ -613,11 +643,11 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
   private void doAllCompletions() {
     final Throwable e = _dt.getDException();
     // Also notify any and all pending completion-style tasks
-    if( _fjtasks != null )
+    if( _fjtasks != null ) {
       for( final H2OCountedCompleter task : _fjtasks ) {
         H2O.submitTask(new H2OCountedCompleter(task.priority()) {
           @Override public void compute2() {
-            if (e != null) // re-throw exception on this side as if it happened locally
+            if (e != null) {// re-throw exception on this side as if it happened locally
               task.completeExceptionally(e);
             else try {
               task.__tryComplete(_dt);
@@ -631,7 +661,9 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
 
   // ---
   public synchronized RPC<V> addCompleter( H2OCountedCompleter task ) {
-    if( _fjtasks == null ) _fjtasks = new ArrayList(2);
+    if( _fjtasks == null ) {
+    	_fjtasks = new ArrayList(2);
+    }
     _fjtasks.add(task);
     return this;
   }

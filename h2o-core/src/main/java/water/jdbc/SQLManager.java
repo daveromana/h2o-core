@@ -138,21 +138,27 @@ public class SQLManager {
       if (rs != null) {
         try {
           rs.close();
-        } catch (SQLException sqlEx) {} // ignore
+        } catch (SQLException sqlEx) {
+        	System.out.println("The error is: " + sqlEx);
+        } // ignore
         rs = null;
       }
 
       if (stmt != null) {
         try {
           stmt.close();
-        } catch (SQLException sqlEx) {} // ignore
+        } catch (SQLException sqlEx) {
+        	System.out.println("The error is: " + sqlEx);
+        } // ignore
         stmt = null;
       }
 
       if (conn != null) {
         try {
           conn.close();
-        } catch (SQLException sqlEx) {} // ignore
+        } catch (SQLException sqlEx) {
+        	System.out.println("The error is: " + sqlEx);
+        } // ignore
         conn = null;
       }
     }
@@ -314,6 +320,7 @@ public class SQLManager {
           try {
             rs.close();
           } catch (SQLException sqlEx) {
+        	  System.out.println("The error is: " + sqlEx);
           } // ignore
           rs = null;
         }
@@ -323,6 +330,7 @@ public class SQLManager {
           try {
             stmt.close();
           } catch (SQLException sqlEx) {
+        	  System.out.println("The error is: " + sqlEx);
           } // ignore
           stmt = null;
         }
@@ -341,6 +349,7 @@ public class SQLManager {
           conn.close();
         }
       } catch (Exception ex) {
+    	  System.out.println("The error is: " + ex);
       } // ignore
     }
   }
@@ -362,6 +371,7 @@ public class SQLManager {
         try {
           stmt.close();
         } catch (SQLException sqlEx) {
+        	System.out.println("The error is: " + sqlEx);
         } // ignore
         stmt = null;
       }
@@ -370,6 +380,7 @@ public class SQLManager {
         try {
           conn.close();
         } catch (SQLException sqlEx) {
+        	System.out.println("The error is: " + sqlEx);
         } // ignore
         conn = null;
       }

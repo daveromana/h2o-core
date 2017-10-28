@@ -32,11 +32,13 @@ public class FrameUtils {
       throw new IllegalArgumentException("List of files is empty!");
     }
     for (File f : files) {
-      if (!f.exists())
+      if (!f.exists()) {
         throw new FileNotFoundException("File not found " + f);
     }
     // Create output key if it is not given
-    if(okey == null) okey = Key.make(files[0].getName());
+    if(okey == null) {
+    	okey = Key.make(files[0].getName());
+    }
     Key[] inKeys = new Key[files.length];
     for (int i=0; i<files.length; i++) inKeys[i] =  NFSFileVec.make(files[i])._key;
     return ParseDataset.parse(okey, inKeys);
@@ -57,7 +59,9 @@ public class FrameUtils {
     if (uris == null || uris.length == 0) {
       throw new IllegalArgumentException("List of uris is empty!");
     }
-    if(okey == null) okey = Key.make(uris[0].toString());
+    if(okey == null) {
+    	okey = Key.make(uris[0].toString());
+    }
     Key[] inKeys = new Key[uris.length];
     for (int i=0; i<uris.length; i++)  inKeys[i] = H2O.getPM().anyURIToKey(uris[i]);
     // Return result
@@ -107,7 +111,7 @@ public class FrameUtils {
       int count = 0;
       for (int i = 0; i < len && count < topK; ++i) {
         if (domains[i] != null && domains[i].length >= levelcutoff) {
-          if (warn)
+          if (warn) {
             Log.warn("Categorical feature '" + names[i] + "' has cardinality " + domains[i].length + ".");
           else
             Log.info("Categorical feature '" + names[i] + "' has cardinality " + domains[i].length + ".");
@@ -167,7 +171,9 @@ public class FrameUtils {
   }
 
   public static double [] asDoubles(Vec v){
-    if(v.length() > 100000) throw new IllegalArgumentException("Vec is too big to be extracted into array");
+    if(v.length() > 100000) {
+    	throw new IllegalArgumentException("Vec is too big to be extracted into array");
+    }
     return new Vec2ArryTsk((int)v.length()).doAll(v).res;
   }
 
@@ -194,7 +200,9 @@ public class FrameUtils {
   }
 
   public static int [] asInts(Vec v){
-    if(v.length() > 100000) throw new IllegalArgumentException("Vec is too big to be extracted into array");
+    if(v.length() > 100000) {
+    	throw new IllegalArgumentException("Vec is too big to be extracted into array");
+    }
     return new Vec2IntArryTsk((int)v.length()).doAll(v).res;
   }
 
@@ -248,7 +256,9 @@ public class FrameUtils {
             for (int c = 0; c < cs.length; c++) {
               for (int r = 0; r < cs[c]._len; r++) {
                 rng.setSeed(_seed + 1234 * c ^ 1723 * (cs[c].start() + r));
-                if (rng.nextDouble() < _fraction) cs[c].setNA(r);
+                if (rng.nextDouble() < _fraction) {
+                	cs[c].setNA(r);
+                }
               }
             }
             _job.update(1);
@@ -260,9 +270,11 @@ public class FrameUtils {
 
     public Job<Frame> execImpl() {
       _job = new Job<>(_dataset, Frame.class.getName(), "MissingValueInserter");
-      if (DKV.get(_dataset) == null)
+      if (DKV.get(_dataset) == null) {
         throw new IllegalArgumentException("Invalid Frame key " + _dataset + " (Frame doesn't exist).");
-      if (_fraction < 0 || _fraction > 1 ) throw new IllegalArgumentException("fraction must be between 0 and 1.");
+      if (_fraction < 0 || _fraction > 1 ) {
+    	  throw new IllegalArgumentException("fraction must be between 0 and 1.");
+      }
       final Frame frame = DKV.getGet(_dataset);
       MissingInserterDriver mid = new MissingInserterDriver(frame);
       int work = frame.vecs()[0].nChunks();
@@ -303,9 +315,13 @@ public class FrameUtils {
     }
     @Override public void map(Chunk response, Chunk weight, Chunk offset) {
       for (int i=0;i<response._len;++i) {
-        if (response.isNA(i)) continue;
+        if (response.isNA(i)) {
+        	continue;
+        }
         double w = weight.atd(i);
-        if (w == 0) continue;
+        if (w == 0) {
+        	continue;
+        }
         _wresponse += w*(response.atd(i)-offset.atd(i));
         _wsum += w;
       }
@@ -391,7 +407,9 @@ public class FrameUtils {
 
       @Override
       public void map(Chunk[] cs) {
-        if (cs[0]._len == 0) return;
+        if (cs[0]._len == 0) {
+        	return;
+        }
         Frame.CSVStream is = new Frame.CSVStream(cs, null, 1, false);
         try {
           _nNonEmpty++;
@@ -428,7 +446,9 @@ public class FrameUtils {
         os.write(bytes, 0, count);
         int workDone = is._curChkIdx - curChkIdx;
         if (workDone > 0) {
-          if (_j.stop_requested()) throw new Job.JobCancelledException();
+          if (_j.stop_requested()) {
+        	  throw new Job.JobCancelledException();
+          }
           _j.update(workDone);
           curChkIdx = is._curChkIdx;
         }
@@ -483,7 +503,9 @@ public class FrameUtils {
       @Override
       protected void setupLocal() {
         boolean created = H2O.getPM().mkdirs(_path);
-        if (! created) Log.warn("Path ", _path, " was not created.");
+        if (! created) {
+        	Log.warn("Path ", _path, " was not created.");
+        }
       }
     }
   }
@@ -531,13 +553,15 @@ public class FrameUtils {
         Vec[] frameVecs = _frame.vecs();
         int numCategoricals = 0;
         for (int i=0;i<frameVecs.length;++i)
-          if (frameVecs[i].isCategorical() && ArrayUtils.find(_skipCols, _frame._names[i])==-1)
+          if (frameVecs[i].isCategorical() && ArrayUtils.find(_skipCols, _frame._names[i])==-1) {
             numCategoricals++;
 
         Vec[] extraVecs = new Vec[_skipCols.length];
         for (int i=0; i< extraVecs.length; ++i) {
           Vec v = _frame.vec(_skipCols[i]); //can be null
-          if (v!=null) extraVecs[i] = v;
+          if (v!=null) {
+        	  extraVecs[i] = v;
+          }
         }
 
         Frame categoricalFrame = new Frame();
@@ -546,7 +570,9 @@ public class FrameUtils {
         int numOutputColumns = 0;
         List<String> catnames= new ArrayList<>();
         for (int i = 0, j = 0; i < frameVecs.length; ++i) {
-          if (ArrayUtils.find(_skipCols, _frame._names[i])>=0) continue;
+          if (ArrayUtils.find(_skipCols, _frame._names[i])>=0) {
+        	  continue;
+          }
           int numCategories = frameVecs[i].cardinality(); // Returns -1 if non-categorical variable
           if (numCategories > 0) {
             categoricalFrame.add(_frame.name(i), frameVecs[i]);
@@ -565,7 +591,7 @@ public class FrameUtils {
         binaryCols.setNames(catnames.toArray(new String[0]));
         outputFrame.add(binaryCols);
         for (int i=0;i<extraVecs.length;++i) {
-          if (extraVecs[i]!=null)
+          if (extraVecs[i]!=null) {
             outputFrame.add(_skipCols[i], extraVecs[i].makeCopy());
         }
         DKV.put(outputFrame);
@@ -574,7 +600,7 @@ public class FrameUtils {
     }
 
     public Job<Frame> exec() {
-      if (_frame == null)
+      if (_frame == null) {
         throw new IllegalArgumentException("Frame doesn't exist.");
       Key<Frame> destKey = Key.makeSystem(Key.make().toString());
       _job = new Job<>(destKey, Frame.class.getName(), "CategoricalOneHotEncoder");
@@ -608,12 +634,16 @@ public class FrameUtils {
         if (extraVecs!=null) {
           for (int i = 0; i < extraVecs.length; ++i) {
             Vec v = _frame.vec(_skipCols[i]); //can be null
-            if (v != null) extraVecs[i] = v;
+            if (v != null) {
+            	extraVecs[i] = v;
+            }
           }
         }
         Frame outputFrame = new Frame(_destKey);
         for (int i = 0, j = 0; i < frameVecs.length; ++i) {
-          if (_skipCols!=null && ArrayUtils.find(_skipCols, _frame._names[i])>=0) continue;
+          if (_skipCols!=null && ArrayUtils.find(_skipCols, _frame._names[i])>=0) {
+        	  continue;
+          }
           int numCategories = frameVecs[i].cardinality(); // Returns -1 if non-categorical variable
           if (numCategories > 0) {
             outputFrame.add(_frame.name(i), frameVecs[i].toNumericVec());
@@ -622,7 +652,7 @@ public class FrameUtils {
         }
         if (_skipCols!=null) {
           for (int i = 0; i < extraVecs.length; ++i) {
-            if (extraVecs[i] != null)
+            if (extraVecs[i] != null) {
               outputFrame.add(_skipCols[i], extraVecs[i].makeCopy());
           }
         }
@@ -632,7 +662,7 @@ public class FrameUtils {
     }
 
     public Job<Frame> exec() {
-      if (_frame == null)
+      if (_frame == null) {
         throw new IllegalArgumentException("Frame doesn't exist.");
       Key<Frame> destKey = Key.makeSystem(Key.make().toString());
       _job = new Job<>(destKey, Frame.class.getName(), "CategoricalLabelEncoder");
@@ -693,14 +723,16 @@ public class FrameUtils {
         Vec[] frameVecs = _frame.vecs();
         int numCategoricals = 0;
         for (int i=0;i<frameVecs.length;++i)
-          if (frameVecs[i].isCategorical() && (_skipCols==null || ArrayUtils.find(_skipCols, _frame._names[i])==-1))
+          if (frameVecs[i].isCategorical() && (_skipCols==null || ArrayUtils.find(_skipCols, _frame._names[i])==-1)) {
             numCategoricals++;
 
         Vec[] extraVecs = _skipCols==null?null:new Vec[_skipCols.length];
         if (extraVecs!=null) {
           for (int i = 0; i < extraVecs.length; ++i) {
             Vec v = _frame.vec(_skipCols[i]); //can be null
-            if (v != null) extraVecs[i] = v;
+            if (v != null) {
+            	extraVecs[i] = v;
+            }
           }
         }
 
@@ -709,7 +741,9 @@ public class FrameUtils {
         int[] binaryCategorySizes = new int[numCategoricals];
         int numOutputColumns = 0;
         for (int i = 0, j = 0; i < frameVecs.length; ++i) {
-          if (_skipCols!=null && ArrayUtils.find(_skipCols, _frame._names[i])>=0) continue;
+          if (_skipCols!=null && ArrayUtils.find(_skipCols, _frame._names[i])>=0) {
+        	  continue;
+          }
           int numCategories = frameVecs[i].cardinality(); // Returns -1 if non-categorical variable
           if (numCategories > 0) {
             categoricalFrame.add(_frame.name(i), frameVecs[i]);
@@ -730,7 +764,7 @@ public class FrameUtils {
         outputFrame.add(binaryCols);
         if (_skipCols!=null) {
           for (int i = 0; i < extraVecs.length; ++i) {
-            if (extraVecs[i] != null)
+            if (extraVecs[i] != null) {
               outputFrame.add(_skipCols[i], extraVecs[i].makeCopy());
           }
         }
@@ -740,7 +774,7 @@ public class FrameUtils {
     }
 
     public Job<Frame> exec() {
-      if (_frame == null)
+      if (_frame == null) {
         throw new IllegalArgumentException("Frame doesn't exist.");
       Key<Frame> destKey = Key.makeSystem(Key.make().toString());
       _job = new Job<>(destKey, Frame.class.getName(), "CategoricalBinaryEncoder");
@@ -780,13 +814,17 @@ public class FrameUtils {
         Vec[] extraVecs = new Vec[_skipCols==null?0:_skipCols.length];
         for (int i=0; i< extraVecs.length; ++i) {
           Vec v = _skipCols==null||_skipCols.length<=i?null:_frame.vec(_skipCols[i]); //can be null
-          if (v!=null) extraVecs[i] = v;
+          if (v!=null) {
+        	  extraVecs[i] = v;
+          }
         }
 //        Log.info(_frame.toTwoDimTable(0, (int)_frame.numRows()));
         Frame outputFrame = new Frame(_destKey);
         for (int i = 0; i < frameVecs.length; ++i) {
           Vec src = frameVecs[i];
-          if (_skipCols!=null && ArrayUtils.find(_skipCols, _frame._names[i])>=0) continue;
+          if (_skipCols!=null && ArrayUtils.find(_skipCols, _frame._names[i])>=0) {
+        	  continue;
+          }
           if (src.cardinality() > _maxLevels) {
             Key<Frame> source = Key.make();
             Key<Frame> dest = Key.make();
@@ -808,7 +846,7 @@ public class FrameUtils {
           }
         }
         for (int i=0;i<extraVecs.length;++i) {
-          if (extraVecs[i]!=null)
+          if (extraVecs[i]!=null) {
             outputFrame.add(_skipCols[i], extraVecs[i].makeCopy());
         }
 //        Log.info(outputFrame.toTwoDimTable(0, (int)outputFrame.numRows()));
@@ -818,7 +856,7 @@ public class FrameUtils {
     }
 
     public Job<Frame> exec() {
-      if (_frame == null)
+      if (_frame == null) {
         throw new IllegalArgumentException("Frame doesn't exist.");
       Key<Frame> destKey = Key.makeSystem(Key.make().toString());
       _job = new Job<>(destKey, Frame.class.getName(), "CategoricalEnumLimited");
@@ -860,18 +898,22 @@ public class FrameUtils {
         Vec[] extraVecs = new Vec[_skipCols==null?0:_skipCols.length];
         for (int i=0; i< extraVecs.length; ++i) {
           Vec v = _skipCols==null||_skipCols.length<=i?null:_frame.vec(_skipCols[i]); //can be null
-          if (v!=null) extraVecs[i] = v;
+          if (v!=null) {
+        	  extraVecs[i] = v;
+          }
         }
         Frame outputFrame = new Frame(_destKey);
         for (int i = 0; i < frameVecs.length; ++i) {
-          if (_skipCols!=null && ArrayUtils.find(_skipCols, _frame._names[i])>=0) continue;
-          if (frameVecs[i].isCategorical())
+          if (_skipCols!=null && ArrayUtils.find(_skipCols, _frame._names[i])>=0) {
+        	  continue;
+          }
+          if (frameVecs[i].isCategorical()) {
             outputFrame.add(_frame.name(i) + ".Eigen", _tev.toEigenVec(frameVecs[i]));
           else
             outputFrame.add(_frame.name(i), frameVecs[i].makeCopy());
         }
         for (int i=0;i<extraVecs.length;++i) {
-          if (extraVecs[i]!=null)
+          if (extraVecs[i]!=null) {
             outputFrame.add(_skipCols[i], extraVecs[i].makeCopy());
         }
         DKV.put(outputFrame);
@@ -880,7 +922,7 @@ public class FrameUtils {
     }
 
     public Job<Frame> exec() {
-      if (_frame == null)
+      if (_frame == null) {
         throw new IllegalArgumentException("Frame doesn't exist.");
       Key<Frame> destKey = Key.makeSystem(Key.make().toString());
       _job = new Job<>(destKey, Frame.class.getName(), "CategoricalEigenEncoder");
@@ -917,7 +959,9 @@ public class FrameUtils {
           @Override
           public void map(Chunk c) {
             for (int i=0;i<c._len;++i) {
-              if (c.isNA(i)) continue;
+              if (c.isNA(i)) {
+            	  continue;
+              }
               else c.set(i, fromTo[(int)c.at8(i)]);
             }
           }

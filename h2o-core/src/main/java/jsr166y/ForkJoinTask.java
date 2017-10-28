@@ -239,10 +239,10 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      */
     private int setCompletion(int completion) {
         for (int s;;) {
-            if ((s = status) < 0)
+            if ((s = status) < 0) {
                 return s;
             if (U.compareAndSwapInt(this, STATUS, s, s | completion)) {
-                if ((s >>> 16) != 0)
+                if ((s >>> 16) != 0) {
                     synchronized (this) { notifyAll(); }
                 return completion;
             }
@@ -264,7 +264,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
             } catch (Throwable rex) {
                 return setExceptionalCompletion(rex);
             }
-            if (completed)
+            if (completed) {
                 s = setCompletion(NORMAL);
         }
         return s;
@@ -304,7 +304,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
                 }
             }
         }
-        if (interrupted)
+        if (interrupted) {
             Thread.currentThread().interrupt();
         return s;
     }
@@ -314,12 +314,12 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      */
     private int externalInterruptibleAwaitDone() throws InterruptedException {
         int s;
-        if (Thread.interrupted())
+        if (Thread.interrupted()) {
             throw new InterruptedException();
         while ((s = status) >= 0) {
             if (U.compareAndSwapInt(this, STATUS, s, s | SIGNAL)) {
                 synchronized (this) {
-                    if (status >= 0)
+                    if (status >= 0) {
                         wait();
                     else
                         notifyAll();
@@ -341,7 +341,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         if ((s = status) >= 0) {
             if (((t = Thread.currentThread()) instanceof ForkJoinWorkerThread)) {
                 if (!(w = (wt = (ForkJoinWorkerThread)t).workQueue).
-                    tryUnpush(this) || (s = doExec()) >= 0)
+                    tryUnpush(this) || (s = doExec()) >= 0) {
                     s = wt.pool.awaitJoin(w, this);
             }
             else
@@ -358,7 +358,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
     private int doInvoke() {
         int s; Thread t; ForkJoinWorkerThread wt;
         if ((s = doExec()) >= 0) {
-            if ((t = Thread.currentThread()) instanceof ForkJoinWorkerThread)
+            if ((t = Thread.currentThread()) instanceof ForkJoinWorkerThread) {
                 s = (wt = (ForkJoinWorkerThread)t).pool.awaitJoin(wt.workQueue,
                                                                   this);
             else
@@ -431,7 +431,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
                         t[i] = new ExceptionNode(this, ex, t[i]);
                         break;
                     }
-                    if (e.get() == this) // already present
+                    if (e.get() == this) {// already present
                         break;
                 }
             } finally {
@@ -449,7 +449,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      */
     private int setExceptionalCompletion(Throwable ex) {
         int s = recordExceptionalCompletion(ex);
-        if ((s & DONE_MASK) == EXCEPTIONAL)
+        if ((s & DONE_MASK) == EXCEPTIONAL) {
             internalPropagateException(ex);
         return s;
     }
@@ -490,7 +490,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
             while (e != null) {
                 ExceptionNode next = e.next;
                 if (e.get() == this) {
-                    if (pred == null)
+                    if (pred == null) {
                         t[i] = next;
                     else
                         pred.next = next;
@@ -521,7 +521,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      * @return the exception, or null if none
      */
     private Throwable getThrowableException() {
-        if ((status & DONE_MASK) != EXCEPTIONAL)
+        if ((status & DONE_MASK) != EXCEPTIONAL) {
             return null;
         int h = System.identityHashCode(this);
         ExceptionNode e;
@@ -537,7 +537,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
             lock.unlock();
         }
         Throwable ex;
-        if (e == null || (ex = e.ex) == null)
+        if (e == null || (ex = e.ex) == null) {
             return null;
         if (false && e.thrower != Thread.currentThread().getId()) {
             Class<? extends Throwable> ec = ex.getClass();
@@ -547,7 +547,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
                 for (int i = 0; i < cs.length; ++i) {
                     Constructor<?> c = cs[i];
                     Class<?>[] ps = c.getParameterTypes();
-                    if (ps.length == 0)
+                    if (ps.length == 0) {
                         noArgCtor = c;
                     else if (ps.length == 1 && ps[0] == Throwable.class)
                         return (Throwable)(c.newInstance(ex));
@@ -577,7 +577,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
                 while (e != null) {
                     ExceptionNode next = e.next;
                     if (e == x) {
-                        if (pred == null)
+                        if (pred == null) {
                             t[i] = next;
                         else
                             pred.next = next;
@@ -612,7 +612,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         Throwable ex = ((s == CANCELLED) ?  new CancellationException() :
                         (s == EXCEPTIONAL) ? getThrowableException() :
                         null);
-        if (ex != null)
+        if (ex != null) {
             U.throwException(ex);
     }
 
@@ -654,7 +654,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      */
     public final V join() {
         int s;
-        if ((s = doJoin() & DONE_MASK) != NORMAL)
+        if ((s = doJoin() & DONE_MASK) != NORMAL) {
             reportException(s);
         return getRawResult();
     }
@@ -669,7 +669,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      */
     public final V invoke() {
         int s;
-        if ((s = doInvoke() & DONE_MASK) != NORMAL)
+        if ((s = doInvoke() & DONE_MASK) != NORMAL) {
             reportException(s);
         return getRawResult();
     }
@@ -700,9 +700,9 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
     public static void invokeAll(ForkJoinTask<?> t1, ForkJoinTask<?> t2) {
         int s1, s2;
         t2.fork();
-        if ((s1 = t1.doInvoke() & DONE_MASK) != NORMAL)
+        if ((s1 = t1.doInvoke() & DONE_MASK) != NORMAL) {
             t1.reportException(s1);
-        if ((s2 = t2.doJoin() & DONE_MASK) != NORMAL)
+        if ((s2 = t2.doJoin() & DONE_MASK) != NORMAL) {
             t2.reportException(s2);
     }
 
@@ -733,7 +733,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         for (int i = last; i >= 0; --i) {
             ForkJoinTask<?> t = tasks[i];
             if (t == null) {
-                if (ex == null)
+                if (ex == null) {
                     ex = new NullPointerException();
             }
             else if (i != 0)
@@ -744,13 +744,13 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         for (int i = 1; i <= last; ++i) {
             ForkJoinTask<?> t = tasks[i];
             if (t != null) {
-                if (ex != null)
+                if (ex != null) {
                     t.cancel(false);
                 else if (t.doJoin() < NORMAL)
                     ex = t.getException();
             }
         }
-        if (ex != null)
+        if (ex != null) {
             U.throwException(ex);
     }
 
@@ -790,7 +790,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         for (int i = last; i >= 0; --i) {
             ForkJoinTask<?> t = ts.get(i);
             if (t == null) {
-                if (ex == null)
+                if (ex == null) {
                     ex = new NullPointerException();
             }
             else if (i != 0)
@@ -801,13 +801,13 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         for (int i = 1; i <= last; ++i) {
             ForkJoinTask<?> t = ts.get(i);
             if (t != null) {
-                if (ex != null)
+                if (ex != null) {
                     t.cancel(false);
                 else if (t.doJoin() < NORMAL)
                     ex = t.getException();
             }
         }
-        if (ex != null)
+        if (ex != null) {
             U.throwException(ex);
         return tasks;
     }
@@ -955,9 +955,9 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         int s = (Thread.currentThread() instanceof ForkJoinWorkerThread) ?
             doJoin() : externalInterruptibleAwaitDone();
         Throwable ex;
-        if ((s &= DONE_MASK) == CANCELLED)
+        if ((s &= DONE_MASK) == CANCELLED) {
             throw new CancellationException();
-        if (s == EXCEPTIONAL && (ex = getThrowableException()) != null)
+        if (s == EXCEPTIONAL && (ex = getThrowableException()) != null) {
             throw new ExecutionException(ex);
         return getRawResult();
     }
@@ -978,7 +978,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      */
     public final V get(long timeout, TimeUnit unit)
         throws InterruptedException, ExecutionException, TimeoutException {
-        if (Thread.interrupted())
+        if (Thread.interrupted()) {
             throw new InterruptedException();
         // Messy in part because we measure in nanosecs, but wait in millisecs
         int s; long ns, ms;
@@ -1000,7 +1000,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
                     if (w != null && w.runState < 0)
                         cancelIgnoringExceptions(this);
                     else if (!canBlock) {
-                        if (p == null || p.tryCompensate(this, null))
+                        if (p == null || p.tryCompensate(this, null)) {
                             canBlock = true;
                     }
                     else {
@@ -1011,7 +1011,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
                                     try {
                                         wait(ms);
                                     } catch (InterruptedException ie) {
-                                        if (p == null)
+                                        if (p == null) {
                                             interrupted = true;
                                     }
                                 }
@@ -1020,24 +1020,24 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
                             }
                         }
                         if ((s = status) < 0 || interrupted ||
-                            (ns = deadline - System.nanoTime()) <= 0L)
+                            (ns = deadline - System.nanoTime()) <= 0L) {
                             break;
                     }
                 }
             } finally {
-                if (p != null && canBlock)
+                if (p != null && canBlock) {
                     p.incrementActiveCount();
             }
-            if (interrupted)
+            if (interrupted) {
                 throw new InterruptedException();
         }
         if ((s &= DONE_MASK) != NORMAL) {
             Throwable ex;
-            if (s == CANCELLED)
+            if (s == CANCELLED) {
                 throw new CancellationException();
-            if (s != EXCEPTIONAL)
+            if (s != EXCEPTIONAL) {
                 throw new TimeoutException();
-            if ((ex = getThrowableException()) != null)
+            if ((ex = getThrowableException()) != null) {
                 throw new ExecutionException(ex);
         }
         return getRawResult();
@@ -1098,7 +1098,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      * setRawResult(null)}.
      */
     public void reinitialize() {
-        if ((status & DONE_MASK) == EXCEPTIONAL)
+        if ((status & DONE_MASK) == EXCEPTIONAL) {
             clearExceptionalCompletion();
         else
             status = 0;
@@ -1361,7 +1361,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
     public final short setForkJoinTaskTag(short tag) {
         for (int s;;) {
             if (U.compareAndSwapInt(this, STATUS, s = status,
-                                    (s & ~SMASK) | (tag & SMASK)))
+                                    (s & ~SMASK) | (tag & SMASK))) {
                 return (short)s;
         }
     }
@@ -1382,10 +1382,10 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      */
     public final boolean compareAndSetForkJoinTaskTag(short e, short tag) {
         for (int s;;) {
-            if ((short)(s = status) != e)
+            if ((short)(s = status) != e) {
                 return false;
             if (U.compareAndSwapInt(this, STATUS, s,
-                                    (s & ~SMASK) | (tag & SMASK)))
+                                    (s & ~SMASK) | (tag & SMASK))) {
                 return true;
         }
     }
@@ -1400,7 +1400,9 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         final Runnable runnable;
         T result;
         AdaptedRunnable(Runnable runnable, T result) {
-            if (runnable == null) throw new NullPointerException();
+            if (runnable == null) {
+            	throw new NullPointerException();
+            }
             this.runnable = runnable;
             this.result = result; // OK to set this even before completion
         }
@@ -1418,7 +1420,9 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         implements RunnableFuture<Void> {
         final Runnable runnable;
         AdaptedRunnableAction(Runnable runnable) {
-            if (runnable == null) throw new NullPointerException();
+            if (runnable == null) {
+            	throw new NullPointerException();
+            }
             this.runnable = runnable;
         }
         public final Void getRawResult() { return null; }
@@ -1436,7 +1440,9 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         final Callable<? extends T> callable;
         T result;
         AdaptedCallable(Callable<? extends T> callable) {
-            if (callable == null) throw new NullPointerException();
+            if (callable == null) {
+            	throw new NullPointerException();
+            }
             this.callable = callable;
         }
         public final T getRawResult() { return result; }
@@ -1518,7 +1524,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         throws java.io.IOException, ClassNotFoundException {
         s.defaultReadObject();
         Object ex = s.readObject();
-        if (ex != null)
+        if (ex != null) {
             setExceptionalCompletion((Throwable)ex);
     }
 

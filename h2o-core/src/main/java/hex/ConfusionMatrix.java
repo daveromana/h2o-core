@@ -29,8 +29,12 @@ public class ConfusionMatrix extends Iced {
    *  never predicted).  Actuals with NAs are not scored, and their predictions
    *  ignored. */
   public static ConfusionMatrix buildCM(Vec actuals, Vec predictions) {
-    if (!actuals.isCategorical()) throw new IllegalArgumentException("actuals must be categorical.");
-    if (!predictions.isCategorical()) throw new IllegalArgumentException("predictions must be categorical.");
+    if (!actuals.isCategorical()) {
+    	throw new IllegalArgumentException("actuals must be categorical.");
+    }
+    if (!predictions.isCategorical()) {
+    	throw new IllegalArgumentException("predictions must be categorical.");
+    }
     Scope.enter();
     try {
       Vec adapted = predictions.adaptTo(actuals.domain());
@@ -47,13 +51,15 @@ public class ConfusionMatrix extends Iced {
     double _arr[/*actuals*/][/*predicted*/];
     CMBuilder(int len) { _len = len; }
     @Override public void map( Chunk ca, Chunk cp ) {
-      if (_len > MAX_CM_CLASSES) return;
+      if (_len > MAX_CM_CLASSES) {
+    	  return;
+      }
       // After adapting frames, the Actuals have all the levels in the
       // prediction results, plus any extras the model was never trained on.
       // i.e., Actual levels are at least as big as the predicted levels.
       _arr = new double[_len][_len];
       for( int i=0; i < ca._len; i++ )
-        if( !ca.isNA(i) )
+        if( !ca.isNA(i) ) {
           _arr[(int)ca.at8(i)][(int)cp.at8(i)]++;
     }
     @Override public void reduce( CMBuilder cm ) {
@@ -69,7 +75,9 @@ public class ConfusionMatrix extends Iced {
   boolean tooLarge() { return size() > MAX_CM_CLASSES; }
 
   public final double mean_per_class_error() {
-    if(tooLarge())throw new UnsupportedOperationException("mean per class error cannot be computed: too many classes");
+    if(tooLarge()) {
+    	throw new UnsupportedOperationException("mean per class error cannot be computed: too many classes");
+    }
     double err = 0;
     for( int d = 0; d < _cm.length; ++d )
       err += class_error(d); //can be 0 if no actuals, but we're still dividing by the total count of classes
@@ -82,9 +90,13 @@ public class ConfusionMatrix extends Iced {
   }
 
   public final double class_error(int c) {
-    if(tooLarge())throw new UnsupportedOperationException("class errors cannot be computed: too many classes");
+    if(tooLarge()) {
+    	throw new UnsupportedOperationException("class errors cannot be computed: too many classes");
+    }
     double s = ArrayUtils.sum(_cm[c]);
-    if( s == 0 ) return 0.0;    // Either 0 or NaN, but 0 is nicer
+    if( s == 0 ) {
+    	return 0.0;    // Either 0 or NaN, but 0 is nicer
+    }
     return (s - _cm[c][c]) / s;
   }
   public double total_rows() {
@@ -95,7 +107,7 @@ public class ConfusionMatrix extends Iced {
   }
 
   public void add(ConfusionMatrix other) {
-    if (_cm != null && other._cm != null)
+    if (_cm != null && other._cm != null) {
       ArrayUtils.add(_cm, other._cm);
   }
 
@@ -103,7 +115,9 @@ public class ConfusionMatrix extends Iced {
    * @return overall classification error
    */
   public double err() {
-    if(tooLarge())throw new UnsupportedOperationException("error cannot be computed: too many classes");
+    if(tooLarge()) {
+    	throw new UnsupportedOperationException("error cannot be computed: too many classes");
+    }
     double n = total_rows();
     double err = n;
     for( int d = 0; d < _cm.length; ++d )
@@ -111,7 +125,9 @@ public class ConfusionMatrix extends Iced {
     return err / n;
   }
   public double err_count() {
-    if(tooLarge())throw new UnsupportedOperationException("error count cannot be computed: too many classes");
+    if(tooLarge()) {
+    	throw new UnsupportedOperationException("error count cannot be computed: too many classes");
+    }
     double err = total_rows();
     for( int d = 0; d < _cm.length; ++d )
       err -= _cm[d][d];
@@ -127,8 +143,12 @@ public class ConfusionMatrix extends Iced {
    * @return TNR / Specificity
    */
   public double specificity() {
-    if(!isBinary())throw new UnsupportedOperationException("specificity is only implemented for 2 class problems.");
-    if(tooLarge())throw new UnsupportedOperationException("specificity cannot be computed: too many classes");
+    if(!isBinary()) {
+    	throw new UnsupportedOperationException("specificity is only implemented for 2 class problems.");
+    }
+    if(tooLarge()) {
+    	throw new UnsupportedOperationException("specificity cannot be computed: too many classes");
+    }
     double tn = _cm[0][0];
     double fp = _cm[0][1];
     return tn / (tn + fp);
@@ -138,8 +158,12 @@ public class ConfusionMatrix extends Iced {
    * @return Recall / TPR / Sensitivity
    */
   public double recall() {
-    if(!isBinary())throw new UnsupportedOperationException("recall is only implemented for 2 class problems.");
-    if(tooLarge())throw new UnsupportedOperationException("recall cannot be computed: too many classes");
+    if(!isBinary()) {
+    	throw new UnsupportedOperationException("recall is only implemented for 2 class problems.");
+    }
+    if(tooLarge()) {
+    	throw new UnsupportedOperationException("recall cannot be computed: too many classes");
+    }
     double tp = _cm[1][1];
     double fn = _cm[1][0];
     return tp / (tp + fn);
@@ -149,8 +173,12 @@ public class ConfusionMatrix extends Iced {
    * @return Precision
    */
   public double precision() {
-    if(!isBinary())throw new UnsupportedOperationException("precision is only implemented for 2 class problems.");
-    if(tooLarge())throw new UnsupportedOperationException("precision cannot be computed: too many classes");
+    if(!isBinary()) {
+    	throw new UnsupportedOperationException("precision is only implemented for 2 class problems.");
+    }
+    if(tooLarge()) {
+    	throw new UnsupportedOperationException("precision cannot be computed: too many classes");
+    }
     double tp = _cm[1][1];
     double fp = _cm[0][1];
     return tp / (tp + fp);
@@ -162,8 +190,12 @@ public class ConfusionMatrix extends Iced {
    * @return mcc ranges from -1 (total disagreement) ... 0 (no better than random) ... 1 (perfect)
    */
   public double mcc() {
-    if(!isBinary())throw new UnsupportedOperationException("mcc is only implemented for 2 class problems.");
-    if(tooLarge())throw new UnsupportedOperationException("mcc cannot be computed: too many classes");
+    if(!isBinary()) {
+    	throw new UnsupportedOperationException("mcc is only implemented for 2 class problems.");
+    }
+    if(tooLarge()) {
+    	throw new UnsupportedOperationException("mcc cannot be computed: too many classes");
+    }
     double tn = _cm[0][0];
     double fp = _cm[0][1];
     double tp = _cm[1][1];
@@ -176,8 +208,12 @@ public class ConfusionMatrix extends Iced {
    */
   public double max_per_class_error() {
     int n = nclasses();
-    if(n == 0)throw new UnsupportedOperationException("max per class error is only defined for classification problems");
-    if(tooLarge())throw new UnsupportedOperationException("max per class error cannot be computed: too many classes");
+    if(n == 0) {
+    	throw new UnsupportedOperationException("max per class error is only defined for classification problems");
+    }
+    if(tooLarge()) {
+    	throw new UnsupportedOperationException("max per class error cannot be computed: too many classes");
+    }
     double res = class_error(0);
     for(int i = 1; i < n; ++i)
       res = Math.max(res, class_error(i));
@@ -227,9 +263,9 @@ public class ConfusionMatrix extends Iced {
   private static String[] createConfusionMatrixHeader( double xs[], String ds[] ) {
     String ss[] = new String[xs.length]; // the same length
     for( int i=0; i<xs.length; i++ )
-      if( xs[i] >= 0 || (ds[i] != null && ds[i].length() > 0) && !Double.toString(i).equals(ds[i]) )
+      if( xs[i] >= 0 || (ds[i] != null && ds[i].length() > 0) && !Double.toString(i).equals(ds[i]) ) {
         ss[i] = ds[i];
-    if( ds.length == xs.length-1 && xs[xs.length-1] > 0 )
+    if( ds.length == xs.length-1 && xs[xs.length-1] > 0 ) {
       ss[xs.length-1] = "NA";
     return ss;
   }
@@ -242,8 +278,12 @@ public class ConfusionMatrix extends Iced {
 
   // Do the work making a TwoDimTable
   private TwoDimTable toTable() {
-    if (tooLarge()) return null;
-    if (_cm == null || _domain == null) return null;
+    if (tooLarge()) {
+    	return null;
+    }
+    if (_cm == null || _domain == null) {
+    	return null;
+    }
     for( double cm[] : _cm ) assert(_cm.length == cm.length);
     // Sum up predicted & actuals
     double acts [] = new double[_cm.length];
@@ -283,12 +323,18 @@ public class ConfusionMatrix extends Iced {
     double terr = 0;
     int width = 0;
     for (int a = 0; a < _cm.length; a++) {
-      if (adomain[a] == null) continue;
+      if (adomain[a] == null) {
+    	  continue;
+      }
       double correct = 0;
       for (int p = 0; p < pdomain.length; p++) {
-        if (pdomain[p] == null) continue;
+        if (pdomain[p] == null) {
+        	continue;
+        }
         boolean onDiag = adomain[a].equals(pdomain[p]);
-        if (onDiag) correct = _cm[a][p];
+        if (onDiag) {
+        	correct = _cm[a][p];
+        }
       }
       double err = acts[a] - correct;
       terr += err;
@@ -330,8 +376,10 @@ public class ConfusionMatrix extends Iced {
 
     // Last row of CM
     for (int p = 0; p < pdomain.length; p++) {
-      if (pdomain[p] == null) continue;
-      if (isInt)
+      if (pdomain[p] == null) {
+    	  continue;
+      }
+      if (isInt) {
         table.set(adomain.length, p, (long)preds[p]);
       else
         table.set(adomain.length, p, preds[p]);

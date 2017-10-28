@@ -110,7 +110,7 @@ public class VecUtils {
       int min = (int) src.min(), max = (int) src.max();
       // try to do the fast domain collection
       long dom[] = (min >= 0 && max < Integer.MAX_VALUE - 4) ? new CollectDomainFast(max).doAll(src).domain() : new CollectIntegerDomain().doAll(src).domain();
-      if (dom.length > Categorical.MAX_CATEGORICAL_COUNT)
+      if (dom.length > Categorical.MAX_CATEGORICAL_COUNT) {
         throw new H2OIllegalArgumentException("Column domain is too large to be represented as an categorical: " + dom.length + " > " + Categorical.MAX_CATEGORICAL_COUNT);
       return copyOver(src, Vec.T_CAT, dom);
     } else if(src.isNumeric()){
@@ -123,7 +123,7 @@ public class VecUtils {
         @Override public void map(Chunk c0, Chunk c1){
           for(int r = 0; r < c0._len; ++r){
             double d = c0.atd(r);
-            if(Double.isNaN(d))
+            if(Double.isNaN(d)) {
               c1.setNA(r);
             else
               c1.set(r,Arrays.binarySearch(dom,d));
@@ -186,7 +186,9 @@ public class VecUtils {
    * @return a numeric {@link Vec}
    */
   public static Vec stringToNumeric(Vec src) {
-    if(!src.isString()) throw new H2OIllegalArgumentException("stringToNumeric conversion only works on string columns");
+    if(!src.isString()) {
+    	throw new H2OIllegalArgumentException("stringToNumeric conversion only works on string columns");
+    }
     Vec res = new MRTask() {
       @Override public void map(Chunk chk, NewChunk newChk){
         if (chk instanceof C0DChunk) { // all NAs
@@ -234,8 +236,12 @@ public class VecUtils {
    * @return a numeric {@link Vec}
    */
   public static Vec categoricalToInt(final Vec src) {
-    if( src.isInt() && (src.domain()==null || src.domain().length == 0)) return copyOver(src, Vec.T_NUM, null);
-    if( !src.isCategorical() ) throw new IllegalArgumentException("categoricalToInt conversion only works on categorical columns.");
+    if( src.isInt() && (src.domain()==null || src.domain().length == 0)) {
+    	return copyOver(src, Vec.T_NUM, null);
+    }
+    if( !src.isCategorical() ) {
+    	throw new IllegalArgumentException("categoricalToInt conversion only works on categorical columns.");
+    }
     // check if the 1st lvl of the domain can be parsed as int
     boolean useDomain=false;
     Vec newVec = copyOver(src, Vec.T_NUM, null);
@@ -249,7 +255,7 @@ public class VecUtils {
       new MRTask() {
         @Override public void map(Chunk c) {
           for (int i=0;i<c._len;++i)
-            if( !c.isNA(i) )
+            if( !c.isNA(i) ) {
               c.set(i, Integer.parseInt(src.domain()[(int)c.at8(i)]));
         }
       }.doAll(newVec);
@@ -300,7 +306,7 @@ public class VecUtils {
    * @return a string {@link Vec}
    */
   public static Vec categoricalToStringVec(Vec src) {
-    if( !src.isCategorical() )
+    if( !src.isCategorical() ) {
       throw new H2OIllegalValueException("Can not convert a non-categorical column"
           + " using categoricalToStringVec().",src);
     return new Categorical2StrChkTask(src.domain()).doAll(Vec.T_STR,src).outputFrame().anyVec();
@@ -311,7 +317,7 @@ public class VecUtils {
     Categorical2StrChkTask(String[] domain) { _domain=domain; }
     @Override public void map(Chunk c, NewChunk nc) {
       for(int i=0;i<c._len;++i)
-        if (!c.isNA(i))
+        if (!c.isNA(i)) {
           nc.addStr(_domain == null ? "" + c.at8(i) : _domain[(int) c.at8(i)]);
         else
           nc.addNA();
@@ -328,7 +334,7 @@ public class VecUtils {
    * @return a string {@link Vec}
    */
   public static Vec numericToStringVec(Vec src) {
-    if (src.isCategorical() || src.isUUID())
+    if (src.isCategorical() || src.isUUID()) {
       throw new H2OIllegalValueException("Cannot convert a non-numeric column"
           + " using numericToStringVec() ",src);
     Vec res = new MRTask() {
@@ -339,7 +345,7 @@ public class VecUtils {
             newChk.addNA();
         } else {
           for (int i=0; i < chk._len; i++) {
-            if (!chk.isNA(i))
+            if (!chk.isNA(i)) {
               newChk.addStr(PrettyPrint.number(chk, chk.atd(i), 4));
             else
               newChk.addNA();
@@ -368,7 +374,7 @@ public class VecUtils {
             newChk.addNA();
         } else {
           for (int i=0; i < chk._len; i++) {
-            if (!chk.isNA(i))
+            if (!chk.isNA(i)) {
               newChk.addStr(PrettyPrint.UUID(chk.at16l(i), chk.at16h(i)));
             else
               newChk.addNA();
@@ -391,12 +397,14 @@ public class VecUtils {
    * @return a numeric {@link Vec}
    */
   public static Vec categoricalDomainsToNumeric(final Vec src) {
-    if( !src.isCategorical() ) throw new H2OIllegalArgumentException("categoricalToNumeric() conversion only works on categorical columns");
+    if( !src.isCategorical() ) {
+    	throw new H2OIllegalArgumentException("categoricalToNumeric() conversion only works on categorical columns");
+    }
     // check if the 1st lvl of the domain can be parsed as int
     return new MRTask() {
         @Override public void map(Chunk c) {
           for (int i=0;i<c._len;++i)
-            if( !c.isNA(i) )
+            if( !c.isNA(i) ) {
               c.set(i, Integer.parseInt(src.domain()[(int)c.at8(i)]));
         }
       }.doAll(Vec.T_NUM, src).outputFrame().anyVec();
@@ -412,7 +420,7 @@ public class VecUtils {
     public CollectDoubleDomain(double [] knownDomain, int maxDomainSize) {
       _maxDomain = maxDomainSize;
       _sortedKnownDomain = knownDomain == null?null:knownDomain.clone();
-      if(_sortedKnownDomain != null && !ArrayUtils.isSorted(knownDomain))
+      if(_sortedKnownDomain != null && !ArrayUtils.isSorted(knownDomain)) {
         Arrays.sort(_sortedKnownDomain);
     }
 
@@ -429,13 +437,15 @@ public class VecUtils {
       return res;
     }
     private IcedDouble addValue(IcedDouble val){
-      if(Double.isNaN(val._val)) return val;
-      if(_sortedKnownDomain != null && Arrays.binarySearch(_sortedKnownDomain,val._val) >= 0)
+      if(Double.isNaN(val._val)) {
+    	  return val;
+      }
+      if(_sortedKnownDomain != null && Arrays.binarySearch(_sortedKnownDomain,val._val) >= 0) {
         return val; // already known value
       if (!_uniques.containsKey(val)) {
         _uniques.put(val,_placeHolder);
         val = new IcedDouble(0);
-        if(_uniques.size() > _maxDomain)
+        if(_uniques.size() > _maxDomain) {
           throw new RuntimeException("Too many unique values. Expected |uniques| < " + _maxDomain + ", already got " + _uniques.size());
       }
       return val;
@@ -444,12 +454,14 @@ public class VecUtils {
       IcedDouble val = new IcedDouble(0);
       for( int row=ys.nextNZ(-1); row< ys._len; row = ys.nextNZ(row) )
         val = addValue(val.setVal(ys.atd(row)));
-      if(ys.isSparseZero())
+      if(ys.isSparseZero()) {
         addValue(val.setVal(0));
     }
     @Override public void reduce(CollectDoubleDomain mrt) {
-      if( _uniques != mrt._uniques ) _uniques.putAll(mrt._uniques);
-      if(_uniques.size() > _maxDomain)
+      if( _uniques != mrt._uniques ) {
+    	  _uniques.putAll(mrt._uniques);
+      }
+      if(_uniques.size() > _maxDomain) {
         throw new RuntimeException("Too many unique values. Expected |uniques| < " + _maxDomain + ", already got " + _uniques.size());
     }
   }
@@ -463,12 +475,14 @@ public class VecUtils {
     @Override protected void setupLocal() { _uniques = new NonBlockingHashMapLong<>(); }
     @Override public void map(Chunk ys) {
       for( int row=0; row< ys._len; row++ )
-        if( !ys.isNA(row) )
+        if( !ys.isNA(row) ) {
           _uniques.put(ys.at8(row), "");
     }
 
     @Override public void reduce(CollectIntegerDomain mrt) {
-      if( _uniques != mrt._uniques ) _uniques.putAll(mrt._uniques);
+      if( _uniques != mrt._uniques ) {
+    	  _uniques.putAll(mrt._uniques);
+      }
     }
 
     public final AutoBuffer write_impl( AutoBuffer ab ) {
@@ -479,7 +493,9 @@ public class VecUtils {
       long ls[] = ab.getA8();
       assert _uniques == null || _uniques.size()==0; // Only receiving into an empty (shared) NBHM
       _uniques = new NonBlockingHashMapLong<>();
-      if( ls != null ) for( long l : ls ) _uniques.put(l, "");
+      if( ls != null ) {
+    	  for( long l : ls ) _uniques.put(l, "");
+      }
       return this;
     }
     @Override public final void copyOver(CollectIntegerDomain that) {
@@ -559,7 +575,7 @@ public class VecUtils {
       _d=MemoryManager.malloc8(c);
       int id=0;
       for (int i = 0; i < _u.length;++i)
-        if (_u[i])
+        if (_u[i]) {
           _d[id++]=i;
       Arrays.sort(_d); //is this necessary? 
     }
@@ -590,11 +606,11 @@ public class VecUtils {
     @Override public void map(Chunk c, NewChunk nc) {
       for(int i=0;i<c._len;++i) {
         if( c.isNA(i) ) { nc.addNA(); continue; }
-        if( _domain == null )
+        if( _domain == null ) {
           nc.addNum(c.at8(i));
         else {
           long num = Arrays.binarySearch(_domain,c.at8(i));  // ~24 hits in worst case for 10M levels
-          if( num < 0 )
+          if( num < 0 ) {
             throw new IllegalArgumentException("Could not find the categorical value!");
           nc.addNum(num);
         }
@@ -645,12 +661,16 @@ public class VecUtils {
     }
   }
   public static int [] getLocalChunkIds(Vec v){
-    if(v._cids != null) return v._cids;
+    if(v._cids != null) {
+    	return v._cids;
+    }
     int [] res = new int[Math.max(v.nChunks()/H2O.CLOUD.size(),1)];
     int j = 0;
     for(int i = 0; i < v.nChunks(); ++i){
       if(v.isHomedLocally(i)) {
-        if(res.length == j) res = Arrays.copyOf(res,2*res.length);
+        if(res.length == j) {
+        	res = Arrays.copyOf(res,2*res.length);
+        }
         res[j++] = i;
       }
     }
@@ -677,12 +697,20 @@ public class VecUtils {
       wcounts = new double[_len]; // no larger than 1M elements, so OK to replicate per thread (faster)
       meanWeightedResponse = new double[_len];
       for (int i=0; i<c._len; ++i) {
-        if (c.isNA(i)) continue;
+        if (c.isNA(i)) {
+        	continue;
+        }
         int level = (int)c.at8(i);
-        if (w.isNA(i)) continue;
+        if (w.isNA(i)) {
+        	continue;
+        }
         double weight = w.atd(i);
-        if (weight == 0) continue;
-        if (r.isNA(i)) continue;
+        if (weight == 0) {
+        	continue;
+        }
+        if (r.isNA(i)) {
+        	continue;
+        }
         double response = r.atd(i);
         wcounts[level] += weight;
         meanWeightedResponse[level] += weight*response;
@@ -721,7 +749,9 @@ public class VecUtils {
     @Override
     public void map(Chunk c, NewChunk nc) {
       for (int i=0;i<c._len;++i) {
-        if (c.isNA(i)) nc.addNA();
+        if (c.isNA(i)) {
+        	nc.addNA();
+        }
         else nc.addNum(_map[(int)c.at8(i)], 0);
       }
     }

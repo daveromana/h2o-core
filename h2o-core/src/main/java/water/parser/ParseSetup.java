@@ -152,7 +152,9 @@ public class ParseSetup extends Iced {
   public byte[] getColumnTypes() { return _column_types; }
 
   public static byte[] strToColumnTypes(String[] strs) {
-    if (strs == null) return null;
+    if (strs == null) {
+    	return null;
+    }
     byte[] types = new byte[strs.length];
     for(int i=0; i< types.length;i++) {
       switch (strs[i].toLowerCase()) {
@@ -208,10 +210,14 @@ public class ParseSetup extends Iced {
   // Set of duplicated column names
   HashSet<String> checkDupColumnNames() {
     HashSet<String> conflictingNames = new HashSet<>();
-    if( null==_column_names ) return conflictingNames;
+    if( null==_column_names ) {
+    	return conflictingNames;
+    }
     HashSet<String> uniqueNames = new HashSet<>();
     for( String n : _column_names)
-      if( !uniqueNames.add(n) ) conflictingNames.add(n);
+      if( !uniqueNames.add(n) ) {
+    	  conflictingNames.add(n);
+      }
     return conflictingNames;
   }
 
@@ -227,8 +233,12 @@ public class ParseSetup extends Iced {
         return false;       // Number in 1st row guesses: No Column Header
       } catch (NumberFormatException e) { /*Pass - determining if number is possible*/ }
       str.set(s);
-      if(ParseTime.isTime(str)) return false;
-      if(ParseUUID.isUUID(str)) return false;
+      if(ParseTime.isTime(str)) {
+    	  return false;
+      }
+      if(ParseUUID.isUUID(str)) {
+    	  return false;
+      }
     }
     return true;
   }
@@ -326,7 +336,9 @@ public class ParseSetup extends Iced {
     @Override public void map(Key key) {
       _file = key.toString();
       Iced ice = DKV.getGet(key);
-      if(ice == null) throw new H2OIllegalArgumentException("Missing data","Did not find any data under key " + key);
+      if(ice == null) {
+    	  throw new H2OIllegalArgumentException("Missing data","Did not find any data under key " + key);
+      }
       ByteVec bv = (ByteVec)(ice instanceof ByteVec ? ice : ((Frame)ice).vecs()[0]);
       byte [] bits = ZipUtil.getFirstUnzippedBytes(bv);
       // The bits can be null
@@ -348,7 +360,9 @@ public class ParseSetup extends Iced {
 
         // Compute the max line length (to help estimate the number of bytes to read per Parse map)
         _maxLineLength = maxLineLength(bits);
-        if (_maxLineLength==-1) throw new H2OIllegalArgumentException("The first 4MB of the data don't contain any line breaks. Cannot parse.");
+        if (_maxLineLength==-1) {
+        	throw new H2OIllegalArgumentException("The first 4MB of the data don't contain any line breaks. Cannot parse.");
+        }
 
         // only preview 1 DFLT_CHUNK_SIZE for ByteVecs, UploadFileVecs, compressed, and small files
 /*        if (ice instanceof ByteVec
@@ -406,7 +420,7 @@ public class ParseSetup extends Iced {
                   "Remaining files have been ignored.";
         }*/
       }
-      if (_gblSetup==null)
+      if (_gblSetup==null) {
         throw new RuntimeException("This H2O node couldn't find the file(s) to parse. Please check files and/or working directories.");
       _gblSetup.setFileName(FileUtils.keyToFileName(key));
     }
@@ -416,7 +430,9 @@ public class ParseSetup extends Iced {
      */
     @Override
     public void reduce(GuessSetupTsk other) {
-      if (other._empty) return;
+      if (other._empty) {
+    	  return;
+      }
 
       if (_gblSetup == null) {
         _empty = false;
@@ -432,7 +448,7 @@ public class ParseSetup extends Iced {
     @Override public void postGlobal() {
       if (_gblSetup._column_previews != null && !_gblSetup._parse_type.equals(ARFF_INFO)) {
         _gblSetup._column_types = _gblSetup._column_previews.guessTypes();
-        if (_userSetup._na_strings == null)
+        if (_userSetup._na_strings == null) {
           _gblSetup._na_strings = _gblSetup._column_previews.guessNAStrings(_gblSetup._column_types);
         else
           _gblSetup._na_strings = _userSetup._na_strings;
@@ -443,7 +459,9 @@ public class ParseSetup extends Iced {
     }
     private ParseSetup mergeSetups(ParseSetup setupA, ParseSetup setupB, String fileA, String fileB) {
       // FIXME: have a merge function defined on a specific parser setup (each parser setup is responsible for merge)
-      if (setupA == null) return setupB;
+      if (setupA == null) {
+    	  return setupB;
+      }
       if(setupA._parse_type.equals(DefaultParserProviders.SVMLight_INFO) && setupB._parse_type.equals(DefaultParserProviders.SVMLight_INFO)){
         // no merging for svm light, all columns are numeric and we take the max of number of columns (it's an estimate anyways)
         return setupA._number_columns >= setupB._number_columns?setupA:setupB;
@@ -453,7 +471,7 @@ public class ParseSetup extends Iced {
       mergedSetup._check_header = unifyCheckHeader(setupA._check_header, setupB._check_header);
 
       mergedSetup._separator = unifyColumnSeparators(setupA._separator, setupB._separator);
-      if (setupA._parse_type.equals(ARFF_INFO) && setupB._parse_type.equals(CSV_INFO))
+      if (setupA._parse_type.equals(ARFF_INFO) && setupB._parse_type.equals(CSV_INFO)) {
         ;// do nothing parse_type and col_types are already set correctly
       else if (setupA._parse_type.equals(CSV_INFO) && setupB._parse_type.equals(ARFF_INFO)) {
         mergedSetup._parse_type = ARFF_INFO;
@@ -473,7 +491,7 @@ public class ParseSetup extends Iced {
       }
       mergedSetup._errs = ArrayUtils.append(setupA._errs,setupB._errs);
       mergedSetup._fileNames = ArrayUtils.append(setupA._fileNames,setupB._fileNames);
-      if(mergedSetup._errs.length > 20)
+      if(mergedSetup._errs.length > 20) {
         mergedSetup._errs = Arrays.copyOf(mergedSetup._errs,20);
       return mergedSetup;
     }
@@ -481,13 +499,17 @@ public class ParseSetup extends Iced {
     private static int unifyCheckHeader(int chkHdrA, int chkHdrB){
       if (chkHdrA == GUESS_HEADER || chkHdrB == GUESS_HEADER)
         throw new ParseDataset.H2OParseException("Unable to determine header on a file. Not expected.");
-      if (chkHdrA == HAS_HEADER || chkHdrB == HAS_HEADER) return HAS_HEADER;
+      if (chkHdrA == HAS_HEADER || chkHdrB == HAS_HEADER) {
+    	  return HAS_HEADER;
+      }
       else return NO_HEADER;
 
     }
 
     private static byte unifyColumnSeparators(byte sepA, byte sepB) {
-      if( sepA == sepB) return sepA;
+      if( sepA == sepB) {
+    	  return sepA;
+      }
       else if (sepA == GUESS_SEP) return sepB;
       else if (sepB == GUESS_SEP) return sepA;
       // TODO: Point out which file is problem
@@ -496,7 +518,9 @@ public class ParseSetup extends Iced {
     }
 
     private int unifyColumnCount(int cntA, int cntB, ParseSetup mergedSetup, String fileA, String fileB) {
-      if (cntA == cntB) return cntA;
+      if (cntA == cntB) {
+    	  return cntA;
+      }
       else if (cntA == 0) return cntB;
       else if (cntB == 0) return cntA;
       else { // files contain different numbers of columns
@@ -509,7 +533,9 @@ public class ParseSetup extends Iced {
     }
 
     private static String[] unifyColumnNames(String[] namesA, String[] namesB){
-      if (namesA == null) return namesB;
+      if (namesA == null) {
+    	  return namesB;
+      }
       else if (namesB == null) return namesA;
       else {
         for (int i = 0; i < namesA.length; i++) {
@@ -526,7 +552,7 @@ public class ParseSetup extends Iced {
 
   private String file() {
     String [] names = _fileNames;
-    if(names.length > 5)
+    if(names.length > 5) {
       names = Arrays.copyOf(names,5);
     return Arrays.toString(names);
   }
@@ -568,7 +594,9 @@ public class ParseSetup extends Iced {
     // blahblahblah/myName.ext ==> myName
     // blahblahblah/myName.csv.ext ==> myName
     int sep = n.lastIndexOf(java.io.File.separatorChar);
-    if( sep > 0 ) n = n.substring(sep+1);
+    if( sep > 0 ) {
+    	n = n.substring(sep+1);
+    }
     int dot = n.lastIndexOf('.');
     while ( dot > 0 &&
             (n.endsWith("zip")
@@ -583,11 +611,13 @@ public class ParseSetup extends Iced {
       dot = n.lastIndexOf('.');
     }
     // "2012_somedata" ==> "X2012_somedata"
-    if( !Character.isJavaIdentifierStart(n.charAt(0)) ) n = "X"+n;
+    if( !Character.isJavaIdentifierStart(n.charAt(0)) ) {
+    	n = "X"+n;
+    }
     // "human%Percent" ==> "human_Percent"
     char[] cs = n.toCharArray();
     for( int i=1; i<cs.length; i++ )
-      if( !Character.isJavaIdentifierPart(cs[i]) )
+      if( !Character.isJavaIdentifierPart(cs[i]) ) {
         cs[i] = '_';
     // "myName" ==> "myName.hex"
     n = new String(cs);
@@ -666,10 +696,12 @@ public class ParseSetup extends Iced {
    * @return true - string is one of the column's NAs, false otherwise
    */
   public boolean isNA(int colIdx, BufferedString str) {
-    if (_na_strings == null || colIdx >= _na_strings.length || _na_strings[colIdx] == null)
+    if (_na_strings == null || colIdx >= _na_strings.length || _na_strings[colIdx] == null) {
       return false;
     for (String naStr : _na_strings[colIdx])
-      if (str.equalsAsciiString(naStr)) return true;
+      if (str.equalsAsciiString(naStr)) {
+    	  return true;
+      }
     return false;
   }
 

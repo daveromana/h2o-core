@@ -57,11 +57,17 @@ class XlsParser extends Parser {
   // Read & keep in _buf from the unpacked stream at least 'lim' bytes.
   // Toss a range-check if the stream runs dry too soon.
   private void readAtLeast(int lim) throws IOException{
-    if( lim <= _lim ) return;   // Already read at least
-    if( _buf == null ) _buf = new byte[0];
+    if( lim <= _lim ) {
+    	return;   // Already read at least
+    }
+    if( _buf == null ) {
+    	_buf = new byte[0];
+    }
     if( lim > _buf.length ) { // Need to grow buffer
       int oldlen = _buf.length,  newlen = oldlen;
-      if( newlen==0 ) newlen=1024;
+      if( newlen==0 ) {
+    	  newlen=1024;
+      }
       while( newlen < lim ) newlen<<=1;
       _buf = Arrays.copyOf(_buf,newlen);
     }
@@ -69,7 +75,7 @@ class XlsParser extends Parser {
     int x;
     while( _lim < lim && (x = _is.read(_buf,_lim,_buf.length-_lim)) != -1 )
       _lim += x;
-    if( _lim < lim )
+    if( _lim < lim ) {
       throw new java.lang.ArrayIndexOutOfBoundsException("not an XLS file: reading at "+lim+" but file is only "+_lim+" bytes");
   }
 
@@ -85,7 +91,7 @@ class XlsParser extends Parser {
     p._lim = bytes.length;
     PreviewParseWriter dout = new PreviewParseWriter();
     try{ p.streamParse(new ByteArrayInputStream(bytes), dout); } catch(IOException e) { throw new RuntimeException(e); }
-    if (dout._ncols > 0 && dout._nlines > 0 && dout._nlines > dout._invalidLines)
+    if (dout._ncols > 0 && dout._nlines > 0 && dout._nlines > dout._invalidLines) {
       return new ParseSetup(XLS_INFO, ParseSetup.GUESS_SEP, false,
             dout.colNames()==null?ParseSetup.NO_HEADER:ParseSetup.HAS_HEADER,dout._ncols,
                                  dout.colNames(), dout.guessTypes(),null,null,dout._data);
@@ -148,7 +154,7 @@ class XlsParser extends Parser {
     // Check for magic first
     readAtLeast(IDENTIFIER_OLE.length);
     for( int i=0; i<IDENTIFIER_OLE.length; i++ ) 
-      if( _buf[i] != IDENTIFIER_OLE[i] )
+      if( _buf[i] != IDENTIFIER_OLE[i] ) {
         throw new ParseDataset.H2OParseException("Not a valid XLS file, lacks correct starting bits (aka magic number).");
 
     _numBigBlockDepotBlocks = get4(NUM_BIG_BLOCK_DEPOT_BLOCKS_POS);
@@ -180,7 +186,9 @@ class XlsParser extends Parser {
       pos = (bigBlockDepotBlocks[i] + 1) * BIG_BLOCK_SIZE;
       for( int j = 0 ; j < BIG_BLOCK_SIZE / 4; j++ ) {
         _bigBlockChain[index++] = get4((pos+=4)-4);
-        if( index==_bigBlockChain.length ) _bigBlockChain = Arrays.copyOf(_bigBlockChain,index<<1);
+        if( index==_bigBlockChain.length ) {
+        	_bigBlockChain = Arrays.copyOf(_bigBlockChain,index<<1);
+        }
       }
     }
 
@@ -192,7 +200,9 @@ class XlsParser extends Parser {
       pos = (sbdBlock + 1) * BIG_BLOCK_SIZE;
       for( int j = 0; j < BIG_BLOCK_SIZE / 4; j++ ) {
         smallBlockChain[index++] = get4((pos+=4)-4);
-        if( index==smallBlockChain.length ) smallBlockChain = Arrays.copyOf(smallBlockChain,index<<1);
+        if( index==smallBlockChain.length ) {
+        	smallBlockChain = Arrays.copyOf(smallBlockChain,index<<1);
+        }
       }
       sbdBlock = _bigBlockChain[sbdBlock];
     }
@@ -203,7 +213,9 @@ class XlsParser extends Parser {
     Buf data = getWorkBook();
     // Parse the workbook
     boolean res = parseWorkbook(data,dout);
-    if( !res ) throw new IOException("not an XLS file");
+    if( !res ) {
+    	throw new IOException("not an XLS file");
+    }
 
     return dout;
   }
@@ -232,9 +244,9 @@ class XlsParser extends Parser {
       name = name.replaceAll("\0", ""); // remove trailing nul (C string?)
       Props p = new Props(name,type,startBlock,size);
       _props.add(p);
-      if( name.equalsIgnoreCase("workbook") || name.equalsIgnoreCase("book") )
+      if( name.equalsIgnoreCase("workbook") || name.equalsIgnoreCase("book") ) {
         _wrkbook = p;
-      if( name.equals("Root Entry") )
+      if( name.equals("Root Entry") ) {
         _rootentry = p;
       offset += PROPERTY_STORAGE_BLOCK_SIZE;
     }
@@ -254,7 +266,7 @@ class XlsParser extends Parser {
       return streamData;
     } else {
       int numBlocks = _wrkbook._size / BIG_BLOCK_SIZE;
-      if( _wrkbook._size % BIG_BLOCK_SIZE != 0 )
+      if( _wrkbook._size % BIG_BLOCK_SIZE != 0 ) {
         numBlocks++;
       Buf streamData = new Buf(_buf,0,0);
       if( numBlocks == 0 ) return streamData;

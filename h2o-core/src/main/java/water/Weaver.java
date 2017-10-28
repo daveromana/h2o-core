@@ -29,8 +29,12 @@ public class Weaver {
            H2O.H2OCountedCompleter.class.isAssignableFrom(clz) ) {
       for( Field f : clz.getDeclaredFields() ) {
         int mods = f.getModifiers();
-        if( Modifier.isTransient(mods) || Modifier.isStatic(mods) ) continue;
-        if( "_ice_id".equals(f.getName()) ) continue; // Strip the required typeid field
+        if( Modifier.isTransient(mods) || Modifier.isStatic(mods) ) {
+        	continue;
+        }
+        if( "_ice_id".equals(f.getName()) ) {
+        	continue; // Strip the required typeid field
+        }
         flds.add(f);
       }
       clz = clz.getSuperclass();
@@ -58,7 +62,9 @@ public class Weaver {
 
   static Class classForName(String className) throws ClassNotFoundException {
     ClassLoader c = CLASSLOADERS.get(className);  // was this class dynamically loaded?
-    if( c==null ) return Class.forName(className); // class not dynamically loaded, use Weaver's ClassLoader
+    if( c==null ) {
+    	return Class.forName(className); // class not dynamically loaded, use Weaver's ClassLoader
+    }
     return Class.forName(className,true,c);
   }
 
@@ -152,7 +158,7 @@ public class Weaver {
     fs.add(RPC.call(H2O.CLOUD.leader(), new LoadClazz(name,b))).blockForPending(); // leader node loads first
     new MRTask() {
       @Override public void setupLocal() {
-        if( H2O.SELF != H2O.CLOUD.leader() ) // already loaded on the leader, load all others
+        if( H2O.SELF != H2O.CLOUD.leader() ) { // already loaded on the leader, load all others
           new LoadClazz(name,b).compute2();
       }
     }.doAllNodes();
@@ -179,7 +185,9 @@ public class Weaver {
         ctc.defrost();
         ctc.detach();
         CtClass icer = _pool.getOrNull(implClazzName(name));
-        if( icer!=null ) icer.detach(); // drop the Icer
+        if( icer!=null ) {
+        	icer.detach(); // drop the Icer
+        }
         _pool.removeClassPath(CLASSPATHS.get(name));
         TypeMap.drop(name);  // drop the icer from the typemap
       }
@@ -231,7 +239,9 @@ public class Weaver {
     //noinspection SynchronizationOnLocalVariableOrMethodParameter
     synchronized( iced_clazz ) {
       icer_cc = _pool.getOrNull(icer_name); // Retry under lock
-      if( icer_cc != null ) return Class.forName(icer_name); // Found a pre-cooked Icer implementation
+      if( icer_cc != null ) {
+    	  return Class.forName(icer_name); // Found a pre-cooked Icer implementation
+      }
       icer_cc = genIcerClass(id,iced_cc,iced_clazz,icer_name,super_id,super_icer_cc,super_has_jfields);
       icer_cc.toClass(iced_clazz.getClassLoader());               // Load class (but does not link & init)
       return Class.forName(icer_name,true, iced_clazz.getClassLoader()); // Initialize class now, before subclasses
@@ -255,7 +265,7 @@ public class Weaver {
     boolean debug_print=false;
     CtField ctfs[] = iced_cc.getDeclaredFields();
     for( CtField ctf : ctfs ) debug_print |= ctf.getName().equals("DEBUG_WEAVER");
-    if( debug_print )
+    if( debug_print ) {
       System.out.println("class "+icer_cc.getName()+" extends "+super_icer.getName()+" {");
 
     // Make a copy of the enum array, for later deser
@@ -263,7 +273,7 @@ public class Weaver {
       CtClass ctft = ctf.getType();
       String name = ctf.getName();
       int mods = ctf.getModifiers();
-      if( javassist.Modifier.isTransient(mods) || javassist.Modifier.isStatic(mods) )
+      if( javassist.Modifier.isTransient(mods) || javassist.Modifier.isStatic(mods) ) {
         continue;  // Only serialize not-transient instance fields (not static)
       // Check for enum
       CtClass base = ctft;
@@ -289,7 +299,9 @@ public class Weaver {
               "    ab.put%z(ice.%s);\n"  ,  "    ab.put%z((%C)_unsafe.get%u(ice,%dL)); // %s\n",
               "    return ab;\n" +
               "  }");
-    if( debug_print ) System.out.println(debug);
+    if( debug_print ) {
+    	System.out.println(debug);
+    }
     String debugJ=
     make_body(icer_cc, iced_cc, iced_clazz, "writeJSON", "(supers?ab.put1(','):ab).", "    ab.put1(',').",
               "  protected final water.AutoBuffer writeJSON"+id+"(water.AutoBuffer ab, "+iced_name+" ice) {\n",
@@ -299,19 +311,25 @@ public class Weaver {
               "putJSON%z(\"%s\",ice.%s);\n"  ,  "putJSON%z(\"%s\",(%C)_unsafe.get%u(ice,%dL)); // %s\n"  ,
               "    return ab;\n" +
               "  }");
-    if( debug_print ) System.out.println(debugJ);
+    if( debug_print ) {
+    	System.out.println(debugJ);
+    }
 
     // The generic override method.  Called virtually at the start of a
     // serialization call.  Only calls thru to the named static method.
     String wbody = "  protected water.AutoBuffer write(water.AutoBuffer ab, water.Freezable ice) {\n"+
       "    return write"+id+"(ab,("+iced_name+")ice);\n"+
       "  }";
-    if( debug_print ) System.out.println(wbody);
+    if( debug_print ) {
+    	System.out.println(wbody);
+    }
     addMethod(wbody,icer_cc);
     String wbodyJ= "  protected water.AutoBuffer writeJSON(water.AutoBuffer ab, water.Freezable ice) {\n"+
       "    return writeJSON"+id+"(ab.put1('{'),("+iced_name+")ice).put1('}');\n"+
       "  }";
-    if( debug_print ) System.out.println(wbodyJ);
+    if( debug_print ) {
+    	System.out.println(wbodyJ);
+    }
     addMethod(wbodyJ,icer_cc);
 
 
@@ -335,7 +353,7 @@ public class Weaver {
               "    ice.%s = (%C)ab.get%z(%c.class);\n","    _unsafe.put%u(ice,%dL,(%C)ab.get%z(%c.class));  //%s\n",
               "    return ice;\n" +
               "  }");
-    if( debug_print )
+    if( debug_print ) {
       System.out.println(rbodyJ_impl);
 
     // The generic override method.  Called virtually at the start of a
@@ -343,24 +361,34 @@ public class Weaver {
     String rbody = "  protected water.Freezable read(water.AutoBuffer ab, water.Freezable ice) {\n"+
       "    return read"+id+"(ab,("+iced_name+")ice);\n"+
       "  }";
-    if( debug_print ) System.out.println(rbody);
+    if( debug_print ) {
+    	System.out.println(rbody);
+    }
     addMethod(rbody,icer_cc);
     String rbodyJ= "  protected water.Freezable readJSON(water.AutoBuffer ab, water.Freezable ice) {\n"+
       "    return readJSON"+id+"(ab,("+iced_name+")ice);\n"+
       "  }";
-    if( debug_print ) System.out.println(rbodyJ);
+    if( debug_print ) {
+    	System.out.println(rbodyJ);
+    }
     addMethod(rbodyJ,icer_cc);
 
     String cnbody = "  protected java.lang.String className() { return \""+iced_name+"\"; }";
-    if( debug_print ) System.out.println(cnbody);
+    if( debug_print ) {
+    	System.out.println(cnbody);
+    }
     addMethod(cnbody,icer_cc);
 
     String ftbody = "  protected int frozenType() { return "+id+"; }";
-    if( debug_print ) System.out.println(ftbody);
+    if( debug_print ) {
+    	System.out.println(ftbody);
+    }
     addMethod(ftbody,icer_cc);
 
     String cmp2 = "  protected void compute1( water.H2O.H2OCountedCompleter dt ) { dt.compute1(); }";
-    if( debug_print ) System.out.println(cmp2);
+    if( debug_print ) {
+    	System.out.println(cmp2);
+    }
     addMethod(cmp2,icer_cc);
 
     // DTasks need to be able to copy all their (non transient) fields from one
@@ -376,18 +404,24 @@ public class Weaver {
                   "    dst.%s = src.%s;\n","    _unsafe.put%u(dst,%dL,_unsafe.get%u(src,%dL));  //%s\n",
                   "    dst.%s = src.%s;\n","    _unsafe.put%u(dst,%dL,_unsafe.get%u(src,%dL));  //%s\n",
                   "  }");
-      if( debug_print ) System.out.println(cpbody_impl);
+      if( debug_print ) {
+    	  System.out.println(cpbody_impl);
+      }
     }
 
     String cstrbody = "  public "+icer_cc.getSimpleName()+"( "+iced_name+" iced) { super(iced); }";
-    if( debug_print ) System.out.println(cstrbody);
+    if( debug_print ) {
+    	System.out.println(cstrbody);
+    }
     try {
       icer_cc.addConstructor(CtNewConstructor.make(cstrbody,icer_cc));
     } catch( CannotCompileException ce ) {
       System.err.println("--- Compilation failure while compiling "+icer_cc.getName()+"\n"+cstrbody+"\n------\n"+ce);
       throw ce;
     }
-    if( debug_print ) System.out.println("}");
+    if( debug_print ) {
+    	System.out.println("}");
+    }
 
     return icer_cc;
   }
@@ -435,7 +469,7 @@ public class Weaver {
             throw barf(iced_cc," Custom serialization methods must be declared either static or final. Failed for method " + mimpl);
         // If the custom serializer is actually abstract, then do nothing - it
         // must be (re)implemented in all child classes which will Do The Right Thing.
-        if( javassist.Modifier.isAbstract(mods) || javassist.Modifier.isVolatile(mods) )
+        if( javassist.Modifier.isAbstract(mods) || javassist.Modifier.isVolatile(mods) ) {
           sb.append(impl.startsWith("write") ? "    return ab;\n  }" : "    return ice;\n  }");
         else {
           if (!supers.isEmpty() && impl.equals("writeJSON")) {
@@ -455,12 +489,14 @@ public class Weaver {
     // For all fields...
     CtField ctfs[] = iced_cc.getDeclaredFields();
     for( CtField ctf : ctfs ) {
-      if( mimpl == null ) break; // Custom serializer, do not dump fields
+      if( mimpl == null ) {
+    	  break; // Custom serializer, do not dump fields
+      }
       int mods = ctf.getModifiers();
-      if( javassist.Modifier.isTransient(mods) || javassist.Modifier.isStatic(mods) )
+      if( javassist.Modifier.isTransient(mods) || javassist.Modifier.isStatic(mods) ) {
         continue;  // Only serialize not-transient instance fields (not static)
-      if (ctf.hasAnnotation(API.class))
-        if( ((API)ctf.getAvailableAnnotations()[0]).json() == false )
+      if (ctf.hasAnnotation(API.class)) {
+        if( ((API)ctf.getAvailableAnnotations()[0]).json() == false ) {
           continue;
       if( field_sep1 != null ) { sb.append(field_sep1); field_sep1 = null; }
       else if( field_sep2 != null ) sb.append(field_sep2);
@@ -474,7 +510,9 @@ public class Weaver {
       // package, so public,protected and package-private all have sufficient
       // access, only private is a problem.
       boolean can_access = !javassist.Modifier.isPrivate(mods);
-      if( (impl.equals("read") || impl.equals("copyOver")) && javassist.Modifier.isFinal(mods) ) can_access = false;
+      if( (impl.equals("read") || impl.equals("copyOver")) && javassist.Modifier.isFinal(mods) ) {
+    	  can_access = false;
+      }
       long off = _unsafe.objectFieldOffset(iced_clazz.getDeclaredField(ctf.getName()));
       int ftype = ftype(iced_cc, ctf.getSignature() ); // Field type encoding
       if( ftype%20 == 9 || ftype%20 == 11 ) {          // Iced/Objects
@@ -495,7 +533,7 @@ public class Weaver {
       subsub(sb, "%u", utype(ctf.getSignature())); // %u ==> unsafe type name
 
     }
-    if( mimpl != null )         // default auto-gen serializer?
+    if( mimpl != null )  {       // default auto-gen serializer?
       sb.append(trailer);
     String body = sb.toString();
     addMethod(body,icer_cc);
@@ -540,9 +578,15 @@ public class Weaver {
 
       String clz = sig.substring(1,sig.length()-1).replace('/', '.');
       CtClass argClass = _pool.get(clz);
-      if( argClass.subtypeOf(_pool.get("water.Freezable")) ) return 9;
-      if( argClass.subtypeOf(_enum) ) return 10;
-      if( argClass.subtypeOf(_serialize) ) return 11; // Uses Java Serialization
+      if( argClass.subtypeOf(_pool.get("water.Freezable")) ) {
+    	  return 9;
+      }
+      if( argClass.subtypeOf(_enum) ) {
+    	  return 10;
+      }
+      if( argClass.subtypeOf(_serialize) ) {
+    	  return 11; // Uses Java Serialization
+      }
       break;
     case '[':                   // Arrays
       return ftype(ct, sig.substring(1))+20; // Same as prims, plus 20

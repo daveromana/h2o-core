@@ -128,7 +128,9 @@ public class LinuxProcFileReader {
       pid = getProcessId();
       _pid = pid;
     }
-    catch (Exception ignore) {}
+    catch (Exception ignore) {
+    	System.out.println("The error is: " + ignore);
+    }
 
     File f = new File ("/proc/stat");
     if (! f.exists()) {
@@ -144,7 +146,9 @@ public class LinuxProcFileReader {
       parseProcessProcFile(_processData);
       parseProcessStatusFile(_processStatus);
     }
-    catch (Exception ignore) {}
+    catch (Exception ignore) {
+    	System.out.println("The error is: " + ignore);
+    }
   }
 
   /**
@@ -219,7 +223,9 @@ public class LinuxProcFileReader {
     try {
       _systemData = readFile(new File("/proc/stat"));
     }
-    catch (Exception ignore) {}
+    catch (Exception ignore) {
+    	System.out.println("The error is: " + ignore);
+    }
   }
 
   /**
@@ -279,7 +285,9 @@ public class LinuxProcFileReader {
         line = reader.readLine();
       }
     }
-    catch (Exception ignore) {}
+    catch (Exception ignore) {
+    	System.out.println("The error is: " + ignore);
+    }
   }
 
   private void readProcessProcFile(String pid) {
@@ -287,7 +295,9 @@ public class LinuxProcFileReader {
       String s = "/proc/" + pid + "/stat";
       _processData = readFile(new File(s));
     }
-    catch (Exception ignore) {}
+    catch (Exception ignore) {
+    	System.out.println("The error is: " + ignore);
+    }
   }
 
   private void parseProcessProcFile(String s) {
@@ -314,7 +324,9 @@ public class LinuxProcFileReader {
       _processTotalTicks = processUserTicks + processSystemTicks;
       _processRss = Long.parseLong(m.group(24));
     }
-    catch (Exception ignore) {}
+    catch (Exception ignore) {
+    	System.out.println("The error is: " + ignore);
+    }
   }
 
   private void readProcessNumOpenFds(String pid) {
@@ -326,7 +338,9 @@ public class LinuxProcFileReader {
         _processNumOpenFds = arr.length;
       }
     }
-    catch (Exception ignore) {}
+    catch (Exception ignore) {
+    	System.out.println("The error is: " + ignore);
+    }
   }
 
   private void readProcessStatusFile(String pid) {
@@ -334,7 +348,9 @@ public class LinuxProcFileReader {
       String s = "/proc/" + pid + "/status";
       _processStatus = readFile(new File(s));
     }
-    catch (Exception ignore) {}
+    catch (Exception ignore) {
+    	System.out.println("The error is: " + ignore);
+    }
   }
 
   private void parseProcessStatusFile(String s) {
@@ -348,7 +364,9 @@ public class LinuxProcFileReader {
       }
       _processCpusAllowed = numSetBitsHex(m.group(1));
     }
-    catch (Exception ignore) {}
+    catch (Exception ignore) {
+    	System.out.println("The error is: " + ignore);
+    }
   }
 
   /**

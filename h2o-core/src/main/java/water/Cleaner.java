@@ -98,17 +98,25 @@ class Cleaner extends Thread {
       // If lazy, store-to-disk things down to 1/2 the desired cache level
       // and anything older than 5 secs.
       boolean force = (h._cached >= DESIRED || !MemoryManager.CAN_ALLOC); // Forced to clean
-      if( force && diskFull )   // Try to clean the diskFull flag
+      if( force && diskFull ) {  // Try to clean the diskFull flag
         diskFull = isDiskFull();
       long clean_to_age = h.clean_to(force ? DESIRED : (DESIRED>>1));
       // If not forced cleaning, expand the cleaning age to allows Values
       // more than 5sec old
-      if( !force ) clean_to_age = Math.max(clean_to_age,now-5000);
-      if( DESIRED == -1 ) clean_to_age = now;  // Test mode: clean all
+      if( !force ) {
+    	  clean_to_age = Math.max(clean_to_age,now-5000);
+      }
+      if( DESIRED == -1 ) {
+    	  clean_to_age = now;  // Test mode: clean all
+      }
 
       // No logging if under memory pressure: can deadlock the cleaner thread
       String s = h+" DESIRED="+(DESIRED>>20)+"M dirtysince="+(now-dirty)+" force="+force+" clean2age="+(now-clean_to_age);
-      if( MemoryManager.canAlloc() ) Log.debug(s);
+      if( MemoryManager.canAlloc() ) { 
+    	  Log.debug(s);
+      }
+      
+      }
       else                           System.err.println(s);
       long cleaned = 0;         // Disk i/o bytes
       long freed = 0;           // memory freed bytes
@@ -122,13 +130,21 @@ class Cleaner extends Thread {
       for( int i=2; i<kvs.length; i += 2 ) {
         // In the raw backing array, Keys and Values alternate in slots
         Object ok = kvs[i], ov = kvs[i+1];
-        if( !(ok instanceof Key  ) ) continue; // Ignore tombstones and Primes and null's
-        if( !(ov instanceof Value) ) continue; // Ignore tombstones and Primes and null's
+        if( !(ok instanceof Key  ) ) {
+        	continue; // Ignore tombstones and Primes and null's
+        }
+        if( !(ov instanceof Value) ) {
+        	continue; // Ignore tombstones and Primes and null's
+        }
         Value val = (Value)ov;
         byte[] m = val.rawMem();
         Object p = val.rawPOJO();
-        if( m == null && p == null ) continue; // Nothing to throw out
-        if( val.isLockable() ) continue; // we do not want to throw out Lockables.
+        if( m == null && p == null ) {
+        	continue; // Nothing to throw out
+        }
+        if( val.isLockable() ) {
+        	continue; // we do not want to throw out Lockables.
+        }
         boolean isChunk = p instanceof Chunk && !((Chunk)p).isVolatile();
         // Ignore things younger than the required age.  In particular, do
         // not spill-to-disk all dirty things we find.
@@ -144,7 +160,9 @@ class Cleaner extends Thread {
           continue;             // Too young
         }
         // Spiller turned off?
-        if( !H2O.ARGS.cleaner ) continue;
+        if( !H2O.ARGS.cleaner ) {
+        	continue;
+        }
 
         // CNC - Memory cleaning turned off, except for Chunks
         // Too many POJOs are written to dynamically; cannot spill & reload
@@ -164,15 +182,21 @@ class Cleaner extends Thread {
             // attempt to write again.  (will retry next run when memory is low)
             diskFull = true;
           }
-          if( m == null ) m = val.rawMem();
-          if( m != null ) cleaned += m.length; // Accumulate i/o bytes
+          if( m == null ) {
+        	  m = val.rawMem();
+          }
+          if( m != null ) {
+        	  cleaned += m.length; // Accumulate i/o bytes
+          }
           io_ns += System.nanoTime() - now_ns; // Accumulate i/o time
         }
         // And, under pressure, free all
         if( isChunk && force && (val.isPersisted() || !((Key)ok).home()) ) {
           val.freeMem ();  if( m != null ) freed += val._max;  m = null;
           val.freePOJO();  if( p != null ) freed += val._max;  p = null;
-          if( isChunk ) freed -= val._max; // Double-counted freed mem for Chunks since val._pojo._mem & val._mem are the same.
+          if( isChunk ) {
+        	  freed -= val._max; // Double-counted freed mem for Chunks since val._pojo._mem & val._mem are the same.
+          }
         }
         // If we have both forms, toss the byte[] form - can be had by
         // serializing again.
@@ -192,12 +216,16 @@ class Cleaner extends Thread {
       MemoryManager.set_goals("postclean",false);
       // No logging if under memory pressure: can deadlock the cleaner thread
       String s2 = h+" diski_o="+PrettyPrint.bytes(cleaned)+", freed="+(freed>>20)+"M, DESIRED="+(DESIRED>>20)+"M";
-      if( MemoryManager.canAlloc() ) Log.debug(s1,s2);
+      if( MemoryManager.canAlloc() ) {
+    	  Log.debug(s1,s2);
+      }
       else                           System.err.println(s1+"\n"+s2);
       // For testing thread
       synchronized(this) {
         _did_sweep = true;
-        if( DESIRED == -1 ) DESIRED = 0; // Turn off test-mode after 1 sweep
+        if( DESIRED == -1 ) {
+        	DESIRED = 0; // Turn off test-mode after 1 sweep
+        }
         notifyAll(); // Wake up testing thread
       }
     }
@@ -214,9 +242,9 @@ class Cleaner extends Thread {
     // will be only computed into one-at-a-time.
     synchronized static Histo current( boolean force ) {
       final Histo h = H; // Grab current best histogram
-      if( !force && System.currentTimeMillis() < h._when+2000 )
+      if( !force && System.currentTimeMillis() < h._when+2000 ) {
         return h; // It is recent; use it
-      if( h != null && h._clean && _dirty==Long.MAX_VALUE )
+      if( h != null && h._clean && _dirty==Long.MAX_VALUE ) {
         return h; // No change to the K/V store, so no point
       // Use last oldest value for computing the next histogram in-place
       return (H = new Histo(h==null ? 0 : h._oldest)); // Record current best histogram & return it
@@ -256,19 +284,33 @@ class Cleaner extends Thread {
       for( int i=2; i<kvs.length; i += 2 ) {
         // In the raw backing array, Keys and Values alternate in slots
         Object ok = kvs[i], ov = kvs[i+1];
-        if( !(ok instanceof Key  ) ) continue; // Ignore tombstones and Primes and null's
-        if( !(ov instanceof Value) ) continue; // Ignore tombstones and Primes and null's
+        if( !(ok instanceof Key  ) ) {
+        	continue; // Ignore tombstones and Primes and null's
+        }
+        if( !(ov instanceof Value) ) {
+        	continue; // Ignore tombstones and Primes and null's
+        }
         Value val = (Value)ov;
         if( val.isNull() ) { Value.STORE_get(val._key); continue; } // Another flavor of NULL
         total += val._max;
-        if( val.isPersisted() ) swapped += val._max;
+        if( val.isPersisted() ) {
+        	swapped += val._max;
+        }
         int len = 0;
         byte[] m = val.rawMem();
         Object p = val.rawPOJO();
-        if( m != null ) len += val._max;
-        if( p != null ) len += val._max;
-        if( m != null && p instanceof Chunk ) len -= val._max; // Do not double-count Chunks
-        if( len == 0 ) continue;
+        if( m != null ) {
+        	len += val._max;
+        }
+        if( p != null ) {
+        	len += val._max;
+        }
+        if( m != null && p instanceof Chunk ) {
+        	len -= val._max; // Do not double-count Chunks
+        }
+        if( len == 0 ) {
+        	continue;
+        }
         cached += len; // Accumulate total amount of cached keys
 
         if( val._lastAccessedTime < oldest ) { // Found an older Value?
@@ -277,7 +319,9 @@ class Cleaner extends Thread {
         }
         // Compute histogram bucket
         int idx = (int)((val._lastAccessedTime - eldest)/_hStep);
-        if( idx < 0 ) idx = 0;
+        if( idx < 0 ) {
+        	idx = 0;
+        }
         else if( idx >= _hs.length ) idx = _hs.length-1;
         _hs[idx] += len;      // Bump histogram bucket
       }
@@ -293,12 +337,16 @@ class Cleaner extends Thread {
     // to throw out enough things to hit the desired cached memory level.
     long clean_to( long desired ) {
       long age = _eldest;       // Age of bucket zero
-      if( _cached < desired ) return age; // Already there; nothing to remove
+      if( _cached < desired ) {
+    	  return age; // Already there; nothing to remove
+      }
       long s = 0;               // Total amount toss out
       for( long t : _hs ) {     // For all buckets...
         s += t;                 // Raise amount tossed out
         age += _hStep;          // Raise age beyond which you need to go
-        if( _cached - s < desired ) break;
+        if( _cached - s < desired ) {
+        	break;
+        }
       }
       return age;
     }

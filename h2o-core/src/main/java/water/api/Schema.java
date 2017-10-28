@@ -119,7 +119,9 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
   }
 
   protected void init_meta() {
-    if (_schema_name != null) return;
+    if (_schema_name != null) {
+    	return;
+    }
     _schema_name = this.getClass().getSimpleName();
     _schema_version = extractVersionFromSchemaName(_schema_name);
     _schema_type = getImplClass().getSimpleName();
@@ -129,7 +131,9 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
    *  there's no version number at the end of the classname. */
   public static int extractVersionFromSchemaName(String clz_name) {
     int idx = clz_name.lastIndexOf('V');
-    if (idx == -1) return -1;
+    if (idx == -1) {
+    	return -1;
+    }
     try { return Integer.valueOf(clz_name.substring(idx+1)); }
     catch( NumberFormatException ex) { return -1; }
   }
@@ -213,7 +217,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
    *  reflection-base field-copying magic in PojoUtils. */
   public static Class<? extends Iced> getImplClass(Class<? extends Schema> clz) {
     Class<? extends Iced> impl_class = ReflectionUtils.findActualClassParameter(clz, 0);
-    if (null == impl_class)
+    if (null == impl_class) {
       Log.warn("Failed to find an impl class for Schema: " + clz);
     return impl_class;
   }
@@ -267,7 +271,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
 
         for (Field f : some_fields) {
           current = f;
-          if (null == fields.get(f.getName()))
+          if (null == fields.get(f.getName())) {
             fields.put(f.getName(), f);
         }
 
@@ -295,7 +299,9 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
         }
         // Only support a single annotation which is an API, and is required
         Annotation[] apis = f.getAnnotations();
-        if( apis.length == 0 ) throw H2O.fail("Broken internal schema; missing API annotation for field: " + key);
+        if( apis.length == 0 ) {
+        	throw H2O.fail("Broken internal schema; missing API annotation for field: " + key);
+        }
         API api = (API)apis[0];
         // Must have one of these set to be an input field
         if( api.direction() == API.Direction.OUTPUT ) {
@@ -317,7 +323,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
     if (checkRequiredFields) {
       for (Field f : fields.values()) {
         int mods = f.getModifiers();
-        if (Modifier.isTransient(mods) || Modifier.isStatic(mods))
+        if (Modifier.isTransient(mods) || Modifier.isStatic(mods)) {
           continue;             // Ignore transient & static
         try {
           API api = (API) f.getAnnotations()[0]; // TODO: is there a more specific way we can do this?
@@ -389,18 +395,28 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
   }
 
   static <E> Object parsePrimitve(String s, Class fclz) {
-    if (fclz.equals(String.class)) return s; // Strings already the right primitive type
-    if (fclz.equals(int.class)) return parseInteger(s, int.class);
-    if (fclz.equals(long.class)) return parseInteger(s, long.class);
-    if (fclz.equals(short.class)) return parseInteger(s, short.class);
+    if (fclz.equals(String.class)) {
+    	return s; // Strings already the right primitive type
+    }
+    if (fclz.equals(int.class)){
+    	 return parseInteger(s, int.class);
+    if (fclz.equals(long.class)) {
+    	return parseInteger(s, long.class);
+    if (fclz.equals(short.class)){
+    	 return parseInteger(s, short.class);
     if (fclz.equals(boolean.class)) {
-      if (s.equals("0")) return Boolean.FALSE;
-      if (s.equals("1")) return Boolean.TRUE;
+      if (s.equals("0")){
+      	 return Boolean.FALSE;
+      if (s.equals("1")) {
+      	return Boolean.TRUE;
       return Boolean.valueOf(s);
     }
-    if (fclz.equals(byte.class)) return parseInteger(s, byte.class);
-    if (fclz.equals(double.class)) return Double.valueOf(s);
-    if (fclz.equals(float.class)) return Float.valueOf(s);
+    if (fclz.equals(byte.class)) {
+    	return parseInteger(s, byte.class);
+    if (fclz.equals(double.class)){
+    	 return Double.valueOf(s);
+    if (fclz.equals(float.class)){
+    	 return Float.valueOf(s);
     //FIXME: if (fclz.equals(char.class)) return Character.valueOf(s);
     throw H2O.fail("Unknown primitive type to parse: " + fclz.getSimpleName());
   }
@@ -422,14 +438,15 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
       // Result
       E[] a = null;
       // Handle simple case with null-array
-      if (s.equals("null") || s.length() == 0) return null;
+      if (s.equals("null") || s.length() == 0){
+      	 return null;
       // Splitted values
       String[] splits; // "".split(",") => {""} so handle the empty case explicitly
       if (s.startsWith("[") && s.endsWith("]") ) { // It looks like an array
         read(s, 0, '[', fclz);
         read(s, s.length() - 1, ']', fclz);
         String inside = s.substring(1, s.length() - 1).trim();
-        if (inside.length() == 0)
+        if (inside.length() == 0) {
           splits = new String[]{};
         else
           splits = splitArgs(inside);
@@ -478,15 +495,18 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
       return gson.fromJson(s, fclz);
     }
 
-    if (fclz.equals(Key.class))
-      if ((s == null || s.length() == 0) && required) throw new H2OKeyNotFoundArgumentException(field_name, s);
+    if (fclz.equals(Key.class)) {
+      if ((s == null || s.length() == 0) && required){
+      	 throw new H2OKeyNotFoundArgumentException(field_name, s);
       else if (!required && (s == null || s.length() == 0)) return null;
       else
         return Key.make(s.startsWith("\"") ? s.substring(1, s.length() - 1) : s); // If the key name is in an array we need to trim surrounding quotes.
 
     if (KeyV3.class.isAssignableFrom(fclz)) {
-      if ((s == null || s.length() == 0) && required) throw new H2OKeyNotFoundArgumentException(field_name, s);
-      if (!required && (s == null || s.length() == 0)) return null;
+      if ((s == null || s.length() == 0) && required) {
+      	throw new H2OKeyNotFoundArgumentException(field_name, s);
+      if (!required && (s == null || s.length() == 0)) {
+      	return null;
 
       return KeyV3.make(fclz, Key.make(s.startsWith("\"") ? s.substring(1, s.length() - 1) : s)); // If the key name is in an array we need to trim surrounding quotes.
     }
@@ -497,23 +517,29 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
 
     // TODO: these can be refactored into a single case using the facilities in Schema:
     if (FrameV3.class.isAssignableFrom(fclz)) {
-      if ((s == null || s.length() == 0) && required) throw new H2OKeyNotFoundArgumentException(field_name, s);
+      if ((s == null || s.length() == 0) && required){
+      	 throw new H2OKeyNotFoundArgumentException(field_name, s);
       else if (!required && (s == null || s.length() == 0)) return null;
       else {
         Value v = DKV.get(s);
-        if (null == v) return null; // not required
-        if (!v.isFrame()) throw H2OIllegalArgumentException.wrongKeyType(field_name, s, "Frame", v.get().getClass());
+        if (null == v){
+        	 return null; // not required
+        if (!v.isFrame()) {
+        	throw H2OIllegalArgumentException.wrongKeyType(field_name, s, "Frame", v.get().getClass());
         return new FrameV3((Frame) v.get()); // TODO: version!
       }
     }
 
     if (JobV3.class.isAssignableFrom(fclz)) {
-      if ((s == null || s.length() == 0) && required) throw new H2OKeyNotFoundArgumentException(s);
+      if ((s == null || s.length() == 0) && required) {
+      	throw new H2OKeyNotFoundArgumentException(s);
       else if (!required && (s == null || s.length() == 0)) return null;
       else {
         Value v = DKV.get(s);
-        if (null == v) return null; // not required
-        if (!v.isJob()) throw H2OIllegalArgumentException.wrongKeyType(field_name, s, "Job", v.get().getClass());
+        if (null == v){
+        	 return null; // not required
+        if (!v.isJob()) {
+        	throw H2OIllegalArgumentException.wrongKeyType(field_name, s, "Job", v.get().getClass());
         return new JobV3().fillFromImpl((Job) v.get()); // TODO: version!
       }
     }
@@ -524,7 +550,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
       return new FrameV3.ColSpecifierV3(s);
     }
 
-    if (ModelSchemaV3.class.isAssignableFrom(fclz))
+    if (ModelSchemaV3.class.isAssignableFrom(fclz)) {
       throw H2O.fail("Can't yet take ModelSchemaV3 as input.");
     /*
       if( (s==null || s.length()==0) && required ) throw new IllegalArgumentException("Missing key");
@@ -565,7 +591,8 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
   }
 
   static private int read( String s, int x, char c, Class fclz ) {
-    if( peek(s,x,c) ) return x+1;
+    if( peek(s,x,c) ){
+    	 return x+1;
     throw new IllegalArgumentException("Expected '"+c+"' while reading a "+fclz.getSimpleName()+", but found "+s);
   }
   static private boolean peek( String s, int x, char c ) { return x < s.length() && s.charAt(x) == c; }
@@ -601,7 +628,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
         arg.append(sb.charAt(i));
       }
     }
-    if (arg.length() > 0)
+    if (arg.length() > 0) {
       splitArgList.add(arg.toString());
 
     return splitArgList.toArray(new String[splitArgList.size()]);
@@ -674,7 +701,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
             );
           }
         }
-        if (first)
+        if (first) {
           builder.paragraph("(none)");
       }
 
@@ -699,7 +726,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
                 (field_meta.is_mutually_exclusive_with == null ? "[]" : Arrays.toString(field_meta.is_mutually_exclusive_with)));
           }
         }
-        if (first)
+        if (first) {
           builder.paragraph("(none)");
       }
 

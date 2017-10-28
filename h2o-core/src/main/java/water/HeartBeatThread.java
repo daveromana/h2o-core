@@ -81,7 +81,10 @@ public class HeartBeatThread extends Thread {
         hb._system_load_average = ((Double)mbs.getAttribute(os, "SystemLoadAverage")).floatValue();
         if( hb._system_load_average == -1 )  // SystemLoadAverage not available on windows
           hb._system_load_average = ((Double)mbs.getAttribute(os, "SystemCpuLoad")).floatValue();
-      } catch( Exception e ) {/*Ignore, data probably not available on this VM*/ }
+      } catch( Exception e ) {
+    	  System.out.println("The error is: " + e);
+    	  /*Ignore, data probably not available on this VM*/ 
+    	  }
 
       int rpcs = 0;
       for( H2ONode h2o : cloud._memary )
@@ -125,7 +128,9 @@ public class HeartBeatThread extends Thread {
       try {
         hb._pid = Integer.parseInt(lpfr.getProcessID());
       }
-      catch (Exception ignore) {}
+      catch (Exception ignore) {
+    	  System.out.println("The error is: " + ignore);
+      }
 
       // Announce what Cloud we think we are in.
       // Publish our health as well.
@@ -165,8 +170,12 @@ public class HeartBeatThread extends Thread {
       // Once per second, for the entire cloud a Node will multi-cast publish
       // itself, so other unrelated Clouds discover each other and form up.
       try { Thread.sleep(SLEEP); } // Only once-sec per entire Cloud
-      catch( IllegalMonitorStateException ignore ) { }
-      catch( InterruptedException ignore ) { }
+      catch( IllegalMonitorStateException ignore ) { 
+    	  System.out.println("The error is: " + ignore);
+      }
+      catch( InterruptedException ignore ) { 
+    	  System.out.println("The error is: " + ignore);
+      }
     }
   }
 }
