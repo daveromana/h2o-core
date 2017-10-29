@@ -31,14 +31,20 @@ public class SetOfBytes {
   
   public int size() {
     int n = 0;
-    for (int b = 0; b < 256; b++) if (bits[b]) n++;
+    for (int b = 0; b < 256; b++)
+    	if (bits[b]) {
+    		n++;
+    	}
     return n;
   }
   
   public byte[] getBytes() {
     byte[] out = new byte[size()];
     int i = 0;
-    for (int b = 0; b < 256; b++) if (bits[b]) out[i++] = (byte)b;
+    for (int b = 0; b < 256; b++) 
+    	if (bits[b]) {
+    		out[i++] = (byte)b;
+    	}
     
     return out;
   }

@@ -15,7 +15,9 @@ public class GAUtils {
   public static void logRequest(String uri, Properties header) {
     if (H2O.GA != null && header != null) {
       // skip useless URIs
-      if (uri.contains("/NodePersistentStorage") || uri.contains("/Metadata")) return;
+      if (uri.contains("/NodePersistentStorage") || uri.contains("/Metadata")) {
+    	  return;
+      }
 
       // clean URIs that include names eg. /3/DKV/random_key_name -> /3/DKV/
       if (uri.contains("/Frames/") ||
@@ -24,15 +26,18 @@ public class GAUtils {
               uri.contains("/Models.java/") ||
               uri.contains("/Predictions/")) {
         int idx = StringUtils.ordinalIndexOf(uri, "/", 3);
-        if (idx > 0)
+        if (idx > 0) {
           uri = uri.substring(0, idx);
+          }
       }
 
       // post URI to GA
-      if (header.getProperty("user-agent") != null)
+      if (header.getProperty("user-agent") != null) {
         H2O.GA.postAsync(new ScreenViewHit(uri).customDimension(H2O.CLIENT_TYPE_GA_CUST_DIM, header.getProperty("user-agent")));
-      else
+        }
+      else {
         H2O.GA.postAsync(new ScreenViewHit(uri));
+        }
     }
   }
 
@@ -54,8 +59,9 @@ public class GAUtils {
         int cloudSize = H2O.CLOUD.size();
 
         H2O.GA.postAsync(new EventHit("System startup info", "Cloud", "Cloud size", cloudSize));
-        if (cloudSize > 1)
+        if (cloudSize > 1) {
           H2O.GA.postAsync(new EventHit("System startup info", "Cloud", "Multi-node cloud size", cloudSize));
+          }
         postRange("System startup info", "Cloud", "Cloud size", new int[]{2, 3, 4, 5, 10, 20, 30, 40, 50, 60}, cloudSize);
 
         if (H2O.ARGS.ga_hadoop_ver != null) {

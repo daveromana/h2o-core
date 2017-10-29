@@ -24,8 +24,10 @@ public class ValFrame extends Val {
    * @return Array of row elements.
    */
   @Override public double[] getRow() {
-    if (_fr.numRows() != 1)
-      throw new IllegalArgumentException("Trying to get a single row from a multirow frame: " + _fr.numRows() + "!=1");
+    if (_fr.numRows() != 1) {
+    	throw new IllegalArgumentException("Trying to get a single row from a multirow frame: " + _fr.numRows() + "!=1");
+    }
+      
 
     double res[] = new double[_fr.numCols()];
     for (int i = 0; i < _fr.numCols(); ++i)

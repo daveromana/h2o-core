@@ -18,7 +18,9 @@ public final class C8DVolatileChunk extends Chunk {
   public double [] getValues(){return _ds;}
   @Override protected final long   at8_impl( int i ) {
     double res = _ds[i];
-    if( Double.isNaN(res) ) throw new IllegalArgumentException("at8_abs but value is missing");
+    if( Double.isNaN(res) ) {
+    	throw new IllegalArgumentException("at8_abs but value is missing");
+    }
     return (long)res;
   }
   @Override protected final double   atd_impl( int i ) {
@@ -27,7 +29,9 @@ public final class C8DVolatileChunk extends Chunk {
   @Override protected final boolean isNA_impl( int i ) { return Double.isNaN(_ds[i]); }
   @Override boolean set_impl(int idx, long l) {
     double d = l;
-    if(d != l) return false;
+    if(d != l) {
+    	return false;
+    }
     _ds[idx] = d;
     return true;
   }

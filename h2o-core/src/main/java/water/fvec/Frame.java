@@ -235,7 +235,7 @@ public class Frame extends Lockable<Frame> {
   // name.  All other names take the O(n^2) lookup.
   private int pint( String name ) {
     try { return Integer.valueOf(name.substring(1)); }
-    catch(NumberFormatException ignored) { }
+    catch(NumberFormatException ignored) { System.out.println("The error is: " + ignored);}
     return 0;
   }
 

@@ -43,7 +43,9 @@ public class AstQtile extends AstPrimitive {
 
     parms._probs = ((AstNumList) asts[2]).expand();
     for (double d : parms._probs)
-      if (d < 0 || d > 1) throw new IllegalArgumentException("Probability must be between 0 and 1: " + d);
+      if (d < 0 || d > 1) {
+    	  throw new IllegalArgumentException("Probability must be between 0 and 1: " + d);
+      }
 
     String inter = asts[3].exec(env).getStr();
     parms._combine_method = QuantileModel.CombineMethod.valueOf(inter.toUpperCase());
@@ -60,14 +62,18 @@ public class AstQtile extends AstPrimitive {
     // Reshape all outputs as a Frame, with probs in col 0 and the
     // quantiles in cols 1 thru fr.numCols() - except the optional weights vec
     int ncols = fr.numCols();
-    if (parms._weights_column != null) ncols--;
+    if (parms._weights_column != null) {
+    	ncols--;
+    }
     Vec[] vecs = new Vec[1 /*1 more for the probs themselves*/ + ncols];
     String[] names = new String[vecs.length];
     vecs[0] = Vec.makeCon(null, parms._probs);
     names[0] = "Probs";
     int w = 0;
     for (int i = 0; i < vecs.length - 1; ++i) {
-      if (fr._names[i].equals(parms._weights_column)) w = 1;
+      if (fr._names[i].equals(parms._weights_column)) {
+    	  w = 1;
+      }
       vecs[i + 1] = Vec.makeCon(null, q._output._quantiles[i]);
       names[i + 1] = fr._names[w + i] + "Quantiles";
     }

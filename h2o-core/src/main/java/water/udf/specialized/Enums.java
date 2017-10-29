@@ -45,8 +45,12 @@ public class Enums extends DataColumns.BaseFactory<Integer> {
 
     @Override
     public void set(int idx, Integer value) {
-      if (value == null) c.setNA(idx);
-      else c.set(idx, value);
+      if (value == null) {
+    	  c.setNA(idx);
+      }
+      else {
+    	  c.set(idx, value);
+      }
     }
 
     public void set(int idx, int value) {
@@ -83,8 +87,12 @@ public class Enums extends DataColumns.BaseFactory<Integer> {
 
     @Override
     public void set(long idx, Integer value) {
-      if (value == null) vec().setNA(idx);
-      else vec().set(idx, value);
+      if (value == null) {
+    	  vec().setNA(idx);
+      }
+      else {
+    	  vec().set(idx, value);
+      }
     }
 
     public void set(long idx, int value) {
@@ -94,8 +102,9 @@ public class Enums extends DataColumns.BaseFactory<Integer> {
   
   @Override
   public DataColumn<Integer> newColumn(final Vec vec) {
-    if (vec.get_type() != Vec.T_CAT)
-      throw new IllegalArgumentException("Expected type T_CAT, got " + vec.get_type_str());
+    if (vec.get_type() != Vec.T_CAT) {
+      throw new IllegalArgumentException("Expected type T_CAT, got " + vec.get_type_str());}
+    
     vec.setDomain(domain);
     return new Column(vec, this);
   }

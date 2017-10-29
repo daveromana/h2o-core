@@ -39,19 +39,22 @@ public class AstToUpper extends AstPrimitive {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
     // Type check
     for (Vec v : fr.vecs())
-      if (!(v.isCategorical() || v.isString()))
+      if (!(v.isCategorical() || v.isString())) {
         throw new IllegalArgumentException("toupper() requires a string or categorical column. "
             + "Received " + fr.anyVec().get_type_str()
             + ". Please convert column to a string or categorical first.");
+        }
 
     // Transform each vec
     Vec nvs[] = new Vec[fr.numCols()];
     int i = 0;
     for (Vec v : fr.vecs()) {
-      if (v.isCategorical())
+      if (v.isCategorical()) {
         nvs[i] = toUpperCategoricalCol(v);
-      else
+        }
+      else {
         nvs[i] = toUpperStringCol(v);
+        }
       i++;
     }
 
@@ -70,18 +73,21 @@ public class AstToUpper extends AstPrimitive {
     return new MRTask() {
       @Override
       public void map(Chunk chk, NewChunk newChk) {
-        if (chk instanceof C0DChunk) // all NAs
+        if (chk instanceof C0DChunk) {// all NAs
           for (int i = 0; i < chk.len(); i++)
             newChk.addNA();
+          }
         else if (((CStrChunk) chk)._isAllASCII) { // fast-path operations
           ((CStrChunk) chk).asciiToUpper(newChk);
         } else { //UTF requires Java string methods for accuracy
           BufferedString tmpStr = new BufferedString();
           for (int i = 0; i < chk._len; i++) {
-            if (chk.isNA(i))
+            if (chk.isNA(i)) {
               newChk.addNA();
+              }
             else // Locale.ENGLISH to give the correct results for local insensitive strings
-              newChk.addStr(chk.atStr(tmpStr, i).toString().toUpperCase(Locale.ENGLISH));
+              {newChk.addStr(chk.atStr(tmpStr, i).toString().toUpperCase(Locale.ENGLISH));
+              }
           }
         }
       }

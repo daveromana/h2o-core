@@ -80,7 +80,9 @@ public abstract class Lockable<T extends Lockable<T>> extends Keyed<T> {
    */
   public static void delete( Key key ) { 
     Value val = DKV.get(key);
-    if( val==null ) return;
+    if( val==null ) {
+    	return;
+    }
     ((Lockable)val.get()).delete();
   }
   /** Write-lock 'this' and delete; blocking.
@@ -107,10 +109,12 @@ public abstract class Lockable<T extends Lockable<T>> extends Keyed<T> {
       _old = old;
       if( old != null ) {       // Prior Lockable exists?
         assert !old.is_wlocked(_job_key) : "Key "+_key+" already locked (or deleted); lks="+Arrays.toString(old._lockers); // No double locking by same job
-        if( old.is_locked(_job_key) ) // read-locked by self? (double-write-lock checked above)
-          old.set_unlocked(old._lockers,_job_key); // Remove read-lock; will atomically upgrade to write-lock
-        if( !old.is_unlocked() ) // Blocking for some other Job to finish???
+        if( old.is_locked(_job_key) ) {// read-locked by self? (double-write-lock checked above)
+          old.set_unlocked(old._lockers,_job_key); 
+          }// Remove read-lock; will atomically upgrade to write-lock
+        if( !old.is_unlocked() ) {// Blocking for some other Job to finish???
           throw new IllegalArgumentException(old.getClass()+" "+_key+" is already in use.  Unable to use it now.  Consider using a different destination name.");
+          }
       }
       // Update & set the new value
       set_write_lock(_job_key);
@@ -123,8 +127,9 @@ public abstract class Lockable<T extends Lockable<T>> extends Keyed<T> {
   public static void read_lock( Key k, Job job ) { read_lock(k,job._key); }
   public static void read_lock( Key k, Key<Job> job_key ) {
     Value val = DKV.get(k);
-    if( val.isLockable() )
-      ((Lockable)val.get()).read_lock(job_key); // Lockable being locked
+    if( val.isLockable() ) {
+      ((Lockable)val.get()).read_lock(job_key);
+      } // Lockable being locked
   }
   /** Atomically get a read-lock on this, preventing future deletes or updates */
   public void read_lock( Key<Job> job_key ) { 
@@ -139,9 +144,12 @@ public abstract class Lockable<T extends Lockable<T>> extends Keyed<T> {
     final Key<Job> _job_key;    // Job doing the unlocking
     ReadLock( Key<Job> job_key ) { _job_key = job_key; }
     @Override public Lockable atomic(Lockable old) {
-      if( old == null ) throw new IllegalArgumentException("Nothing to lock!");
-      if( old.is_wlocked() )
+      if( old == null ) {
+    	  throw new IllegalArgumentException("Nothing to lock!");
+      }
+      if( old.is_wlocked() ) {
         throw new IllegalArgumentException( old.getClass()+" "+_key+" is being created;  Unable to read it now.");
+        }
       old.set_read_lock(_job_key);
       return old;
     }
@@ -195,8 +203,9 @@ public abstract class Lockable<T extends Lockable<T>> extends Keyed<T> {
     @Override public Lockable atomic(Lockable old) {
       assert !_exact || old != null : "Trying to unlock null!";
       assert !_exact || old.is_locked(_job_key) : "Can't unlock: Not locked!";
-      if( _exact || old.is_locked(_job_key) )
+      if( _exact || old.is_locked(_job_key) ) {
         set_unlocked(old._lockers,_job_key);
+        }
       return Lockable.this;
     }
   }
@@ -204,10 +213,14 @@ public abstract class Lockable<T extends Lockable<T>> extends Keyed<T> {
   // -----------
   // Accessors for locking state.  Minimal self-checking; primitive results
   private boolean is_locked(Key<Job> job_key) { 
-    if( _lockers==null ) return false;
+    if( _lockers==null ) {
+    	return false;
+    }
     for( int i=(_lockers.length==1?0:1); i<_lockers.length; i++ ) {
       Key k = _lockers[i];
-      if( job_key==k || (job_key != null && k != null && job_key.equals(k)) ) return true;
+      if( job_key==k || (job_key != null && k != null && job_key.equals(k)) ) {
+    	  return true;
+      }
     }
     return false;
   }
@@ -237,7 +250,9 @@ public abstract class Lockable<T extends Lockable<T>> extends Keyed<T> {
       _lockers = Arrays.copyOf(lks,lks.length-1);
       for( int i=1; i<lks.length; i++ )
         if( (job_key != null && job_key.equals(lks[i])) || (job_key == null && lks[i] == null) ) {
-          if( i < _lockers.length ) _lockers[i] = lks[lks.length-1];
+          if( i < _lockers.length ) {
+        	  _lockers[i] = lks[lks.length-1];
+          }
           break;
         }
     }
@@ -245,16 +260,18 @@ public abstract class Lockable<T extends Lockable<T>> extends Keyed<T> {
 
   /** Force-unlock (break a lock) all lockers; useful in some debug situations. */
   public void unlock_all() {
-    if( _key != null )
+    if( _key != null ) {
       for (Key k : _lockers) new UnlockSafe(k).invoke(_key);
+      }
   }
 
   private class UnlockSafe extends TAtomic<Lockable> {
     final Key<Job> _job_key;    // potential job doing the unlocking
     UnlockSafe( Key job_key ) { _job_key = job_key; }
     @Override public Lockable atomic(Lockable old) {
-      if (old.is_locked(_job_key))
+      if (old.is_locked(_job_key)) {
         set_unlocked(old._lockers,_job_key);
+        }
       return Lockable.this;
     }
   }

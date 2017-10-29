@@ -59,8 +59,9 @@ public class AstKFold extends AstPrimitive {
   public static Vec stratifiedKFoldColumn(Vec y, final int nfolds, final long seed) {
     // for each class, generate a fold column (never materialized)
     // therefore, have a seed per class to be used by the map call
-    if (!(y.isCategorical() || (y.isNumeric() && y.isInt())))
+    if (!(y.isCategorical() || (y.isNumeric() && y.isInt()))) {
       throw new IllegalArgumentException("stratification only applies to integer and categorical columns. Got: " + y.get_type_str());
+      }
     final long[] classes = new VecUtils.CollectIntegerDomain().doAll(y).domain();
     final int nClass = y.isNumeric() ? classes.length : y.domain().length;
     final long[] seeds = new long[nClass]; // seed for each regular fold column (one per class)
@@ -100,12 +101,14 @@ public class AstKFold extends AstPrimitive {
             for (int row = 0; row < y[0]._len; ++row) {
               // missing response gets spread around
               if (y[0].isNA(row)) {
-                if ((start + row) % nfolds == testFold)
+                if ((start + row) % nfolds == testFold) {
                   y[1].set(row, testFold);
+                  }
               } else {
                 if (y[0].at8(row) == (classes == null ? classLabel : classes[classLabel])) {
-                  if (testFold == getFoldId(start + row, seeds[classLabel]))
+                  if (testFold == getFoldId(start + row, seeds[classLabel])) {
                     y[1].set(row, testFold);
+                    }
                 }
               }
             }

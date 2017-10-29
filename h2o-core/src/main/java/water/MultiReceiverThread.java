@@ -44,12 +44,16 @@ class MultiReceiverThread extends Thread {
           final MulticastSocket tmp2 = errsock; errsock = null;
           tmp2.close();       // Could throw, but errsock cleared for next pass
         }
-        if( saw_error ) Thread.sleep(1000); // prevent deny-of-service endless socket-creates
+        if( saw_error ) {
+        	Thread.sleep(1000); // prevent deny-of-service endless socket-creates
+        }
         saw_error = false;
 
         // ---
         // Actually do the common-case setup of Inet multicast group
-        if( group == null ) group = H2O.CLOUD_MULTICAST_GROUP;
+        if( group == null ) {
+        	group = H2O.CLOUD_MULTICAST_GROUP;
+        }
         // More common-case setup of a MultiCast socket
         if( sock == null ) {
           sock = new MulticastSocket(H2O.CLOUD_MULTICAST_PORT);

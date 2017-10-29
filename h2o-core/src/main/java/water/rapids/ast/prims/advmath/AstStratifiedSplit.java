@@ -41,9 +41,10 @@ public class AstStratifiedSplit extends AstPrimitive {
     final double testFrac = asts[2].exec(env).getNum();
     long seed = (long) asts[3].exec(env).getNum();
     // It is just a single column
-    if (frame.numCols() != 1)
+    if (frame.numCols() != 1) {
       throw new IllegalArgumentException("Must give a single column to stratify against. Got: " + frame.numCols() + " columns.");
     Vec stratifyingColumn = frame.anyVec();
+    }
     Frame result = new Frame(Key.<Frame>make(),
                              new String[] {OUTPUT_COLUMN_NAME},
                              new Vec[] { split(stratifyingColumn, testFrac, seed, OUTPUT_COLUMN_DOMAIN)}
@@ -96,8 +97,9 @@ public class AstStratifiedSplit extends AstPrimitive {
   }
 
   static void checkIfCanStratifyBy(Vec vec) {
-    if (!(vec.isCategorical() || (vec.isNumeric() && vec.isInt())))
+    if (!(vec.isCategorical() || (vec.isNumeric() && vec.isInt()))) {
       throw new IllegalArgumentException("Stratification only applies to integer and categorical columns. Got: " + vec.get_type_str());
+      }
     if (vec.length() > Integer.MAX_VALUE) {
       throw new IllegalArgumentException("Cannot stratified the frame because it is too long: nrows=" + vec.length());
     }
@@ -145,7 +147,9 @@ public class AstStratifiedSplit extends AstPrimitive {
       for (int i = 0; i < ck[0].len(); i++) {
         long clas = ck[0].at8(i);
         Integer clas_idx = _classMap.get(clas);
-        if (clas_idx != null) _indexes[clas_idx].add(ck[0].start() + i);
+        if (clas_idx != null) {
+        	_indexes[clas_idx].add(ck[0].start() + i);
+        }
       }
       _classes = null;
     }
@@ -164,12 +168,15 @@ public class AstStratifiedSplit extends AstPrimitive {
     long [] _ary = new long[4];
     int _sz;
     public void add(long i){
-      if (_sz == _ary.length)
+      if (_sz == _ary.length) {
         _ary = Arrays.copyOf(_ary, Math.max(4, _ary.length * 2));
+        }
       _ary[_sz++] = i;
     }
     public long get(int i){
-      if(i >= _sz) throw new ArrayIndexOutOfBoundsException(i);
+      if(i >= _sz) {
+    	  throw new ArrayIndexOutOfBoundsException(i);
+      }
       return _ary[i];
     }
     public int size(){return _sz;}

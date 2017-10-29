@@ -86,9 +86,11 @@ public class ChunkSummary extends MRTask<ChunkSummary> {
       // Table lookup, roughly sorted by frequency
       int j;
       for( j = 0; j < chunkTypes.length; ++j )
-        if( sname.equals(chunkTypes[j][0]) )
-          break;
-      if( j==chunkTypes.length ) throw H2O.fail("Unknown Chunk Type: " + sname);
+        if( sname.equals(chunkTypes[j][0]) ) {
+          break;}
+      if( j==chunkTypes.length ) {
+    	  throw H2O.fail("Unknown Chunk Type: " + sname);
+      }
       chunk_counts[j]++;
       chunk_byte_sizes[j] += c.byteSize();
       byte_size_per_node[H2O.SELF.index()] += c.byteSize();
@@ -112,7 +114,9 @@ public class ChunkSummary extends MRTask<ChunkSummary> {
 
   @Override
   protected void postGlobal() {
-    if (chunk_counts == null || chunk_byte_sizes == null || byte_size_per_node == null) return;
+    if (chunk_counts == null || chunk_byte_sizes == null || byte_size_per_node == null) {
+    	return;
+    }
     assert(total_row_count == _fr.numRows()): "total_row_count["+total_row_count+"] != _fr.numRows()["+_fr.numRows()+"]. ";
 
     // compute counts and sizes

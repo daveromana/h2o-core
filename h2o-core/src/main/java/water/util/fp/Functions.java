@@ -27,7 +27,9 @@ public class Functions {
 
     @Override
     public boolean equals(Object obj) {
-      if (!(obj instanceof Composition)) return false;
+      if (!(obj instanceof Composition)) {
+    	  return false;
+      }
       Composition other = (Composition) obj;
       return Objects.equals(f, other.f) && Objects.equals(g, other.g);
     }
@@ -81,7 +83,9 @@ public class Functions {
 
     @Override
     public boolean equals(Object obj) {
-      if (!(obj instanceof StringSplitter)) return false;
+      if (!(obj instanceof StringSplitter)) {
+    	  return false;
+      }
       StringSplitter other = (StringSplitter) obj;
       return Objects.equals(separator, other.separator);
     }

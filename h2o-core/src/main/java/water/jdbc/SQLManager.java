@@ -75,12 +75,14 @@ public class SQLManager {
         numRow = rs.getLong(1);
       }
       //get H2O column names and types 
-      if (needFetchClause)
+      if (needFetchClause) {
         rs = stmt.executeQuery("SELECT " + columns + " FROM " + table + " FETCH NEXT 1 ROWS ONLY");
-      else
+        }
+      else {
         rs = stmt.executeQuery("SELECT " + columns + " FROM " + table + " LIMIT 1");
       ResultSetMetaData rsmd = rs.getMetaData();
       numCol = rsmd.getColumnCount();
+      }
 
       columnNames = new String[numCol];
       columnH2OTypes = new byte[numCol];
@@ -193,8 +195,9 @@ public class SQLManager {
         DKV.put(fr);
         _v.remove();
         ParseDataset.logParseResults(fr);
-        if (finalTable.equals(SQLManager.TEMP_TABLE_NAME)) 
+        if (finalTable.equals(SQLManager.TEMP_TABLE_NAME)) {
           dropTempTable(connection_url, username, password);
+          }
         tryComplete();
       }
     };
@@ -243,17 +246,21 @@ public class SQLManager {
 
     @Override
     public void map(Chunk[] cs, NewChunk[] ncs) {
-      if (isCancelled() || _job != null && _job.stop_requested()) return;
+      if (isCancelled() || _job != null && _job.stop_requested()) {
+    	  return;
+      }
       //fetch data from sql table with limit and offset
       Connection conn = null;
       Statement stmt = null;
       ResultSet rs = null;
       Chunk c0 = cs[0];
       String sqlText = "SELECT " + _columns + " FROM " + _table;
-      if (_needFetchClause)
+      if (_needFetchClause) {
         sqlText += " OFFSET " + c0.start() + " ROWS FETCH NEXT " + c0._len + " ROWS ONLY";
-      else
+        }
+      else {
         sqlText += " LIMIT " + c0._len + " OFFSET " + c0.start();
+        }
       try {
         conn = sqlConn.take();
         stmt = conn.createStatement();
@@ -263,7 +270,9 @@ public class SQLManager {
         while (rs.next()) {
           for (int i = 0; i < _numCol; i++) {
             Object res = rs.getObject(i + 1);
-            if (res == null) ncs[i].addNA();
+            if (res == null) {
+            	ncs[i].addNA();
+            }
             else {
               switch (res.getClass().getSimpleName()) {
                 case "Double":

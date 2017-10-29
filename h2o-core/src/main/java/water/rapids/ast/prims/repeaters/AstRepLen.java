@@ -33,7 +33,9 @@ public class AstRepLen extends AstPrimitive {
     Val v = asts[1].exec(env);
     long length = (long) asts[2].exec(env).getNum();
     Frame ff;
-    if (v instanceof ValFrame) ff = stk.track(v).getFrame();
+    if (v instanceof ValFrame) {
+    	ff = stk.track(v).getFrame();
+    }
     else return new ValFrame(new Frame(Vec.makeCon(v.getNum(), length)));
 
     final Frame fr = ff;

@@ -20,10 +20,11 @@ public class CategoricalColumnCfcm extends CreateFrameColumnMaker {
   public CategoricalColumnCfcm(String colName, int nFactors) {
     name = colName;
     numFactors = nFactors;
-    if (name.equals("response"))
-      prepareAnimalDomain();
-    else
+    if (name.equals("response")) {
+      prepareAnimalDomain();}
+    else {
       prepareSimpleDomain();
+      }
   }
 
   @Override public void exec(int nrows, NewChunk[] ncs, Random rng) {
@@ -67,9 +68,13 @@ public class CategoricalColumnCfcm extends CreateFrameColumnMaker {
       OUTER:
       for (int i = 0; i < _animals.length; i++)
         for (int j = 0; j < _animals.length; j++) {
-          if (i == j) continue;
+          if (i == j) {
+        	  continue;
+          }
           domain[k++] = _animals[i] + _animals[j];
-          if (k == numFactors) break OUTER;
+          if (k == numFactors) {
+        	  break OUTER;
+          }
         }
     }
   }

@@ -23,8 +23,12 @@ public class TaskPutKey extends DTask<TaskPutKey> {
     assert _key.home() || _val==null; // Only PUT to home for keys, or remote invalidation from home
     Paxos.lockCloud(_key);
     // Initialize Value for having a single known replica (the sender)
-    if( _val != null ) _val.initReplicaHome(sender,_key);
-    else if( _key.home() ) _val = Value.makeNull(_key);
+    if( _val != null ) {
+    	_val.initReplicaHome(sender,_key);
+    }
+    else if( _key.home() ) {
+    	_val = Value.makeNull(_key);
+    }
     // Spin, until we update something.
     Value old = H2O.STORE.get(_key); // Raw-get: do not lazy-manifest if overwriting
     while( H2O.putIfMatch(_key,_val,old) != old )
@@ -36,8 +40,12 @@ public class TaskPutKey extends DTask<TaskPutKey> {
     // completion ("I started your Put request" and "I completed your Put
     // request").
     if( _key.home() ) {
-      if( old != null ) old.lockAndInvalidate(sender,_val,new Futures()).blockForPending();
-      else _val.lowerActiveGetCount(null);  // Remove initial read-lock, accounting for pending inv counts
+      if( old != null ) {
+    	  old.lockAndInvalidate(sender,_val,new Futures()).blockForPending();
+      }
+      else {
+    	  _val.lowerActiveGetCount(null);  // Remove initial read-lock, accounting for pending inv counts
+      }
     }
     // No return result
     _key = null;
@@ -50,7 +58,11 @@ public class TaskPutKey extends DTask<TaskPutKey> {
   @Override public void onAck() {
     // remove local cache but NOT in case it is already on disk
     // (ie memory can be reclaimed and we assume we have plenty of disk space)
-    if( _dontCache && !_xval.isPersisted() ) H2O.putIfMatch(_xkey, null, _xval);
-    if( _xval != null ) _xval.completeRemotePut();
+    if( _dontCache && !_xval.isPersisted() ) {
+    	H2O.putIfMatch(_xkey, null, _xval);
+    }
+    if( _xval != null ) {
+    	_xval.completeRemotePut();
+    }
   }
 }

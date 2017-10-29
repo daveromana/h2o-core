@@ -66,7 +66,9 @@ class SplitByMSBLocal extends MRTask<SplitByMSBLocal> {
     _o = new long[256][][];
     _x = new byte[256][][];  // for each bucket, there might be > 2^31 bytes, so an extra dimension for that
     for (int msb = 0; msb < 256; msb++) {
-      if (MSBhist[msb] == 0) continue;
+      if (MSBhist[msb] == 0) {
+    	  continue;
+      }
       int nbatch = (int) ((MSBhist[msb]-1)/_batchSize +1);  // at least one batch
       int lastSize = (int) (MSBhist[msb] - (nbatch-1) * _batchSize);   // the size of the last batch (could be batchSize)
       assert nbatch > 0;
@@ -91,7 +93,9 @@ class SplitByMSBLocal extends MRTask<SplitByMSBLocal> {
       // into x[MSBvalue][batch div][mod] and o[MSBvalue][batch div][mod]
       long rollSum = 0;
       for (int c = 0; c < nc; c++) {
-        if (_counts[c] == null) continue;
+        if (_counts[c] == null) {
+        	continue;
+        }
         long tmp = _counts[c][msb];
         // Warning: modify the POJO DKV cache, but that's fine since this node
         // won't ask for the original DKV.get() version again
@@ -167,8 +171,12 @@ class SplitByMSBLocal extends MRTask<SplitByMSBLocal> {
 
       for (int c=1; c<chk.length; c++) {  // TO DO: left align subsequent
         offset += _bytesUsed[c-1];     // advance offset by the previous field width
-        if (chk[c].isNA(r)) continue;  // NA is a zero field so skip over as java initializes memory to 0 for us always
-        if (_isLeft && _id_maps[c] != null) thisx = BigInteger.valueOf(_id_maps[c][(int)chk[c].at8(r)] + 1);
+        if (chk[c].isNA(r)) {
+        	continue;  // NA is a zero field so skip over as java initializes memory to 0 for us always
+        }
+        if (_isLeft && _id_maps[c] != null) {
+        	thisx = BigInteger.valueOf(_id_maps[c][(int)chk[c].at8(r)] + 1);
+        }
         else {
           thisx =  isIntCols[c]?
                   BigInteger.valueOf(chk[c].at8(r)).subtract(_base[c]).add(BigInteger.ONE):
@@ -278,10 +286,11 @@ class SplitByMSBLocal extends MRTask<SplitByMSBLocal> {
     @Override public void compute2() {
       int numChunks = 0;  // how many of the chunks are on this node
       for( long[] cnts : _counts )
-        if (cnts != null)  // the map() allocated the 256 vector in the spine slots for this node's chunks
+        if (cnts != null) { // the map() allocated the 256 vector in the spine slots for this node's chunks
           // even if cnts[_msb]==0 (no _msb for this chunk) we'll store
           // that because needed by line marked LINE_ANCHOR_1 below.
           numChunks++;
+          }
       // make dense.  And by construction (i.e. cumulative counts) these chunks
       // contributed in order
       int msbNodeChunkCounts[] = new int[numChunks];

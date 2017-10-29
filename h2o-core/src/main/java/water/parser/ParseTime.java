@@ -58,7 +58,7 @@ public abstract class ParseTime {
       if( t4 != Long.MIN_VALUE ) return t4;     // Cant tell which date: 3/2/10 is
     } catch( org.joda.time.IllegalFieldValueException | // Not time at all
              org.joda.time.IllegalInstantException      // Parsed as time, but falls into e.g. a daylight-savings hour hole
-             ie ) { } //FIXME should collect errors and report at end of parse
+             ie ) {System.out.println("The error is: " + ie); } //FIXME should collect errors and report at end of parse
     return Long.MIN_VALUE;
   }
   // Tries to parse "yyyy-MM[-dd] [HH:mm:ss.SSS aa]"

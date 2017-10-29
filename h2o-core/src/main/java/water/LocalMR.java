@@ -30,8 +30,9 @@ public class LocalMR<T extends MrFun<T>> extends H2O.H2OCountedCompleter<LocalMR
   public LocalMR(MrFun mrt, H2O.H2OCountedCompleter cc){this(mrt,H2O.NUMCPUS,cc);}
   public LocalMR(MrFun mrt, int nthreads, H2O.H2OCountedCompleter cc){
     super(cc);
-    if(nthreads <= 0)
+    if(nthreads <= 0) {
       throw new IllegalArgumentException("nthreads must be positive");
+      }
     _root = this;
     _mrFun = mrt; // used as golden copy and also will hold the result after task has finished.
     _lo = 0;
@@ -100,16 +101,26 @@ public class LocalMR<T extends MrFun<T>> extends H2O.H2OCountedCompleter<LocalMR
         completeExceptionally(_t == null ? new CancellationException() : _t); // instead of throw
         return;
       }
-      if (_root._cancelled) return;
+      if (_root._cancelled) {
+    	  return;
+      }
       if (_left != null && _left._mrFun != null && _mrFun != _left._mrFun) {
         assert _left.completed;
-        if (_mrFun == null) _mrFun = _left._mrFun;
-        else _mrFun.reduce(_left._mrFun);
+        if (_mrFun == null) {
+        	_mrFun = _left._mrFun;
+        }
+        else {
+        	_mrFun.reduce(_left._mrFun);
+        }
       }
       if (_rite != null && _mrFun != _rite._mrFun) {
         assert _rite.completed;
-        if (_mrFun == null) _mrFun = _rite._mrFun;
-        else _mrFun.reduce(_rite._mrFun);
+        if (_mrFun == null) {
+        	_mrFun = _rite._mrFun;
+        }
+        else {
+        	_mrFun.reduce(_rite._mrFun);
+        }
       }
       _left = null;
       _rite = null;

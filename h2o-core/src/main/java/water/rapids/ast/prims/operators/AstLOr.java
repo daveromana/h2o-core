@@ -18,7 +18,9 @@ public class AstLOr extends AstBinOp {
     // If the left is 1, just return the left
     if (left.isNum()) {
       double d = left.getNum();
-      if (d == 1) return left;
+      if (d == 1) {
+    	  return left;
+      }
     }
     Val rite = stk.track(asts[2].exec(env));
     return prim_apply(left, rite);

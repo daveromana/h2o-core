@@ -97,10 +97,12 @@ public class ScoringInfo extends Iced<ScoringInfo> {
       public int compare(ScoringInfo o1, ScoringInfo o2) {
         boolean moreIsBetter = ScoreKeeper.moreIsBetter(criterion);
 
-        if (!moreIsBetter)
+        if (!moreIsBetter) {
           return (int)Math.signum(o2.metric(criterion) - o1.metric(criterion));
-        else
+          }
+        else {
           return (int)Math.signum(o1.metric(criterion) - o2.metric(criterion));
+          }
       }
     };
   }
@@ -114,12 +116,17 @@ public class ScoringInfo extends Iced<ScoringInfo> {
    * @param criterion scalar model metric / stopping criterion by which to sort
    */
   public static void sort(ScoringInfo[] scoringInfos, ScoreKeeper.StoppingMetric criterion) {
-    if (null == scoringInfos) return;
-    if (scoringInfos.length == 0) return;
+    if (null == scoringInfos) {
+    	return;
+    }
+    if (scoringInfos.length == 0) {
+    	return;
+    }
 
     // handle StoppingMetric.AUTO
-    if (criterion == ScoreKeeper.StoppingMetric.AUTO)
+    if (criterion == ScoreKeeper.StoppingMetric.AUTO) {
       criterion = scoringInfos[0].is_classification ? ScoreKeeper.StoppingMetric.logloss : scoringInfos[0].is_autoencoder ? ScoreKeeper.StoppingMetric.RMSE : ScoreKeeper.StoppingMetric.deviance;
+      }
 
     Arrays.sort(scoringInfos, ScoringInfo.comparator(criterion));
   }
@@ -227,8 +234,9 @@ public class ScoringInfo extends Iced<ScoringInfo> {
       "");
     int row = 0;
 
-    if (null == scoringInfos)
+    if (null == scoringInfos) {
       return table;
+      }
 
     for (ScoringInfo si : scoringInfos) {
       int col = 0;
@@ -246,9 +254,15 @@ public class ScoringInfo extends Iced<ScoringInfo> {
                 speed>10 ? String.format("%d", (int)speed) : String.format("%g", speed)
         ) + " obs/sec");
       }
-      if (hasEpochs) table.set(row, col++, ((HasEpochs)si).epoch_counter());
-      if (hasIterations) table.set(row, col++, ((HasIterations)si).iterations());
-      if (hasSamples) table.set(row, col++, ((HasSamples)si).training_samples());
+      if (hasEpochs) {
+    	  table.set(row, col++, ((HasEpochs)si).epoch_counter());
+      }
+      if (hasIterations) {
+    	  table.set(row, col++, ((HasIterations)si).iterations());
+      }
+      if (hasSamples) {
+    	  table.set(row, col++, ((HasSamples)si).training_samples());
+      }
 
       table.set(row, col++, si.scored_train != null ? si.scored_train._rmse : Double.NaN);
       if (modelCategory == ModelCategory.Regression) {

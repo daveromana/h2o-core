@@ -583,7 +583,10 @@ MAIN_LOOP:
           if( t1.length != s1[i]+1 || t2.length != s2[i]+1 ) {
             continue;           // Token parsing fails
           return separators[i];
-        } catch( Exception ignore ) { /*pass; try another parse attempt*/ }
+        } catch( Exception ignore ) { 
+        	System.out.println("The error is: " + ignore);
+        	/*pass; try another parse attempt*/ }
+        }
       }
     }
     // No sep's appeared, or no sep's had equal counts on lines 1 & 2.  If no

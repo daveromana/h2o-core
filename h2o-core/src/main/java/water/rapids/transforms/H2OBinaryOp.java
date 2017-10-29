@@ -35,16 +35,22 @@ public class H2OBinaryOp extends H2OColOp {
 
   @Override protected void setupParamsImpl(int i, String[] args) {
     if( _ast._asts[i+1] instanceof AstExec) {
-      if( !isBinaryOp(_fun) ) throw H2O.unimpl("unimpl: " + lookup(_fun));
+      if( !isBinaryOp(_fun) ) {
+    	  throw H2O.unimpl("unimpl: " + lookup(_fun));
+      }
       _leftIsCol = args[i].equals("leftArg");
       _riteIsCol = !_leftIsCol;
       _binCol = ((AstExec)_ast._asts[i+1])._asts[2].str();
       _params.put(args[i], new AstStr(((AstExec) _ast._asts[i + 1])._asts[2].str()));
-    } else super.setupParamsImpl(i,args);
+    } else {
+    	super.setupParamsImpl(i,args);
+    }
   }
 
   @Override protected Frame transformImpl(Frame f) {
-    if( paramIsRow() ) ((AstExec)_ast._asts[2])._asts[1] = new AstId(f);
+    if( paramIsRow() ) {
+    	((AstExec)_ast._asts[2])._asts[1] = new AstId(f);
+    }
     return super.transformImpl(f);
   }
 

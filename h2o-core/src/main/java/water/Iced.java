@@ -51,7 +51,9 @@ abstract public class Iced<D extends Iced> implements Freezable<D>, Externalizab
   private Icer<D> icer() {
     int id = _ice_id;
     int tyid;
-    if(id != 0) assert id == (tyid =TypeMap.onIce(this)):"incorrectly cashed id " + id + ", typemap has " + tyid + ", type = " + getClass().getName();
+    if(id != 0) {
+    	assert id == (tyid =TypeMap.onIce(this)):"incorrectly cashed id " + id + ", typemap has " + tyid + ", type = " + getClass().getName();
+    }
     return TypeMap.getIcer(id!=0 ? id : (_ice_id=(short)TypeMap.onIce(this)),this); 
   }
 

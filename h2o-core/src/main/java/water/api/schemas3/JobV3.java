@@ -60,7 +60,9 @@ public class JobV3 extends SchemaV3<Job, JobV3> {
 
   // Version&Schema-specific filling from the impl
   @Override public JobV3 fillFromImpl( Job job ) {
-    if( job == null ) return this;
+    if( job == null ) {
+    	return this;
+    }
     // Handle fields in subclasses:
     PojoUtils.copyProperties(this, job, PojoUtils.FieldNaming.ORIGIN_HAS_UNDERSCORES);
     PojoUtils.copyProperties(this, job, PojoUtils.FieldNaming.CONSISTENT);  // TODO: make consistent and remove
@@ -74,13 +76,23 @@ public class JobV3 extends SchemaV3<Job, JobV3> {
     // Notice state "CREATED" no long exists and is never returned.
     // Notice new state "CANCEL_PENDING".
     if( job.isRunning() )
-      if( job.stop_requested() ) status = "CANCEL_PENDING";
-      else status = "RUNNING";
-    else
-      if( job.stop_requested() ) status = "CANCELLED";
-      else status = "DONE";
+      if( job.stop_requested() ) {
+    	  status = "CANCEL_PENDING";
+      }
+      else {
+    	  status = "RUNNING";
+      }
+    else {
+      if( job.stop_requested() ) {
+    	  status = "CANCELLED";
+      }
+      else {
+    	  status = "DONE";
+      }
     Throwable ex = job.ex();
-    if( ex != null ) status = "FAILED";
+    if( ex != null ) {
+    	status = "FAILED";
+    }
     exception = ex == null ? null : ex.toString();
     if (ex!=null) {
       StringWriter sw = new StringWriter();
@@ -99,4 +111,5 @@ public class JobV3 extends SchemaV3<Job, JobV3> {
   //==========================
   // Helper so Jobs can link to JobPoll
   public static String link(Key key) { return "/Jobs/"+key; }
-}
+  }
+  

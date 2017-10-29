@@ -23,9 +23,13 @@ public class PrettyPrint {
     final long min = TimeUnit.MILLISECONDS.toMinutes(msecs); msecs -= TimeUnit.MINUTES.toMillis(min);
     final long sec = TimeUnit.MILLISECONDS.toSeconds(msecs); msecs -= TimeUnit.SECONDS.toMillis(sec);
     final long ms  = TimeUnit.MILLISECONDS.toMillis (msecs);
-    if( !truncate ) return String.format("%02d:%02d:%02d.%03d", hr, min, sec, ms);
-    if( hr != 0 ) return String.format("%2d:%02d:%02d.%03d", hr, min, sec, ms);
-    if( min != 0 ) return String.format("%2d min %2d.%03d sec", min, sec, ms);
+    if( !truncate ) {
+    	return String.format("%02d:%02d:%02d.%03d", hr, min, sec, ms);
+    }
+    if( hr != 0 ){
+    	return String.format("%2d:%02d:%02d.%03d", hr, min, sec, ms);
+    if( min != 0 ) {
+    	return String.format("%2d min %2d.%03d sec", min, sec, ms);
     return String.format("%2d.%03d sec", sec, ms);
   }
   public static String usecs(long usecs) {
@@ -33,15 +37,20 @@ public class PrettyPrint {
     final long min = TimeUnit.MICROSECONDS.toMinutes(usecs); usecs -= TimeUnit.MINUTES.toMicros(min);
     final long sec = TimeUnit.MICROSECONDS.toSeconds(usecs); usecs -= TimeUnit.SECONDS.toMicros(sec);
     final long ms = TimeUnit.MICROSECONDS.toMillis(usecs); usecs -= TimeUnit.MILLISECONDS.toMicros(ms);
-    if( hr != 0 ) return String.format("%2d:%02d:%02d.%03d", hr, min, sec, ms);
-    if( min != 0 ) return String.format("%2d min %2d.%03d sec", min, sec, ms);
-    if( sec != 0 ) return String.format("%2d.%03d sec", sec, ms);
-    if( ms != 0 ) return String.format("%3d.%03d msec", ms, usecs);
+    if( hr != 0 ){
+    	 return String.format("%2d:%02d:%02d.%03d", hr, min, sec, ms);
+    if( min != 0 ) {
+    	return String.format("%2d min %2d.%03d sec", min, sec, ms);
+    if( sec != 0 ) {
+    	return String.format("%2d.%03d sec", sec, ms);
+    if( ms != 0 ){
+    	 return String.format("%3d.%03d msec", ms, usecs);
     return String.format("%3d usec", usecs);
   }
 
   public static String toAge(Date from, Date to) {
-    if (from == null || to == null) return "N/A";
+    if (from == null || to == null){
+    	 return "N/A";
     final Period period = new Period(from.getTime(), to.getTime());
     DurationFieldType[] dtf = new ArrayList<DurationFieldType>() {{
       add(DurationFieldType.years()); add(DurationFieldType.months());
@@ -59,21 +68,24 @@ public class PrettyPrint {
 
   // Return X such that (bytes < 1L<<(X*10))
   static int byteScale(long bytes) {
-    if (bytes<0) return -1;
+    if (bytes<0){
+    	 return -1;
     for( int i=0; i<6; i++ )
-      if( bytes < 1L<<(i*10) )
+      if( bytes < 1L<<(i*10) ) {
         return i;
     return 6;
   }
   static double bytesScaled(long bytes, int scale) {
-    if( scale <= 0 ) return bytes;
+    if( scale <= 0 ) {
+    	return bytes;
     return bytes / (double)(1L<<((scale-1)*10));
   }
   static final String[] SCALE = new String[] {"N/A (-ve)","Zero  ","%4.0f  B","%.1f KB","%.1f MB","%.2f GB","%.3f TB","%.3f PB"};
   public static String bytes(long bytes) { return bytes(bytes,byteScale(bytes)); }
   static String bytes(long bytes, int scale) { return String.format(SCALE[scale+1],bytesScaled(bytes,scale)); }
   public static String bytesPerSecond(long bytes) {
-    if( bytes < 0 ) return "N/A";
+    if( bytes < 0 ){
+    	 return "N/A";
     return bytes(bytes)+"/S";
   }
 
@@ -150,9 +162,12 @@ public class PrettyPrint {
     if( (double)l == d ) return Long.toString(l);
     if( precision > 0 ) return x2(d,PrettyPrint.pow10(-precision));
     Class chunkClass = chk.getClass();
-    if( chunkClass == C1SChunk.class ) return x2(d,((C1SChunk)chk).scale());
-    if( chunkClass == C2SChunk.class ) return x2(d,((C2SChunk)chk).scale());
-    if( chunkClass == C4SChunk.class ) return x2(d,((C4SChunk)chk).scale());
+    if( chunkClass == C1SChunk.class ) {
+    	return x2(d,((C1SChunk)chk).scale());
+    if( chunkClass == C2SChunk.class ){
+    	 return x2(d,((C2SChunk)chk).scale());
+    if( chunkClass == C4SChunk.class ){
+    	 return x2(d,((C4SChunk)chk).scale());
     return Double.toString(d);
   }
 
@@ -164,7 +179,8 @@ public class PrettyPrint {
     int ex = (int)Math.log10(scale);
     int x = s.indexOf('.');
     int y = x+1+(-ex);
-    if( x != -1 && y < s.length() ) s = s.substring(0,x+1+(-ex));
+    if( x != -1 && y < s.length() ) {
+    	s = s.substring(0,x+1+(-ex));
     while( s.charAt(s.length()-1)=='0' )
       s = s.substring(0,s.length()-1);
     return s;
@@ -172,7 +188,7 @@ public class PrettyPrint {
 
   public static String formatPct(double pct) {
     String s = "N/A";
-    if( !isNaN(pct) )
+    if( !isNaN(pct) ){
       s = String.format("%5.2f %%", 100 * pct);
     return s;
   }
@@ -188,7 +204,8 @@ public class PrettyPrint {
     String ord;
     // Grab second to last digit
     int d = (int) (Math.abs(i) / Math.pow(10, 1)) % 10;
-    if (d == 1) ord = "th"; //teen values all end in "th"
+    if (d == 1){
+    	 ord = "th"; //teen values all end in "th"
     else { // not a weird teen number
       d = (int) (Math.abs(i) / Math.pow(10, 0)) % 10;
       switch (d) {

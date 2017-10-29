@@ -47,8 +47,10 @@ public class ScoreKeeper extends Iced {
    * @param m model for which we should keep score
    */
   public ScoreKeeper(Model m) {
-    if (null == m) throw new H2OIllegalArgumentException("model", "ScoreKeeper(Model model)", null);
-    if (null == m._output) throw new H2OIllegalArgumentException("model._output", "ScoreKeeper(Model model)", null);
+    if (null == m) {
+    	throw new H2OIllegalArgumentException("model", "ScoreKeeper(Model model)", null);
+    if (null == m._output) {
+    	throw new H2OIllegalArgumentException("model._output", "ScoreKeeper(Model model)", null);
 
 
     if (null != m._output._cross_validation_metrics) {
@@ -59,13 +61,16 @@ public class ScoreKeeper extends Iced {
       fillFrom(m._output._training_metrics);
     }
   }
+    }
+  }
 
   public boolean isEmpty() {
     return Double.isNaN(_mse) && Double.isNaN(_logloss); // at least one of them should always be filled
   }
 
   public void fillFrom(ModelMetrics m) {
-    if (m == null) return;
+    if (m == null){
+    	 return;
     _mse = m._MSE;
     _rmse = m.rmse();
     if (m instanceof ModelMetricsRegression) {
@@ -92,7 +97,7 @@ public class ScoreKeeper extends Iced {
       _hitratio = ((ModelMetricsMultinomial)m)._hit_ratios;
     }
   }
-
+  }
   public enum StoppingMetric { AUTO, deviance, logloss, MSE, RMSE,MAE,RMSLE, AUC, lift_top_group, misclassification, mean_per_class_error}
   public static boolean moreIsBetter(StoppingMetric criterion) {
     return (criterion == StoppingMetric.AUC || criterion == StoppingMetric.lift_top_group);
@@ -100,9 +105,11 @@ public class ScoreKeeper extends Iced {
 
   /** Based on the given array of ScoreKeeper and stopping criteria should we stop early? */
   public static boolean stopEarly(ScoreKeeper[] sk, int k, boolean classification, StoppingMetric criterion, double rel_improvement, String what, boolean verbose) {
-    if (k == 0) return false;
+    if (k == 0) {
+    	return false;
     int len = sk.length - 1; //how many "full"/"conservative" scoring events we have (skip the first)
-    if (len < 2*k) return false; //need at least k for SMA and another k to tell whether the model got better or not
+    if (len < 2*k) {
+    	return false; //need at least k for SMA and another k to tell whether the model got better or not
 
     if (criterion==StoppingMetric.AUTO) {
       criterion = classification ? StoppingMetric.logloss : StoppingMetric.deviance;
@@ -176,55 +183,72 @@ public class ScoreKeeper extends Iced {
         movingAvg[i] += val;
       }
       movingAvg[i]/=k;
-      if (Double.isNaN(movingAvg[i])) return false;
-      if (i==0)
-        lastBeforeK = movingAvg[i];
-      else
-        bestInLastK = moreIsBetter ? Math.max(movingAvg[i], bestInLastK) : Math.min(movingAvg[i], bestInLastK);
-    }
+      if (Double.isNaN(movingAvg[i])){
+      	 return false;
+      	 if (i==0) {
+      		 lastBeforeK = movingAvg[i];}
+      	 else {
+        bestInLastK = moreIsBetter ? Math.max(movingAvg[i], bestInLastK) : Math.min(movingAvg[i], bestInLastK);}
     // zero-crossing could be for residual deviance or r^2 -> mark it not yet converged, avoid division by 0 or weird relative improvements math below
-    if (Math.signum(ArrayUtils.maxValue(movingAvg)) != Math.signum(ArrayUtils.minValue(movingAvg))) return false;
-    if (Math.signum(bestInLastK) != Math.signum(lastBeforeK)) return false;
-    assert(lastBeforeK != Double.MAX_VALUE);
-    assert(bestInLastK != Double.MAX_VALUE);
-    if (verbose)
-      Log.info("Windowed averages (window size " + k + ") of " + what + " " + (k+1) + " " + criterion.toString() + " metrics: " + Arrays.toString(movingAvg));
+    if (Math.signum(ArrayUtils.maxValue(movingAvg)) != Math.signum(ArrayUtils.minValue(movingAvg))){
+    	 return false;
+    	 if (Math.signum(bestInLastK) != Math.signum(lastBeforeK)) {
+    		 return false;
+    		 assert(lastBeforeK != Double.MAX_VALUE);
+    		 assert(bestInLastK != Double.MAX_VALUE);
+    		 	if (verbose) {
+    		 		Log.info("Windowed averages (window size " + k + ") of " + what + " " + (k+1) + " " + criterion.toString() + " metrics: " + Arrays.toString(movingAvg));
 
-    double ratio = bestInLastK / lastBeforeK;
-    if (Double.isNaN(ratio)) return false;
-    boolean improved = moreIsBetter ? ratio > 1+rel_improvement : ratio < 1-rel_improvement;
+    		 		double ratio = bestInLastK / lastBeforeK;
+    		 			if (Double.isNaN(ratio)){
+    		 				return false;
+    		 				boolean improved = moreIsBetter ? ratio > 1+rel_improvement : ratio < 1-rel_improvement;
 
-    if (verbose)
-      Log.info("Checking convergence with " + criterion.toString() + " metric: " + lastBeforeK + " --> " + bestInLastK + (improved ? " (still improving)." : " (converged)."));
-    return !improved;
-  } // stopEarly
-
+    		 					if (verbose) {
+    		 						Log.info("Checking convergence with " + criterion.toString() + " metric: " + lastBeforeK + " --> " + bestInLastK + (improved ? " (still improving)." : " (converged)."));
+    		 						return !improved;
+    		 					} // stopEarly
+    		 			}
+    		 	}
+    	 }
+    }
+    }
+      
   /**
    * Compare this ScoreKeeper with that ScoreKeeper
    * @param that
    * @return true if they are equal (up to 1e-6 absolute and relative error, or both contain NaN for the same values)
    */
   @Override public boolean equals(Object that) {
-    if (! (that instanceof ScoreKeeper)) return false;
-    ScoreKeeper o = (ScoreKeeper)that;
-    if (_hitratio == null && ((ScoreKeeper) that)._hitratio != null) return false;
-    if (_hitratio != null && ((ScoreKeeper) that)._hitratio == null) return false;
-    if (_hitratio != null && ((ScoreKeeper) that)._hitratio != null) {
-      if (_hitratio.length != ((ScoreKeeper) that)._hitratio.length) return false;
-      for (int i=0; i<_hitratio.length; ++i) {
-        if (!MathUtils.compare(_hitratio[i], ((ScoreKeeper) that)._hitratio[i], 1e-6, 1e-6)) return false;
-      }
+    if (! (that instanceof ScoreKeeper)){
+    	 return false;
+    	 ScoreKeeper o = (ScoreKeeper)that;
+    	 	if (_hitratio == null && ((ScoreKeeper) that)._hitratio != null) {
+    	 		return false;
+    	 			if (_hitratio != null && ((ScoreKeeper) that)._hitratio == null) {
+    	 				return false;
+    	 					if (_hitratio != null && ((ScoreKeeper) that)._hitratio != null) {
+    	 						if (_hitratio.length != ((ScoreKeeper) that)._hitratio.length){
+    	 							return false;
+    	 								for (int i=0; i<_hitratio.length; ++i) {
+    	 									if (!MathUtils.compare(_hitratio[i], ((ScoreKeeper) that)._hitratio[i], 1e-6, 1e-6)){
+    	 										return false;
+    	 									}
+    	 								}
+    	 								return MathUtils.compare(_mean_residual_deviance, o._mean_residual_deviance, 1e-6, 1e-6)
+    	 						&& MathUtils.compare(_mse, o._mse, 1e-6, 1e-6)
+					            && MathUtils.compare(_mae, o._mae, 1e-6, 1e-6)
+					            && MathUtils.compare(_rmsle, o._rmsle, 1e-6, 1e-6)
+					            && MathUtils.compare(_logloss, o._logloss, 1e-6, 1e-6)
+					            && MathUtils.compare(_classError, o._classError, 1e-6, 1e-6)
+					            && MathUtils.compare(_mean_per_class_error, o._mean_per_class_error, 1e-6, 1e-6)
+					            && MathUtils.compare(_lift, o._lift, 1e-6, 1e-6);
+    	 						}
+    	 					}
+    	 			}
+    	 	}
     }
-    return MathUtils.compare(_mean_residual_deviance, o._mean_residual_deviance, 1e-6, 1e-6)
-            && MathUtils.compare(_mse, o._mse, 1e-6, 1e-6)
-            && MathUtils.compare(_mae, o._mae, 1e-6, 1e-6)
-            && MathUtils.compare(_rmsle, o._rmsle, 1e-6, 1e-6)
-            && MathUtils.compare(_logloss, o._logloss, 1e-6, 1e-6)
-            && MathUtils.compare(_classError, o._classError, 1e-6, 1e-6)
-            && MathUtils.compare(_mean_per_class_error, o._mean_per_class_error, 1e-6, 1e-6)
-            && MathUtils.compare(_lift, o._lift, 1e-6, 1e-6);
   }
-
   public static Comparator<ScoreKeeper> comparator(StoppingMetric criterion) {
     switch (criterion) {
       case AUC:
@@ -310,4 +334,5 @@ public class ScoreKeeper extends Iced {
         ", _lift=" + _lift +
         '}';
   }
+}
 }

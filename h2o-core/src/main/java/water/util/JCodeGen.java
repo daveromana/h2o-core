@@ -31,68 +31,96 @@ import water.exceptions.JCodeSB;
 public class JCodeGen {
 
   public static <T extends JCodeSB> T toStaticVar(T sb, String varname, int value, String comment) {
-    if (comment!=null) sb.ip("// ").p(comment).nl();
+    if (comment!=null) {
+    	sb.ip("// ").p(comment).nl();
+    }
     return (T) sb.ip("public static final int ").p(varname).p(" = ").p(value).p(';').nl();
   }
 
   public static JCodeSB toStaticVar(JCodeSB sb, String varname, String[] values, String comment) {
-    if (comment!=null) sb.ip("// ").p(comment).nl();
+    if (comment!=null) {
+    	sb.ip("// ").p(comment).nl();
+    }
     sb.ip("public static final String[] ").p(varname).p(" = ");
-    if (values == null) return sb.p("null;").nl();
+    if (values == null) {
+    	return sb.p("null;").nl();
+    }
     sb.p("new String[]{").p("\""+values[0]+"\"");
     for (int i = 1; i < values.length; ++i) sb.p(",").p("\""+values[i]+"\"");
     return sb.p("};").nl();
   }
 
   public static JCodeSB toStaticVar(JCodeSB sb, String varname, float[] values, String comment) {
-    if (comment!=null) sb.ip("// ").p(comment).nl();
+    if (comment!=null) {
+    	sb.ip("// ").p(comment).nl();
+    }
     sb.ip("public static final float[] ").p(varname).p(" = ");
-    if (values == null) return sb.p("null;").nl();
+    if (values == null) {
+    	return sb.p("null;").nl();
+    }
     sb.p("{").pj(values[0]);
     for (int i = 1; i < values.length; ++i) sb.p(",").pj(values[i]);
     return sb.p("};").nl();
   }
 
   public static JCodeSB toStaticVarZeros(JCodeSB sb, String varname, double[] values, String comment) {
-    if (comment!=null) sb.ip("// ").p(comment).nl();
+    if (comment!=null) {
+    	sb.ip("// ").p(comment).nl();
+    }
     sb.ip("public static final double[] ").p(varname).p(" = new double[" + values.length + "];");
     return sb.nl();
   }
 
   public static JCodeSB toStaticVar(JCodeSB sb, String varname, double[] values, String comment) {
-    if (comment!=null) sb.ip("// ").p(comment).nl();
+    if (comment!=null) {
+    	sb.ip("// ").p(comment).nl();
+    }
     sb.ip("public static final double[] ").p(varname).p(" = ");
-    if (values == null) return sb.p("null;").nl();
+    if (values == null) {
+    	return sb.p("null;").nl();
+    }
     sb.p("{").pj(values[0]);
     for (int i = 1; i < values.length; ++i) sb.p(",").pj(values[i]);
     return sb.p("};").nl();
   }
 
   public static JCodeSB toStaticVar(JCodeSB sb, String varname, int[] values, String comment) {
-    if (comment!=null) sb.ip("// ").p(comment).nl();
+    if (comment!=null) {
+    	sb.ip("// ").p(comment).nl();
+    }
     sb.ip("public static final int[] ").p(varname).p(" = ");
-    if (values == null) return sb.p("null;").nl();
+    if (values == null) {
+    	return sb.p("null;").nl();
+    }
     sb.p("{").p(values[0]);
     for (int i = 1; i < values.length; ++i) sb.p(",").p(values[i]);
     return sb.p("};").nl();
   }
 
   public static JCodeSB toStaticVar(JCodeSB sb, String varname, double[][] values, String comment) {
-    if (comment!=null) sb.ip("// ").p(comment).nl();
+    if (comment!=null) {
+    	sb.ip("// ").p(comment).nl();
+    }
     sb.ip("public static final double[][] ").p(varname).p(" = ");
     return sb.toJavaStringInit(values).p(';').nl();
   }
 
   public static JCodeSB toStaticVar(JCodeSB sb, String varname, double[][][] values, String comment) {
-    if (comment!=null) sb.ip("// ").p(comment).nl();
+    if (comment!=null) {
+    	sb.ip("// ").p(comment).nl();
+    }
     sb.ip("public static final double[][][] ").p(varname).p(" = ");
     return sb.toJavaStringInit(values).p(';').nl();
   }
 
   public static JCodeSB toStaticVar(JCodeSB sb, String varname, boolean[] values, String comment) {
-    if (comment!=null) sb.ip("// ").p(comment).nl();
+    if (comment!=null) {
+    	sb.ip("// ").p(comment).nl();
+    }
     sb.ip("public static final boolean[] ").p(varname).p(" = ");
-    if (values == null) return sb.p("null;").nl();
+    if (values == null) {
+    	return sb.p("null;").nl();
+    }
     sb.p("{").p(values[0]);
     for (int i = 1; i < values.length; ++i) sb.p(",").p(values[i]);
     return sb.p("};").nl();
@@ -116,7 +144,7 @@ public class JCodeGen {
     }
     sb.ip(modifiers!=null ? modifiers+" ": "").p("class ").p(className).p(" implements java.io.Serializable {").nl().ii(1);
     sb.ip("public static final String[] VALUES = ");
-    if (values==null)
+    if (values==null) {
       sb.p("null;").nl();
     else {
       sb.p("new String[").p(values.length).p("];").nl();
@@ -149,7 +177,7 @@ public class JCodeGen {
     }
     sb.ip(modifiers!=null ? modifiers+" ": "").p("class ").p(className).p(" implements java.io.Serializable {").nl().ii(1);
     sb.ip("public static final double[] VALUES = ");
-    if (values==null)
+    if (values==null) {
       sb.p("null;").nl();
     else {
       sb.p("new double[").p(values.length).p("];").nl();
@@ -182,7 +210,7 @@ public class JCodeGen {
     }
     sb.ip(modifiers!=null ? modifiers+" ": "").p("class ").p(className).p(" implements java.io.Serializable {").nl().ii(1);
     sb.ip("public static final float[] VALUES = ");
-    if (values==null)
+    if (values==null) {
       sb.p("null;").nl();
     else {
       sb.p("new float[").p(values.length).p("];").nl();
@@ -216,7 +244,7 @@ public class JCodeGen {
     }
     sb.ip(modifiers!=null ? modifiers+" ": "").p("class ").p(className).p(" implements java.io.Serializable {").nl().ii(1);
     sb.ip("public static final int[] VALUES = ");
-    if (values==null)
+    if (values==null) {
       sb.p("null;").nl();
     else {
       sb.p("new int[").p(values.length).p("];").nl();
@@ -250,7 +278,7 @@ public class JCodeGen {
     }
     sb.ip(modifiers!=null ? modifiers+" ": "").p("class ").p(className).p(" implements java.io.Serializable {").nl().ii(1);
     sb.ip("public static final double[][] VALUES = ");
-    if (values == null)
+    if (values == null) {
       sb.p("null;").nl();
     else {
       sb.p("new double[").p(values.length).p("][];").nl();
@@ -285,7 +313,7 @@ public class JCodeGen {
     }
     sb.ip(modifiers!=null ? modifiers+" ": "").p("class ").p(className).p(" implements java.io.Serializable {").nl().ii(1);
     sb.ip("public static final double[][][] VALUES = ");
-    if (values == null)
+    if (values == null) {
       sb.p("null;").nl();
     else {
       sb.p("new double[").p(values.length).p("][][];").nl();
@@ -396,13 +424,15 @@ public class JCodeGen {
   public static boolean canCompile() { return COMPILER!=null; }
   
   public static Class compile(String class_name, String java_text) throws Exception {
-    if( COMPILER==null ) throw new UnsupportedOperationException("Unable to launch an internal instance of javac");
+    if( COMPILER==null ) {
+    	throw new UnsupportedOperationException("Unable to launch an internal instance of javac");
+    }
     // Wrap input string up as a file-like java source thing
     JavaFileObject file = new JavaSourceFromString(class_name, java_text);
     // Capture all output class "files" as simple ByteArrayOutputStreams
     JavacFileManager jfm = new JavacFileManager(COMPILER.getStandardFileManager(null, null, null));
     // Invoke javac
-    if( !COMPILER.getTask(null, jfm, null, /*javac options*/null, null, Arrays.asList(file)).call() )
+    if( !COMPILER.getTask(null, jfm, null, /*javac options*/null, null, Arrays.asList(file)).call() ) {
       throw H2O.fail("Internal POJO compilation failed.");
 
     // Load POJO classes via a separated classloader to separate POJO namespace

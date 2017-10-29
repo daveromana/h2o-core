@@ -67,14 +67,20 @@ abstract public class MemoryManager {
   // before & after amounts and diff them.
 
   static void setMemGood() {
-    if( CAN_ALLOC ) return;
+    if( CAN_ALLOC ) {
+    	return;
+    }
     synchronized(_lock) { CAN_ALLOC = true; _lock.notifyAll(); }
     // NO LOGGING UNDER LOCK!
     Log.warn("Continuing after swapping");
   }
   static void setMemLow() {
-    if( !H2O.ARGS.cleaner ) return; // Cleaner turned off
-    if( !CAN_ALLOC ) return;
+    if( !H2O.ARGS.cleaner ) {
+    	return; // Cleaner turned off
+    }
+    if( !CAN_ALLOC ) {
+    	return;
+    }
     synchronized(_lock) { CAN_ALLOC = false; }
     // NO LOGGING UNDER LOCK!
     Log.warn("Pausing to swap to disk; more memory may help");
@@ -113,18 +119,23 @@ abstract public class MemoryManager {
     long p = pojoUsedGC;
     long age = (System.currentTimeMillis() - timeGC); // Age since last FullGC
     age = Math.min(age,10*60*1000 ); // Clip at 10mins
-    while( (age-=5000) > 0 ) p = p-(p>>3); // Decay effective POJO by 1/8th every 5sec
+    while( (age-=5000) > 0 ){
+    	p = p-(p>>3); // Decay effective POJO by 1/8th every 5sec
+    }
     d -= 2*p - bytes; // Allow for the effective POJO, and again to throttle GC rate (and allow for this allocation)
     d = Math.max(d,MEM_MAX>>3); // Keep at least 1/8th heap
-    if( Cleaner.DESIRED != -1 ) // Set to -1 only for OOM/Cleaner testing.  Never negative normally
-      Cleaner.DESIRED = d;      // Desired caching level
+    if( Cleaner.DESIRED != -1 ) {// Set to -1 only for OOM/Cleaner testing.  Never negative normally
+      Cleaner.DESIRED = d;
+      }      // Desired caching level
     final long cacheUsageNow = Cleaner.Histo.cached();
 
     boolean skipThisLogMessageToAvoidSpammingTheLogs = false;
     String m="";
     if( cacheUsageNow > Cleaner.DESIRED ) {
       m = (CAN_ALLOC?"Swapping!  ":"blocked:   ");
-      if( oom ) setMemLow(); // Stop allocations; trigger emergency clean
+      if( oom ) { 
+    	  setMemLow(); // Stop allocations; trigger emergency clean
+      }
       Cleaner.kick_store_cleaner();
     } else { // Else we are not *emergency* cleaning, but may be lazily cleaning.
       setMemGood();             // Cache is below desired level; unblock allocations
@@ -153,8 +164,17 @@ abstract public class MemoryManager {
 
     // No logging if under memory pressure: can deadlock the cleaner thread
     String s = m+msg+", (K/V:"+PrettyPrint.bytes(cacheUsageGC)+" + POJO:"+PrettyPrint.bytes(pojoUsedGC)+" + FREE:"+PrettyPrint.bytes(freeHeap)+" == MEM_MAX:"+PrettyPrint.bytes(MEM_MAX)+"), desiredKV="+PrettyPrint.bytes(Cleaner.DESIRED)+(oom?" OOM!":" NO-OOM");
-    if( CAN_ALLOC ) { if( oom ) Log.warn(s); else Log.debug(s); }
-    else            System.err.println(s);
+    if( CAN_ALLOC ) { 
+    	if( oom ) {
+    		Log.warn(s);
+    		} else {
+    			Log.debug(s);
+    		}
+    	
+    }
+    else  {     
+    	System.err.println(s);
+    }
   }
 
   /** Monitors the heap usage after full gc run and tells Cleaner to free memory
@@ -168,8 +188,9 @@ abstract public class MemoryManager {
     HeapUsageMonitor() {
       int c = 0;
       for( MemoryPoolMXBean m : ManagementFactory.getMemoryPoolMXBeans() ) {
-        if( m.getType() != MemoryType.HEAP ) // only interested in HEAP
+        if( m.getType() != MemoryType.HEAP ) { // only interested in HEAP
           continue;
+          }
         if( m.isCollectionUsageThresholdSupported()
             && m.isUsageThresholdSupported()) {
           // Really idiotic API: no idea what the usageThreshold is, so I have
@@ -199,7 +220,9 @@ abstract public class MemoryManager {
      *  2) sets the CAN_ALLOC flag to false if memory level is critical  */
     @Override public void handleNotification(Notification notification, Object handback) {
       String notifType = notification.getType();
-      if( !notifType.equals(MemoryNotificationInfo.MEMORY_COLLECTION_THRESHOLD_EXCEEDED)) return;
+      if( !notifType.equals(MemoryNotificationInfo.MEMORY_COLLECTION_THRESHOLD_EXCEEDED)) {
+    	  return;
+      }
       // Memory used after this FullGC
       Cleaner.TIME_AT_LAST_GC = System.currentTimeMillis();
       Cleaner.HEAP_USED_AT_LAST_GC = _allMemBean.getHeapMemoryUsage().getUsed();
@@ -234,7 +257,7 @@ abstract public class MemoryManager {
           // logging-induced deadlock!) which will probably be recycled quickly.
           !(Thread.currentThread() instanceof Cleaner) ) {
         synchronized(_lock) {
-          try { _lock.wait(300*1000); } catch (InterruptedException ex) { }
+          try { _lock.wait(300*1000); } catch (InterruptedException ex) {System.out.println("The error is: " + ex); }
         }
       }
       try {
@@ -275,11 +298,17 @@ abstract public class MemoryManager {
   public static long   [] malloc8 (int size) { return (long   [])malloc(size,size*8L, 8,null,0); }
   public static float  [] malloc4f(int size) { return (float  [])malloc(size,size*4L, 5,null,0); }
   public static double [] malloc8d(int size) {
-    if(size < 32) try { // fast path for small arrays (e.g. histograms in gbm)
+    if(size < 32) {
+    	try { // fast path for small arrays (e.g. histograms in gbm)
+    }
       return new double [size];
-    } catch (OutOfMemoryError oom){/* fall through */}
+    } catch (OutOfMemoryError oom){
+    	System.out.println("The error is: " + oom);
+    	/* fall through */}
     return (double [])malloc(size,size*8L, 9,null,0);
-  }
+    }
+
+
   public static double [][] malloc8d(int m, int n) {
     double [][] res = new double[m][];
     for(int i = 0; i < m; ++i)
@@ -314,8 +343,12 @@ abstract public class MemoryManager {
    * @return true if there is enough free memory
    */
   static boolean tryReserveTaskMem(long m){
-    if(!CAN_ALLOC)return false;
-    if( m == 0 ) return true;
+    if(!CAN_ALLOC) {
+    	return false;
+    }
+    if( m == 0 ) {
+    	return true;
+    }
     assert m >= 0:"m < 0: " + m;
     long current = _taskMem.addAndGet(-m);
     if(current < 0){
@@ -333,7 +366,7 @@ abstract public class MemoryManager {
           @Override public boolean isReleasable() {return _taskMem.get() >= bytes;}
           @Override public boolean block() throws InterruptedException {
             synchronized(_taskMemLock){
-              try {_taskMemLock.wait();} catch( InterruptedException e ) {}
+              try {_taskMemLock.wait();} catch( InterruptedException e ) {System.out.println("The error is: " + e);}
             }
             return isReleasable();
           }
@@ -347,7 +380,9 @@ abstract public class MemoryManager {
    * @param m
    */
   static void freeTaskMem(long m){
-    if(m == 0)return;
+    if(m == 0) {
+    	return;
+    }
     _taskMem.addAndGet(m);
     synchronized(_taskMemLock){
       _taskMemLock.notifyAll();

@@ -38,10 +38,12 @@ public class AstPivot extends AstBuiltin<AstPivot> {
     String value = args[4].getStr();
     int indexIdx = fr.find(index);
     int colIdx = fr.find(column);
-    if(fr.vec(column).isConst())
+    if(fr.vec(column).isConst()) {
       throw new IllegalArgumentException("Column: '" + column + "'is constant. Perhaps use transpose?" );
-    if(fr.vec(index).naCnt() > 0)
+      }
+    if(fr.vec(index).naCnt() > 0) {
       throw new IllegalArgumentException("Index column '" + index + "' has > 0 NAs");
+      }
     // This is the sort then MRTask method.
     // Create the target Frame
     // Now sort on the index key, result is that unique keys will be localized

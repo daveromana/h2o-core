@@ -38,9 +38,14 @@ public class DatasetServlet extends HttpServlet {
       int x = f_name.length() - 1;
       boolean dot = false;
       for (; x >= 0; x--)
-        if (!Character.isLetterOrDigit(f_name.charAt(x)) && f_name.charAt(x) != '_')
-          if (f_name.charAt(x) == '.' && !dot) dot = true;
-          else break;
+        if (!Character.isLetterOrDigit(f_name.charAt(x)) && f_name.charAt(x) != '_') {
+          if (f_name.charAt(x) == '.' && !dot) {
+        	  dot = true;
+          }
+          else {
+        	  break;
+          }
+          }
       String suggested_fname = f_name.substring(x + 1).replace(".hex", ".csv");
       if (!suggested_fname.endsWith(".csv"))
         suggested_fname = suggested_fname + ".csv";

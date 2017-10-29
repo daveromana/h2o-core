@@ -42,19 +42,21 @@ abstract public class Log {
   public static byte valueOf( String slvl ) {
     if( slvl == null ) return -1;
     slvl = slvl.toLowerCase();
-    if( slvl.startsWith("fatal") ) return FATAL;
-    if( slvl.startsWith("err"  ) ) return ERRR;
-    if( slvl.startsWith("warn" ) ) return WARN;
-    if( slvl.startsWith("info" ) ) return INFO;
-    if( slvl.startsWith("debug") ) return DEBUG;
-    if( slvl.startsWith("trace") ) return TRACE;
+    if( slvl.startsWith("fatal") ) {return FATAL;}
+    if( slvl.startsWith("err"  ) ) {return ERRR;}
+    if( slvl.startsWith("warn" ) ) { return WARN;}
+    if( slvl.startsWith("info" ) ) { return INFO;}
+    if( slvl.startsWith("debug") ) {return DEBUG;}
+    if( slvl.startsWith("trace") ) { return TRACE;}
     return -1;
   }
   
   public static void init(String sLvl, boolean quiet) {
     int lvl = valueOf(sLvl);
-    if( lvl != -1 ) _level = lvl;
+    if( lvl != -1 ) { _level = lvl;
     _quiet = quiet;
+    }
+    
   }
   
   public static void setLogLevel(String sLvl, boolean quiet) {
@@ -121,7 +123,9 @@ abstract public class Log {
       String host = H2O.SELF_ADDRESS.getHostAddress();
       _preHeader = fixedLength(host + ":" + H2O.API_PORT + " ", 22) + fixedLength(H2O.PID + " ", 6);
       ArrayList<String> bufmsgs = INIT_MSGS;  INIT_MSGS = null;
-      if (bufmsgs != null) for( String s : bufmsgs ) write0(INFO, true, s);
+      if (bufmsgs != null) { 
+    	  for( String s : bufmsgs ) write0(INFO, true, s);
+      }
     }
     write0(lvl, stdout, res);
   }
@@ -354,12 +358,12 @@ abstract public class Log {
           boolean windowsPath = H2O.ICE_ROOT.toString().matches("^[a-zA-Z]:.*");
 
           // Use ice folder if local, or default
-          if (windowsPath)
-            dir = new File(H2O.ICE_ROOT.toString());
-          else if (H2O.ICE_ROOT.getScheme() == null || PersistManager.Schemes.FILE.equals(H2O.ICE_ROOT.getScheme()))
-            dir = new File(H2O.ICE_ROOT.getPath());
-          else
-            dir = new File(H2O.DEFAULT_ICE_ROOT());
+          if (windowsPath) {
+            dir = new File(H2O.ICE_ROOT.toString());}
+          else if (H2O.ICE_ROOT.getScheme() == null || PersistManager.Schemes.FILE.equals(H2O.ICE_ROOT.getScheme())) {
+            dir = new File(H2O.ICE_ROOT.getPath());}
+          else {
+            dir = new File(H2O.DEFAULT_ICE_ROOT());}
 
           dir = new File(dir, "h2ologs");
         }
@@ -402,7 +406,8 @@ abstract public class Log {
   static String padRight(String stringToPad, int size) {
     StringBuilder strb = new StringBuilder(stringToPad);
     while( strb.length() < size )
-      if( strb.length() < size ) strb.append(' ');
+      if( strb.length() < size ) { strb.append(' ');
+      }
     return strb.toString();
   }
 

@@ -14,9 +14,11 @@ public class ValRow extends Val {
   public ValRow(double[] ds, String[] names) {
     _ds = ds;
     _names = names;
-    if (ds != null && names != null && ds.length != names.length)
-      throw new IllegalArgumentException("Lengths of data and names mismatch: " +
+    if (ds != null && names != null && ds.length != names.length) {
+    	throw new IllegalArgumentException("Lengths of data and names mismatch: " +
           Arrays.toString(ds) + " and " + Arrays.toString(names));
+    }
+      
   }
 
   @Override public int type() { return ROW; }

@@ -88,10 +88,12 @@ public abstract class ModelMojoWriter<M extends Model<M, P, O>, P extends Model.
    */
   protected final void writekv(String key, Object value) throws IOException {
     String valStr = value == null? "null" : value.toString();
-    if (valStr.contains("\n"))
+    if (valStr.contains("\n")) {
       throw new IOException("The `value` must not contain newline characters, got: " + valStr);
-    if (lkv.containsKey(key))
+      }
+    if (lkv.containsKey(key)) {
       throw new IOException("Key " + key + " was already written");
+      }
     lkv.put(key, valStr);
   }
   protected final void writekv(String key, int[] value) throws IOException {
@@ -184,8 +186,9 @@ public abstract class ModelMojoWriter<M extends Model<M, P, O>, P extends Model.
   private void addCommonModelInfo() throws IOException {
     int n_categoricals = 0;
     for (String[] domain : model.scoringDomains())
-      if (domain != null)
-        n_categoricals++;
+      if (domain != null) {
+        n_categoricals++;}
+    
 
     writekv("h2o_version", H2O.ABV.projectVersion());
     writekv("mojo_version", mojoVersion());
@@ -248,8 +251,9 @@ public abstract class ModelMojoWriter<M extends Model<M, P, O>, P extends Model.
     int domIndex = 0;
     String[][] domains = model.scoringDomains();
     for (int colIndex = 0; colIndex < domains.length; colIndex++) {
-      if (domains[colIndex] != null)
+      if (domains[colIndex] != null) {
         writeln(String.format(format, colIndex, domains[colIndex].length, domIndex++));
+        }
     }
     finishWritingTextFile();
   }
@@ -258,7 +262,9 @@ public abstract class ModelMojoWriter<M extends Model<M, P, O>, P extends Model.
   private void writeDomains() throws IOException {
     int domIndex = 0;
     for (String[] domain : model.scoringDomains()) {
-      if (domain == null) continue;
+      if (domain == null) {
+    	  continue;
+      }
       startWritingTextFile(String.format("domains/d%03d.txt", domIndex++));
       for (String category : domain) {
         writeln(category.replaceAll("\n", "\\n"));  // replace newlines with "\n" escape sequences

@@ -88,19 +88,20 @@ public class FrameSplitter extends H2OCountedCompleter<FrameSplitter> {
 
   @Override public void onCompletion(CountedCompleter caller) {
     dataset.unlock(jobKey);
-    if (splits!=null)
+    if (splits!=null) {
       for (Frame s : splits)
-        if (s!=null)
-          s.update(jobKey).unlock(jobKey);
+        if (s!=null) {
+          s.update(jobKey).unlock(jobKey);}
+    }
   }
   @Override public boolean onExceptionalCompletion(Throwable ex, CountedCompleter caller) {
     dataset.unlock(jobKey);
     Futures fs = new Futures();
-    if (splits!=null)
+    if (splits!=null) {
       for (Frame s : splits)
-        if (s!=null)
-          s.unlock(jobKey).delete(jobKey,fs);
-    fs.blockForPending();
+        if (s!=null) {
+          s.unlock(jobKey).delete(jobKey,fs);}
+    fs.blockForPending();}
     return true;
   }
 
@@ -137,7 +138,9 @@ public class FrameSplitter extends H2OCountedCompleter<FrameSplitter> {
     for (int p=0,c=0; p<nparts; p++) {
       int nc = 0; // number of chunks for this partition
       for(;c<espc.length-1 && (espc[c+1]-start) <= partSizes[p];c++) r[p][++nc] = espc[c+1]-start;
-      if (r[p][nc] < partSizes[p]) r[p][++nc] = partSizes[p]; // last item in espc contains number of rows
+      if (r[p][nc] < partSizes[p]) {
+    	  r[p][++nc] = partSizes[p]; // last item in espc contains number of rows
+      }
       r[p] = Arrays.copyOf(r[p], nc+1);
       // Transfer rest of lines to the next part
       nrows = nrows-partSizes[p];
@@ -196,8 +199,12 @@ public class FrameSplitter extends H2OCountedCompleter<FrameSplitter> {
       sum += r[i];
       sr  += ratio[i];
     }
-    if (sr<1f) r[i] = len - sum;
-    else r[i-1] += (len-sum);
+    if (sr<1f) {
+    	r[i] = len - sum;
+    }
+    else {
+    	r[i-1] += (len-sum);
+    }
     return r;
   }
 }

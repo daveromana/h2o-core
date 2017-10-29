@@ -29,11 +29,14 @@ final class PersistFS extends Persist {
   public void cleanUp() { deleteRecursive(_dir); }
 
   private static void deleteRecursive(File path) {
-    if( !path.exists() ) return;
-    if( path.isDirectory() )
+    if( !path.exists() ) {
+    	return;
+    }
+    if( path.isDirectory() ) {
       for (File f : path.listFiles())
         deleteRecursive(f);
     path.delete();
+    }
   }
 
   private File getFile(Value v) {
@@ -59,8 +62,9 @@ final class PersistFS extends Persist {
   @Override public void store(Value v) throws IOException {
     assert !v.isPersisted();
     File dirs = new File(_dir, getIceDirectory(v._key));
-    if( !dirs.mkdirs() && !dirs.exists() )
+    if( !dirs.mkdirs() && !dirs.exists() ) {
       throw new java.io.IOException("mkdirs failed making "+dirs);
+      }
     try(FileOutputStream s = new FileOutputStream(getFile(v))) {
         byte[] m = v.memOrLoad(); // we are not single threaded anymore
         if( m != null && m.length != v._max ) {
@@ -113,8 +117,9 @@ final class PersistFS extends Persist {
     else {
       f = new File(URI.create(path));
     }
-    if (f.exists() && !overwrite)
+    if (f.exists() && !overwrite) {
       throw new FSIOException(path, "File already exists");
+      }
 
     try {
       if (!f.getParentFile().exists()) {

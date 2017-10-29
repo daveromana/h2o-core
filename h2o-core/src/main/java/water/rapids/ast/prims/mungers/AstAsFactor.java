@@ -35,10 +35,11 @@ public class AstAsFactor extends AstPrimitive {
 
     // Type check  - prescreen for correct types
     for (Vec v : ary.vecs())
-      if (!(v.isCategorical() || v.isString() || v.isNumeric()))
+      if (!(v.isCategorical() || v.isString() || v.isNumeric())) {
         throw new IllegalArgumentException("asfactor() requires a string, categorical, or numeric column. "
             + "Received " + ary.anyVec().get_type_str()
             + ". Please convert column to a string or categorical first.");
+        }
     Vec vv;
     for (int c = 0; c < nvecs.length; ++c) {
       vv = ary.vec(c);

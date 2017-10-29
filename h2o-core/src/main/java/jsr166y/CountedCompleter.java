@@ -428,8 +428,10 @@ public abstract class CountedCompleter extends ForkJoinTask<Void> {
           return;
         }
       }
-      else if (U.compareAndSwapInt(a, PENDING, c, c - 1))
-        return;
+      else if (U.compareAndSwapInt(a, PENDING, c, c - 1)) {
+    	   return;
+      }
+       
     }
   }
 
@@ -447,8 +449,10 @@ public abstract class CountedCompleter extends ForkJoinTask<Void> {
         CountedCompleter p;
         onCompletion(this);
         quietlyComplete();
-        if ((p = completer) != null)
-            p.tryComplete();
+        if ((p = completer) != null) {
+        	 p.tryComplete();
+        }
+           
     }
 
     /**

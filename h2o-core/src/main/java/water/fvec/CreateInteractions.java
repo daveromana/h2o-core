@@ -88,7 +88,9 @@ public class CreateInteractions extends H2O.H2OCountedCompleter {
 //        Log.info("Adding interaction feature " + feature + ", occurrence count: " + count);
 //        Log.info("Total number of interaction factors so far: " + factorCount);
         _domain[d++] = feature;
-      } else break;
+      } else {
+    	  break;
+      }
     }
     if (d < _sortedMap.size()) {
 //      Log.info("Truncated map to " + _sortedMap.size() + " elements.");
@@ -241,24 +243,38 @@ public class CreateInteractions extends H2O.H2OCountedCompleter {
       // find unique interaction domain
       HashSet<Integer> restrictedA = _restrictedEnumA==null?null: new HashSet<Integer>(),
                        restrictedB = _restrictedEnumB==null?null: new HashSet<Integer>();
-      if( restrictedA!=null ) for (int i: _restrictedEnumA) restrictedA.add(i);
-      if( restrictedB!=null ) for (int i: _restrictedEnumB) restrictedB.add(i);
-      for (int r = 0; r < A._len; r++) {
-        int a = A.isNA(r) ? _missing : (int)A.at8(r);
-        if( !_interactOnNA && a==_missing ) continue; // most readable way to express
-        if( restrictedA!=null && !restrictedA.contains(a) ) continue; // not part of the limited set
-        long ab;
+      if( restrictedA!=null ) {
+    	  for (int i: _restrictedEnumA) restrictedA.add(i);
+      }
+      if( restrictedB!=null ) { 
+    	  for (int i: _restrictedEnumB) restrictedB.add(i);
+      
+    	  	for (int r = 0; r < A._len; r++) {
+    	  		int a = A.isNA(r) ? _missing : (int)A.at8(r);
+    	  		if( !_interactOnNA && a==_missing ) {
+    	  			continue; // most readable way to express
+    	  		}
+    	  		if( restrictedA!=null && !restrictedA.contains(a) ) {
+    	  			continue; // not part of the limited set
+    	  		}
+    	  		long ab;}
         if (!_same) {
           int b = B.isNA(r) ? _missing : (int)B.at8(r);
-          if( !_interactOnNA && b==_missing ) continue;
-          if( restrictedB!=null && !restrictedB.contains(b) ) continue; // not part of the limited set
+          if( !_interactOnNA && b==_missing ) {
+        	  continue;
+          }
+          if( restrictedB!=null && !restrictedB.contains(b) ) {
+        	  continue; // not part of the limited set
+          }
 
           // key: combine both ints into a long
           ab = ((long) a << 32) | (b & 0xFFFFFFFFL);
           assert a == (int) (ab >> 32);
           assert b == (int) ab;
         } else {
-          if (a == _missing) continue;
+          if (a == _missing) {
+        	  continue;
+          }
           ab = (long)a;
         }
 

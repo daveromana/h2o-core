@@ -36,9 +36,11 @@ public abstract class AstUniOp<T extends AstUniOp<T>> extends AstBuiltin<T> {
       case Val.FRM:
         Frame fr = val.getFrame();
         for (int i = 0; i < fr.numCols(); i++)
-          if (!fr.vec(i).isNumeric())
-            throw new IllegalArgumentException(
+          if (!fr.vec(i).isNumeric()) {
+        	  throw new IllegalArgumentException(
                 "Operator " + str() + "() cannot be applied to non-numeric column " + fr.name(i));
+          }
+            
 
         // Get length of columns in fr and append `op(colName)`. For example, a column named "income" that had
         // a log transformation would now be changed to `log(income)`.

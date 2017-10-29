@@ -30,7 +30,9 @@ public class AstRunif extends AstPrimitive {
   public ValFrame apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
     long seed = (long) asts[2].exec(env).getNum();
-    if (seed == -1) seed = new Random().nextLong();
+    if (seed == -1) {
+    	seed = new Random().nextLong();
+    }
     return new ValFrame(new Frame(new String[]{"rnd"}, new Vec[]{fr.anyVec().makeRand(seed)}));
   }
 }

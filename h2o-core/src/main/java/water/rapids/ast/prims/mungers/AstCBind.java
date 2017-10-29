@@ -38,10 +38,15 @@ public class AstCBind extends AstPrimitive {
       vals[i] = stk.track(asts[i].exec(env));
       if (vals[i].isFrame()) {
         Vec anyvec = vals[i].getFrame().anyVec();
-        if (anyvec == null) continue; // Ignore the empty frame
-        if (vec == null) vec = anyvec;
-        else if (vec.length() != anyvec.length())
+        if (anyvec == null) {
+        	continue; // Ignore the empty frame
+        }
+        if (vec == null) {
+        	vec = anyvec;
+        }
+        else if (vec.length() != anyvec.length()) {
           throw new IllegalArgumentException("cbind frames must have all the same rows, found " + vec.length() + " and " + anyvec.length() + " rows.");
+          }
       }
     }
     boolean clean = false;
@@ -70,7 +75,9 @@ public class AstCBind extends AstPrimitive {
           throw H2O.unimpl();
       }
     }
-    if (clean) vec.remove();
+    if (clean) {
+    	vec.remove();
+    }
 
     return new ValFrame(fr);
   }

@@ -174,7 +174,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
 
   final long at8_abs(long i) {
     long x = i - (_start>0 ? _start : 0);
-    if( 0 <= x && x < _len) return at8((int) x);
+    if( 0 <= x && x < _len) {
+    	return at8((int) x);
+    }
     throw new ArrayIndexOutOfBoundsException(""+_start+" <= "+i+" < "+(_start+ _len));
   }
 
@@ -190,7 +192,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
    *  @return double value at the given row, or NaN if the value is missing */
   final double at_abs(long i) {
     long x = i - (_start>0 ? _start : 0);
-    if( 0 <= x && x < _len) return atd((int) x);
+    if( 0 <= x && x < _len) {
+    	return atd((int) x);
+    }
     throw new ArrayIndexOutOfBoundsException(""+_start+" <= "+i+" < "+(_start+ _len));
   }
 
@@ -205,7 +209,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
    *  @return true if the value is missing */
   final boolean isNA_abs(long i) {
     long x = i - (_start>0 ? _start : 0);
-    if( 0 <= x && x < _len) return isNA((int) x);
+    if( 0 <= x && x < _len) {
+    	return isNA((int) x);
+    }
     throw new ArrayIndexOutOfBoundsException(""+_start+" <= "+i+" < "+(_start+ _len));
   }
 
@@ -220,7 +226,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
    *  @return Low half of a 128-bit UUID, or throws if the value is missing.  */
   final long at16l_abs(long i) {
     long x = i - (_start>0 ? _start : 0);
-    if( 0 <= x && x < _len) return at16l((int) x);
+    if( 0 <= x && x < _len) {
+    	return at16l((int) x);
+    }
     throw new ArrayIndexOutOfBoundsException(""+_start+" <= "+i+" < "+(_start+ _len));
   }
 
@@ -235,7 +243,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
    *  @return High half of a 128-bit UUID, or throws if the value is missing.  */
   final long at16h_abs(long i) {
     long x = i - (_start>0 ? _start : 0);
-    if( 0 <= x && x < _len) return at16h((int) x);
+    if( 0 <= x && x < _len) {
+    	return at16h((int) x);
+    }
     throw new ArrayIndexOutOfBoundsException(""+_start+" <= "+i+" < "+(_start+ _len));
   }
 
@@ -250,7 +260,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
    *  @return String value using absolute row numbers, or null if missing. */
   final BufferedString atStr_abs(BufferedString bStr, long i) {
     long x = i - (_start>0 ? _start : 0);
-    if( 0 <= x && x < _len) return atStr(bStr, (int) x);
+    if( 0 <= x && x < _len) {
+    	return atStr(bStr, (int) x);
+    }
     throw new ArrayIndexOutOfBoundsException(""+_start+" <= "+i+" < "+(_start+ _len));
   }
 
@@ -396,7 +408,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
   }
 
   private void setWrite() {
-    if( _chk2 != null ) return; // Already setWrite
+    if( _chk2 != null ) {
+    	return; // Already setWrite
+    }
     assert !(this instanceof NewChunk) : "Cannot direct-write into a NewChunk, only append";
     setWrite(clone());
   }
@@ -424,7 +438,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
    */
   public final long set(int idx, long l) {
     setWrite();
-    if( _chk2.set_impl(idx,l) ) return l;
+    if( _chk2.set_impl(idx,l) ) {
+    	return l;
+    }
     (_chk2 = inflate()).set_impl(idx,l);
     return l;
   }
@@ -447,7 +463,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
    */
   public final double set(int idx, double d) {
     setWrite();
-    if( _chk2.set_impl(idx,d) ) return d;
+    if( _chk2.set_impl(idx,d) ) {
+    	return d;
+    }
     (_chk2 = inflate()).set_impl(idx,d);
     return d;
   }
@@ -465,7 +483,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
    */
   public final float set(int idx, float f) {
     setWrite();
-    if( _chk2.set_impl(idx,f) ) return f;
+    if( _chk2.set_impl(idx,f) ) {
+    	return f;
+    }
     (_chk2 = inflate()).set_impl(idx,f);
     return f;
   }
@@ -482,7 +502,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
    */
   public final boolean setNA(int idx) {
     setWrite();
-    if( _chk2.setNA_impl(idx) ) return true;
+    if( _chk2.setNA_impl(idx) ) {
+    	return true;
+    }
     (_chk2 = inflate()).setNA_impl(idx);
     return true;
   }
@@ -500,7 +522,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
    */
   public final String set(int idx, String str) {
     setWrite();
-    if( _chk2.set_impl(idx,str) ) return str;
+    if( _chk2.set_impl(idx,str) ) {
+    	return str;
+    }
     (_chk2 = inflate()).set_impl(idx,str);
     return str;
   }
@@ -510,7 +534,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
     long lo = uuid.getLeastSignificantBits();
     long hi = uuid.getMostSignificantBits();
 
-    if( _chk2.set_impl(idx, lo, hi) ) return uuid;
+    if( _chk2.set_impl(idx, lo, hi) ) {
+    	return uuid;
+    }
     _chk2 = inflate();
     _chk2.set_impl(idx,lo, hi);
     return uuid;
@@ -545,9 +571,15 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
    *  @return the passed-in {@link Futures}, for flow-coding.
    */
   public Futures close( int cidx, Futures fs ) {
-    if( this  instanceof NewChunk ) _chk2 = this;
-    if( _chk2 == null ) return fs;          // No change?
-    if( _chk2 instanceof NewChunk ) _chk2 = ((NewChunk)_chk2).new_close();
+    if( this  instanceof NewChunk ) {
+    	_chk2 = this;
+    }
+    if( _chk2 == null ) {
+    	return fs;          // No change?
+    }
+    if( _chk2 instanceof NewChunk ) {
+    	_chk2 = ((NewChunk)_chk2).new_close();
+    }
 
     DKV.put(_vec.chunkKey(cidx),_chk2,fs,true); // Write updated chunk back into K/V
     return fs;
@@ -624,7 +656,7 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
   public int nonzeros(int [] res) {
     int k = 0;
     for( int i = 0; i < _len; ++i)
-      if(atd(i) != 0)
+      if(atd(i) != 0) {
         res[k++] = i;
     return k;
   }
@@ -678,7 +710,9 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
   public long byteSize() {
     long s= _mem == null ? 0 : _mem.length;
     s += (2+5)*8 + 12; // 2 hdr words, 5 other words, @8bytes each, plus mem array hdr
-    if( _chk2 != null ) s += _chk2.byteSize();
+    if( _chk2 != null ) {
+    	s += _chk2.byteSize();
+    }
     return s;
   }
 

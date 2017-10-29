@@ -191,8 +191,9 @@ public class FrameV3 extends FrameBaseV3<Frame, FrameV3> {
         string_data = null;
       }
       _vec = vec;               // Better HTML display, not in the JSON
-      if (len > 0)  // len == 0 is presumed to be a header file
+      if (len > 0) { // len == 0 is presumed to be a header file
         precision = vec.chunkForRow(0).precision();
+        }
 
     }
 
@@ -223,8 +224,12 @@ public class FrameV3 extends FrameBaseV3<Frame, FrameV3> {
   }
 
   public FrameV3 fillFromImpl(Frame f, long row_offset, int row_count, int column_offset, int column_count) {
-    if( row_count == 0 ) row_count = 100;                                 // 100 rows by default
-    if( column_count == 0 ) column_count = f.numCols() - column_offset; // full width by default
+    if( row_count == 0 ) {
+    	row_count = 100;                                 // 100 rows by default
+    }
+    if( column_count == 0 ) {
+    	column_count = f.numCols() - column_offset; // full width by default
+    }
 
     row_count    = (int) Math.min(row_count, row_offset + f.numRows());
     column_count = Math.min(column_count, column_offset + f.numCols());
@@ -249,15 +254,19 @@ public class FrameV3 extends FrameBaseV3<Frame, FrameV3> {
     // them when filling in the ColV3 Schemas.
     // NOTE: SKIP deleted Vecs!  The columns entry will be null for deleted Vecs.
     for( int i = 0; i < column_count; i++ )
-      if (null == DKV.get(vecs[column_offset + i]._key))
+      if (null == DKV.get(vecs[column_offset + i]._key)) {
         Log.warn("For Frame: " + f._key + ", Vec number: " + (column_offset + i) + " (" + f.name((column_offset + i))+ ") is missing; not returning it.");
-      else
+        }
+      else {
         vecs[column_offset + i].startRollupStats(fs);
+        }
     for( int i = 0; i < column_count; i++ )
-      if (null == DKV.get(vecs[column_offset + i]._key))
+      if (null == DKV.get(vecs[column_offset + i]._key)) {
         Log.warn("For Frame: " + f._key + ", Vec number: " + (column_offset + i) + " (" + f.name((column_offset + i))+ ") is missing; not returning it.");
-      else
+        }
+      else {
         columns[i] = new ColV3(f._names[column_offset + i], vecs[column_offset + i], this.row_offset, this.row_count);
+        }
 
     fs.blockForPending();
     this.is_text = f.numCols()==1 && vecs[0] instanceof ByteVec;
@@ -277,8 +286,9 @@ public class FrameV3 extends FrameBaseV3<Frame, FrameV3> {
 
   public void clearBinsField() {
     for (ColV3 col: columns)
-      if (col != null)
+      if (col != null) {
         col.clearBinsField();
+        }
   }
 
   private abstract static class ColOp { abstract String op(ColV3 v); }
@@ -288,11 +298,17 @@ public class FrameV3 extends FrameBaseV3<Frame, FrameV3> {
 
 
   private String formatCell( double d, String str, ColV3 c, int precision ) {
-    if (Double.isNaN(d)) return "-";
-    if (c.domain != null) return c.domain[(int) d];
+    if (Double.isNaN(d)) {
+    	return "-";
+    }
+    if (c.domain != null) {
+    	return c.domain[(int) d];
+    }
     if ("uuid".equals(c.type) || "string".equals(c.type)) {
       // UUID and String handling
-      if (str == null) return "-";
+      if (str == null) {
+    	  return "-";
+      }
       return "<b style=\"font-family:monospace;\">" + str + "</b>";
     } else {
       Chunk chk = c._vec.chunkForRow(row_offset);

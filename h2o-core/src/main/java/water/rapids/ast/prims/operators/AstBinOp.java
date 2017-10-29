@@ -306,15 +306,25 @@ abstract public class AstBinOp extends AstPrimitive {
         if (lf.numCols() != rt.numCols())
           throw new IllegalArgumentException("Frames must have same columns, found " + lf.numCols() + " columns and " + rt.numCols() + " columns.");
         return frame_op_row(lf, rt);
-      } else
+      } else {
         throw new IllegalArgumentException("Frames must have same rows, found " + lf.numRows() + " rows and " + rt.numRows() + " rows.");
+        }
     }
-    if (lf.numCols() == 0) return new ValFrame(lf);
-    if (rt.numCols() == 0) return new ValFrame(rt);
-    if (lf.numCols() == 1 && rt.numCols() > 1) return vec_op_frame(lf.vecs()[0], rt);
-    if (rt.numCols() == 1 && lf.numCols() > 1) return frame_op_vec(lf, rt.vecs()[0]);
-    if (lf.numCols() != rt.numCols())
+    if (lf.numCols() == 0) {
+    	return new ValFrame(lf);
+    }
+    if (rt.numCols() == 0) {
+    	return new ValFrame(rt);
+    }
+    if (lf.numCols() == 1 && rt.numCols() > 1) {
+    	return vec_op_frame(lf.vecs()[0], rt);
+    }
+    if (rt.numCols() == 1 && lf.numCols() > 1) {
+    	return frame_op_vec(lf, rt.vecs()[0]);
+    }
+    if (lf.numCols() != rt.numCols()) {
       throw new IllegalArgumentException("Frames must have same columns, found " + lf.numCols() + " columns and " + rt.numCols() + " columns.");
+      }
 
     Frame res = new MRTask() {
       @Override
@@ -326,12 +336,14 @@ abstract public class AstBinOp extends AstPrimitive {
           Chunk clf = chks[c];
           Chunk crt = chks[c + cress.length];
           NewChunk cres = cress[c];
-          if (clf.vec().isString())
+          if (clf.vec().isString()) {
             for (int i = 0; i < clf._len; i++)
               cres.addNum(str_op(clf.atStr(lfstr, i), crt.atStr(rtstr, i)));
-          else
+            }
+          else {
             for (int i = 0; i < clf._len; i++)
               cres.addNum(op(clf.atd(i), crt.atd(i)));
+            }
         }
       }
     }.doAll(lf.numCols(), Vec.T_NUM, new Frame(lf).add(rt)).outputFrame(lf._names, null);
@@ -349,10 +361,11 @@ abstract public class AstBinOp extends AstPrimitive {
           Chunk clf = chks[c];
           NewChunk cres = cress[c];
           for (int r = 0; r < clf._len; ++r) {
-            if (clf.vec().isString())
-              cres.addNum(Double.NaN); // TODO: improve
-            else
+            if (clf.vec().isString()) {
+              cres.addNum(Double.NaN); }// TODO: improve
+            else {
               cres.addNum(op(clf.atd(r), rawRow[c]));
+              }
           }
         }
       }

@@ -1242,6 +1242,8 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
         Integer.valueOf(names[i]);
         names[i] = "p" + names[i];
       } catch (Throwable t) {
+    	  System.out.println("The error is: " + t);
+      }
         // do nothing, non-integer names are fine already
       }
     }

@@ -86,9 +86,11 @@ public class FramesHandler<I extends FramesHandler.Frames, S extends SchemaV3<I,
         if (frame_column_names.containsAll(model_cols)) {
           // See if adapt throws an exception or not.
           try {
-            if( model.adaptTestForTrain(new Frame(frame), false, false).length == 0 )
+            if( model.adaptTestForTrain(new Frame(frame), false, false).length == 0 ) {
               compatible_models.add(model);
+              }
           } catch( IllegalArgumentException e ) {
+        	  System.out.println("The error is: " + e);
             // skip
           }
         }
@@ -126,19 +128,23 @@ public class FramesHandler<I extends FramesHandler.Frames, S extends SchemaV3<I,
 
   // TODO: almost identical to ModelsHandler; refactor
   public static Frame getFromDKV(String param_name, Key key) {
-    if (null == key)
+    if (null == key) {
       throw new H2OIllegalArgumentException(param_name, "Frames.getFromDKV()", null);
+      }
 
     Value v = DKV.get(key);
-    if (null == v)
+    if (null == v) {
       throw new H2OKeyNotFoundArgumentException(param_name, key.toString());
+      }
 
     Iced ice = v.get();
-    if( ice instanceof Vec )
+    if( ice instanceof Vec ) {
       return new Frame((Vec)ice);
+      }
 
-    if (! (ice instanceof Frame))
+    if (! (ice instanceof Frame)) {
       throw new H2OKeyWrongTypeArgumentException(param_name, key.toString(), Frame.class, ice.getClass());
+      }
 
     return (Frame)ice;
   }
@@ -150,8 +156,9 @@ public class FramesHandler<I extends FramesHandler.Frames, S extends SchemaV3<I,
     Frame frame = getFromDKV("key", s.frame_id.key());
 
     Vec vec = frame.vec(s.column);
-    if (null == vec)
+    if (null == vec) {
       throw new H2OColumnNotFoundArgumentException("column", s.frame_id.toString(), s.column);
+      }
 
     Vec[] vecs = { vec };
     String[] names = { s.column };
@@ -167,8 +174,9 @@ public class FramesHandler<I extends FramesHandler.Frames, S extends SchemaV3<I,
   public FramesV3 columnDomain(int version, FramesV3 s) {
     Frame frame = getFromDKV("key", s.frame_id.key());
     Vec vec = frame.vec(s.column);
-    if (vec == null)
+    if (vec == null) {
       throw new H2OColumnNotFoundArgumentException("column", s.frame_id.toString(), s.column);
+      }
     s.domain = new String[1][];
     s.domain[0] = vec.domain();
     return s;
@@ -179,8 +187,9 @@ public class FramesHandler<I extends FramesHandler.Frames, S extends SchemaV3<I,
   public FramesV3 columnSummary(int version, FramesV3 s) {
     Frame frame = getFromDKV("key", s.frame_id.key()); // safe
     Vec vec = frame.vec(s.column);
-    if (null == vec)
+    if (null == vec) {
       throw new H2OColumnNotFoundArgumentException("column", s.frame_id.toString(), s.column);
+      }
 
     // Compute second pass of rollups: the histograms.
     vec.bins();
@@ -244,10 +253,12 @@ public class FramesHandler<I extends FramesHandler.Frames, S extends SchemaV3<I,
       Futures fs = new Futures();
       int i = 0;
       for( Vec v : frame.vecs() ) {
-        if (null == DKV.get(v._key))
+        if (null == DKV.get(v._key)) {
           Log.warn("For Frame: " + frame._key + ", Vec number: " + i + " (" + frame.name(i)+ ") is missing; not returning it.");
-        else
+          }
+        else {
           v.startRollupStats(fs, Vec.DO_HISTOGRAMS);
+          }
         i++;
       }
       fs.blockForPending();
@@ -282,7 +293,9 @@ public class FramesHandler<I extends FramesHandler.Frames, S extends SchemaV3<I,
       }
     }
     fs.blockForPending();
-    if( missing.size() != 0 ) throw new H2OKeysNotFoundArgumentException("(none)", missing.toArray(new String[missing.size()]));
+    if( missing.size() != 0 ) {
+    	throw new H2OKeysNotFoundArgumentException("(none)", missing.toArray(new String[missing.size()]));
+    }
     return frames;
   }
 }

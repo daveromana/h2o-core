@@ -66,8 +66,9 @@ public abstract class AstWhichFunc extends AstBuiltin<AstWhichFunc> {
             }else if(searchVal() == "min"){ //Looking for the min?
                 for (int i = 0; i < row.length; i++) {
                     if (Double.isNaN(row[i])) {
-                        if (!na_rm)
+                        if (!na_rm) {
                             return new ValRow(new double[]{Double.NaN}, null);
+                            }
                     } else {
                         if (row[i] < val) {
                             val = row[i];
@@ -95,8 +96,12 @@ public abstract class AstWhichFunc extends AstBuiltin<AstWhichFunc> {
         // Determine how many columns of different types we have
         int n_numeric = 0, n_time = 0;
         for (Vec vec : fr.vecs()) {
-            if (vec.isNumeric()) n_numeric++;
-            if (vec.isTime()) n_time++;
+            if (vec.isNumeric()) {
+            	n_numeric++;
+            }
+            if (vec.isTime()) {
+            	n_time++;
+            }
         }
         // Compute the type of the resulting column: if all columns are TIME then the result is also time; otherwise
         // if at least one column is numeric then the result is also numeric.
@@ -106,8 +111,9 @@ public abstract class AstWhichFunc extends AstBuiltin<AstWhichFunc> {
         Frame compFrame = new Frame();
         for (int i = 0; i < fr.numCols(); i++) {
             Vec vec = fr.vec(i);
-            if (n_numeric > 0? vec.isNumeric() : vec.isTime())
+            if (n_numeric > 0? vec.isNumeric() : vec.isTime()) {
                 compFrame.add(fr.name(i), vec);
+                }
         }
         Vec anyvec = compFrame.anyVec();
 
@@ -160,10 +166,12 @@ public abstract class AstWhichFunc extends AstBuiltin<AstWhichFunc> {
                     }else{
                         throw new IllegalArgumentException("Incorrect argument: expected to search for max() or min(), received " + searchVal());
                     }
-                    if (na_rm ? numNaColumns < numCols : numNaColumns == 0)
+                    if (na_rm ? numNaColumns < numCols : numNaColumns == 0) {
                         nc.addNum(valueIndex);
-                    else
+                        }
+                    else {
                         nc.addNum(Double.NaN);
+                        }
                 }
             }
         }.doAll(1, resType, compFrame)

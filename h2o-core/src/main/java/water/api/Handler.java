@@ -44,8 +44,9 @@ public class Handler extends H2OCountedCompleter<Handler> {
 
     // Fill from http request params:
     schema = schema.fillFromParms(parms, !is_post_of_json);
-    if (schema == null)
+    if (schema == null) {
       throw H2O.fail("fillFromParms returned a null schema for version: " + version + " in: " + this.getClass() + " with params: " + parms);
+      }
 
     // Fill from JSON body, if there is one.  NOTE: there should *either* be a JSON body *or* parms,
     // with the exception of control-type query parameters.
@@ -66,8 +67,12 @@ public class Handler extends H2OCountedCompleter<Handler> {
     // rather uselessly.  Peel out the original exception & throw it.
     catch( InvocationTargetException ite ) {
       Throwable t = ite.getCause();
-      if( t instanceof RuntimeException ) throw (RuntimeException)t;
-      if( t instanceof Error ) throw (Error)t;
+      if( t instanceof RuntimeException ) {
+    	  throw (RuntimeException)t;
+      }
+      if( t instanceof Error ) {
+    	  throw (Error)t;
+      }
       throw new RuntimeException(t);
     }
 
@@ -85,8 +90,10 @@ public class Handler extends H2OCountedCompleter<Handler> {
     catch (IOException e) {
       Log.warn("Caught IOException trying to read doc file: ", path);
     }
-    if (docs != null)
-      docs.append(sb);
+    if (docs != null) {
+    	 docs.append(sb);
+    }
+     
     return sb;
   }
 
@@ -95,12 +102,14 @@ public class Handler extends H2OCountedCompleter<Handler> {
   }
 
   public static <T extends Keyed> T getFromDKV(String param_name, Key key, Class<T> klazz) {
-    if (key == null)
+    if (key == null) {
       throw new H2OIllegalArgumentException(param_name, "Handler.getFromDKV()", "null");
+      }
 
     Value v = DKV.get(key);
-    if (v == null)
+    if (v == null) {
       throw new H2OKeyNotFoundArgumentException(param_name, key.toString());
+      }
 
     try {
       return klazz.cast(v.get());

@@ -765,7 +765,7 @@ public class NonBlockingHashMapLong<TypeV>
         //synchronized( this ) { wait(8*megs); }         // Timeout - we always wakeup
         // For now, sleep a tad and see if the 2 guys already trying to make
         // the table actually get around to making it happen.
-        try { Thread.sleep(8*megs); } catch( Exception e ) { }
+        try { Thread.sleep(8*megs); } catch( Exception e ) { System.out.println("The error is: " + e);}
       }
       // Last check, since the 'new' below is expensive and there is a chance
       // that another thread slipped in a new thread while we ran the heuristic.

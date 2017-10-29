@@ -32,9 +32,13 @@ public class JobsHandler extends Handler {
   public JobsV3 fetch(int version, JobsV3 s) {
     Key key = s.job_id.key();
     Value val = DKV.get(key);
-    if( null == val ) throw new IllegalArgumentException("Job is missing");
+    if( null == val ) {
+    	throw new IllegalArgumentException("Job is missing");
+    }
     Iced ice = val.get();
-    if( !(ice instanceof Job) ) throw new IllegalArgumentException("Must be a Job not a "+ice.getClass());
+    if( !(ice instanceof Job) ) {
+    	throw new IllegalArgumentException("Must be a Job not a "+ice.getClass());
+    }
 
     Job j = (Job) ice;
     s.jobs = new JobV3[1];
@@ -69,11 +73,13 @@ public class JobsHandler extends Handler {
     public JobV4 exec(int ignored, JobIV4 input) {
       Key<Job> key = Key.make(input.job_id);
       Value val = DKV.get(key);
-      if (val == null)
+      if (val == null) {
         throw new IllegalArgumentException("Job " + input.job_id + " is missing");
+      }
       Iced iced = val.get();
-      if (!(iced instanceof Job))
+      if (!(iced instanceof Job)) {
         throw new IllegalArgumentException("Id " + input.job_id + " references a " + iced.getClass() + " not a Job");
+      }
 
       Job job = (Job) iced;
       JobV4 out = new JobV4();

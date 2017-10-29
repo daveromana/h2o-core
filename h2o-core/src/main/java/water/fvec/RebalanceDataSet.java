@@ -62,7 +62,9 @@ public class RebalanceDataSet extends H2O.H2OCountedCompleter {
     // on each one of them.  RebalanceTask will fetch the appropriate training_frame
     // chunks and fetch the data from them.
     long[] espc;
-    if (_espc != null) espc = _espc;
+    if (_espc != null) {
+    	espc = _espc;
+    }
     else {
       int rpc = (int) (_in.numRows() / _nchunks);
       int rem = (int) (_in.numRows() % _nchunks);
@@ -93,7 +95,9 @@ public class RebalanceDataSet extends H2O.H2OCountedCompleter {
   }
   @Override public boolean onExceptionalCompletion(Throwable t, CountedCompleter caller) {
     t.printStackTrace();
-    if( _out != null ) _out.delete(_jobKey,new Futures()).blockForPending();
+    if( _out != null ) {
+    	_out.delete(_jobKey,new Futures()).blockForPending();
+    }
     return true;
   }
 

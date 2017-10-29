@@ -174,8 +174,9 @@ public abstract class AbstractHTTPD {
       _server.setSessionIdManager(idManager);
 
       HashSessionManager manager = new HashSessionManager();
-      if (_args.session_timeout > 0)
+      if (_args.session_timeout > 0) {
         manager.setMaxInactiveInterval(_args.session_timeout * 60);
+        }
 
       SessionHandler sessionHandler = new SessionHandler(manager);
       sessionHandler.setHandler(security);

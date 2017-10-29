@@ -66,7 +66,9 @@ public class MetadataHandler extends Handler {
     res.endpoints = new EndpointV4[RequestServer.numRoutes(4)];
     int i = 0;
     for (Route route : RequestServer.routes()) {
-      if (route.getVersion() != version) continue;
+      if (route.getVersion() != version) {
+    	  continue;
+      }
       EndpointV4 routeSchema = Schema.newInstance(EndpointV4.class).fillFromImpl(route);
       res.endpoints[i++] = routeSchema;
     }
@@ -87,16 +89,20 @@ public class MetadataHandler extends Handler {
     } else {
       // Linear scan for the route, plus each route is asked for in-order
       // during doc-gen leading to an O(n^2) execution cost.
-      if (docs.path != null)
+      if (docs.path != null) {
         try { docs.num = Integer.parseInt(docs.path); }
-        catch (NumberFormatException e) { /* path is not a number, it's ok */ }
-      if (docs.num >= 0 && docs.num < RequestServer.numRoutes())
+        catch (NumberFormatException e) { 
+        	System.out.println("The error is: " + e);	}
+        /* path is not a number, it's ok */ }
+      if (docs.num >= 0 && docs.num < RequestServer.numRoutes()) {
         route = RequestServer.routes().get(docs.num);
       // Crash-n-burn if route not found (old code thru an AIOOBE), so we
       // something similarly bad.
-      docs.routes = new RouteV3[]{new RouteV3(route)};
+      docs.routes = new RouteV3[]{new RouteV3(route)};}
     }
-    if (route == null) return null;
+    if (route == null) {
+    	return null;
+    }
 
     Schema sinput, soutput;
     if( route._handler_class.equals(water.api.ModelBuilderHandler.class) ||
@@ -157,6 +163,7 @@ public class MetadataHandler extends Handler {
       schema.fillFromImpl(impl);
     }
     catch (Exception e) {
+    	System.out.println("The error is: " + e);
       // ignore if create fails; this can happen for abstract classes
     }
     SchemaMetadataV3 meta = new SchemaMetadataV3(new SchemaMetadata(schema));
@@ -182,6 +189,7 @@ public class MetadataHandler extends Handler {
         schema.fillFromImpl(impl);
       }
       catch (Exception e) {
+    	  System.out.println("The error is: " + e);
         // ignore if create fails; this can happen for abstract classes
       }
 

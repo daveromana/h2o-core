@@ -29,7 +29,9 @@ public class C16Chunk extends Chunk {
     return hi;
   }
   @Override boolean set_impl(int i, long lo, long hi) {
-    if (isNA(lo, hi)) throw new IllegalArgumentException("Illegal uid value");
+    if (isNA(lo, hi)) {
+    	throw new IllegalArgumentException("Illegal uid value");
+    }
     UnsafeUtils.set8(_mem, i*16,     lo);
     UnsafeUtils.set8(_mem, i*16 + 8, hi);
     return true;
@@ -42,8 +44,12 @@ public class C16Chunk extends Chunk {
   @Override
   public <T extends ChunkVisitor> T processRows(T v, int from, int to) {
     for(int i = from; i < to; i++) {
-      if(isNA(i)) v.addNAs(1);
-      else v.addValue(UnsafeUtils.get8(_mem, 16 * i), UnsafeUtils.get8(_mem, 16 * i + 8));
+      if(isNA(i)) {
+    	  v.addNAs(1);
+      }
+      else {
+    	  v.addValue(UnsafeUtils.get8(_mem, 16 * i), UnsafeUtils.get8(_mem, 16 * i + 8));
+      }
     }
     return v;
   }

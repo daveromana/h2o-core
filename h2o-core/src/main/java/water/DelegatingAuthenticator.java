@@ -40,10 +40,14 @@ class DelegatingAuthenticator implements Authenticator {
   @Override
   public Authentication validateRequest(ServletRequest request, ServletResponse response,
                                         boolean mandatory) throws ServerAuthException {
-    if (isBrowserAgent((HttpServletRequest) request))
-      return _formAuth.validateRequest(request, response, mandatory);
-    else
-      return _basicAuth.validateRequest(request, response, mandatory);
+    if (isBrowserAgent((HttpServletRequest) request)) {
+    	return _formAuth.validateRequest(request, response, mandatory);
+    }
+      
+    else {
+    	 return _basicAuth.validateRequest(request, response, mandatory);
+    }
+     
   }
 
   private static boolean isBrowserAgent(HttpServletRequest request) {

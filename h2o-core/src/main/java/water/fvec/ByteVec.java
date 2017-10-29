@@ -40,15 +40,18 @@ public class ByteVec extends Vec {
   public byte[] getPreviewChunkBytes(int chkIdx) {
     if (chkIdx >= nChunks())
       throw new H2OIllegalArgumentException("Asked for chunk index beyond the number of chunks.");
-    if (chkIdx == 0)
+    if (chkIdx == 0) {
       return chunkForChunkIdx(chkIdx)._mem;
+      }
     else { //must eat partial lines
       // FIXME: a hack to consume partial lines since each preview chunk is seen as cidx=0
       byte[] mem = chunkForChunkIdx(chkIdx)._mem;
       int i = 0, j = mem.length-1;
       while (i < mem.length && mem[i] != CHAR_CR && mem[i] != CHAR_LF) i++;
       while (j > i && mem[j] != CHAR_CR && mem[j] != CHAR_LF) j--;
-      if (j-i > 1) return Arrays.copyOfRange(mem,i,j);
+      if (j-i > 1) {
+    	  return Arrays.copyOfRange(mem,i,j);
+      }
       else return null;
     }
   }
@@ -66,11 +69,14 @@ public class ByteVec extends Vec {
       public int available() {
         if (_c0 == null || _sz >= _c0._len) {
           sz[0] += _c0 != null ? _c0._len : 0;
-          if (_cidx >= nChunks()) return 0;
+          if (_cidx >= nChunks()) {
+        	  return 0;
+          }
           _c0 = chunkForChunkIdx(_cidx++);
           _sz = C1NChunk._OFF;
-          if (job_key != null)
+          if (job_key != null) {
             Job.update(_c0._len, job_key);
+            }
         }
         return _c0._len - _sz;
       }
@@ -100,8 +106,9 @@ public class ByteVec extends Vec {
           return _cidx;
         }
         int sz = available();
-        if (sz == 0)
+        if (sz == 0) {
           return -1;
+          }
         len = Math.min(len, sz);
         System.arraycopy(_c0._mem, _sz, b, off, len);
         _sz += len;

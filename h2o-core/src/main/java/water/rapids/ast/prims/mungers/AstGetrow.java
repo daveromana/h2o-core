@@ -36,8 +36,10 @@ public class AstGetrow extends AstPrimitive {
   @Override
   public ValRow apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
-    if (fr.numRows() != 1)
-      throw new IllegalArgumentException("The frame should have only 1 row; found " + fr.numRows() + " rows.");
+    if (fr.numRows() != 1) {
+    	      throw new IllegalArgumentException("The frame should have only 1 row; found " + fr.numRows() + " rows.");
+
+    }
 
     double[] res = new double[fr.numCols()];
     for (int i = 0; i < res.length; i++) {

@@ -37,29 +37,36 @@ public class AstSetDomain extends AstPrimitive {
     Frame f = stk.track(asts[1].exec(env)).getFrame();
     boolean inPlace = asts[2].exec(env).getNum() == 1;
     String[] newDomains = ((AstStrList) asts[3])._strs;
-    if (f.numCols() != 1)
+    if (f.numCols() != 1) {
       throw new IllegalArgumentException("Must be a single column. Got: " + f.numCols() + " columns.");
-    if (! f.vec(0).isCategorical())
+      }
+    if (! f.vec(0).isCategorical()) {
       throw new IllegalArgumentException("Vector must be a factor column. Got: " + f.vec(0).get_type_str());
+      }
     Vec v;
-    if (inPlace)
+    if (inPlace) {
       v = f.vec(0);
-    else
+      }
+    else {
       v = env._ses.copyOnWrite(f, new int[]{0})[0]; // copy-on-write
+      }
     if (newDomains != null && newDomains.length != v.domain().length) {
       // in this case we want to recollect the domain and check that number of levels matches _domains
       VecUtils.CollectDomainFast t = new VecUtils.CollectDomainFast((int) v.max());
       t.doAll(v);
       final long[] dom = t.domain();
-      if (dom.length != newDomains.length)
+      if (dom.length != newDomains.length) {
         throw new IllegalArgumentException("Number of replacement factors must equal current number of levels. Current number of levels: " + dom.length + " != " + newDomains.length);
+        }
       new MRTask() {
         @Override
         public void map(Chunk c) {
           for (int i = 0; i < c._len; ++i) {
             if (!c.isNA(i)) {
               long num = Arrays.binarySearch(dom, c.at8(i));
-              if (num < 0) throw new IllegalArgumentException("Could not find the categorical value!");
+              if (num < 0) {
+            	  throw new IllegalArgumentException("Could not find the categorical value!");
+              }
               c.set(i, num);
             }
           }

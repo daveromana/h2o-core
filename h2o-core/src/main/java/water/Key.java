@@ -94,7 +94,9 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
   int D( int repl ) {
     int hsz = H2O.CLOUD.size();
 
-    if (0 == hsz) return -1;    // Clients starting up find no cloud, be unable to home keys
+    if (0 == hsz) {
+    	return -1;    // Clients starting up find no cloud, be unable to home keys
+    }
 
     // See if this is a specifically homed Key
     if( !user_allowed() && repl < _kb[1] ) { // Asking for a replica# from the homed list?
@@ -103,7 +105,9 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
       H2ONode h2o = H2ONode.intern(_kb,2+repl*(H2ONode.H2Okey.SIZE /* serialized bytesize of H2OKey - depends on IP protocol */));
       // Reverse the home to the index
       int idx = h2o.index();
-      if( idx >= 0 ) return idx;
+      if( idx >= 0 ) {
+    	  return idx;
+      }
       // Else homed to a node which is no longer in the cloud!
       // Fall back to the normal home mode
     }
@@ -120,7 +124,9 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
     // go round-robin in 64MB chunks.
     if( _kb[0] == CHK ) {
       // Homed Chunk?
-      if( _kb[1] != -1 ) throw H2O.fail();
+      if( _kb[1] != -1 ) {
+    	  throw H2O.fail();
+      }
       // For round-robin on Chunks in the following pattern:
       // 1 Chunk-per-node, until all nodes have 1 chunk (max parallelism).
       // Then 2 chunks-per-node, once around, then 4, then 8, then 16.
@@ -202,13 +208,17 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
   private boolean set_cache( long cache ) {
     while( true ) { // Spin till get it
       long old = _cache; // Read once at the start
-      if( !H2O.larger(cloud(cache),cloud(old)) ) // Rolling backwards?
+      if( !H2O.larger(cloud(cache),cloud(old)) ) {// Rolling backwards?
         // Attempt to set for an older Cloud. Blow out with a failure; caller
         // should retry on a new Cloud.
         return false;
       assert cloud(cache) != cloud(old) || cache == old;
-      if( old == cache ) return true; // Fast-path cutout
-      if( _cacheUpdater.compareAndSet(this,old,cache) ) return true;
+      if( old == cache ) {
+    	  return true; // Fast-path cutout
+      }
+      if( _cacheUpdater.compareAndSet(this,old,cache) ) {
+    	  return true;
+      }
       // Can fail if the cache is really old, and just got updated to a version
       // which is still not the latest, and we are trying to update it again.
     }
@@ -217,7 +227,9 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
   long cloud_info( H2O cloud ) {
     long x = _cache;
     // See if cached for this Cloud. This should be the 99% fast case.
-    if( cloud(x) == cloud._idx ) return x;
+    if( cloud(x) == cloud._idx ) {
+    	return x;
+    }
 
     // Cache missed! Probably it just needs (atomic) updating.
     // But we might be holding the stale cloud...
@@ -244,7 +256,9 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
 
   // Construct a new Key.
   private Key(byte[] kb) {
-    if( kb.length > KEY_LENGTH ) throw new IllegalArgumentException("Key length would be "+kb.length);
+    if( kb.length > KEY_LENGTH ) {
+    	throw new IllegalArgumentException("Key length would be "+kb.length);
+    }
     _kb = kb;
     // Quicky hash: http://en.wikipedia.org/wiki/Jenkins_hash_function
     int hash = 0;
@@ -261,10 +275,12 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
 
   // Make new Keys.  Optimistically attempt interning, but no guarantee.
   static <P extends Keyed> Key<P> make(byte[] kb, byte rf) {
-    if( rf == -1 ) throw new IllegalArgumentException();
+    if( rf == -1 ) {
+    	throw new IllegalArgumentException();
+    }
     Key key = new Key(kb);
     Key key2 = H2O.getk(key); // Get the interned version, if any
-    if( key2 != null ) // There is one! Return it instead
+    if( key2 != null ) { // There is one! Return it instead
       return key2;
 
     // Set the cache with desired replication factor, and a fake cloud index
@@ -342,8 +358,12 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
     assert systemType<32; // only system keys allowed
     boolean inCloud=true;
     for( H2ONode h2o : replicas ) if( !H2O.CLOUD.contains(h2o) ) inCloud = false;
-    if( required ) assert inCloud; // If required placement, error to find a client as the home
-    else if( !inCloud ) replicas = new H2ONode[0]; // If placement is a hint & cannot be placed, then ignore
+    if( required ) {
+    	assert inCloud; // If required placement, error to find a client as the home
+    }
+    else if( !inCloud ) { 
+    	replicas = new H2ONode[0]; // If placement is a hint & cannot be placed, then ignore
+    }
 
     // Key byte layout is:
     // 0 - systemType, from 0-31
@@ -365,7 +385,9 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
   public void remove() { remove(new Futures()).blockForPending(); }
   public Futures remove(Futures fs) {
     Value val = DKV.get(this);
-    if( val!=null ) ((Keyed)val.get()).remove(fs);
+    if( val!=null ) {
+    	((Keyed)val.get()).remove(fs);
+    }
     return fs;
   }
 
@@ -387,9 +409,9 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
     //
     // Therefore, we have to fetch the type of the item the Key is pointing to at runtime.
     Value v = DKV.get(this);
-    if (null == v)
+    if (null == v) {
       return null;
-    else
+    else {
       return v.className();
   }
 
@@ -397,7 +419,9 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
   public String valueClassSimple() {
     String vc = this.valueClass();
 
-    if (null == vc) return null;
+    if (null == vc) {
+    	return null;
+    }
 
     String[] elements = vc.split("\\.");
     return elements[elements.length - 1];
@@ -417,9 +441,13 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
     int len = _kb.length;
     while( --len >= 0 ) {
       char a = (char) _kb[len];
-      if (' ' <= a && a <= '#') continue;
+      if (' ' <= a && a <= '#') {
+    	  continue;
+      }
       // then we have $ which is not allowed
-      if ('%' <= a && a <= '~') continue;
+      if ('%' <= a && a <= '~') {
+    	  continue;
+      }
       // already in the one above
       //if( 'a' <= a && a <= 'z' ) continue;
       //if( 'A' <= a && a <= 'Z' ) continue;
@@ -443,11 +471,17 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
   }
 
   private static byte[] decodeKeyName(String what) {
-    if( what==null ) return null;
-    if( what.length()==0 ) return null;
+    if( what==null ) {
+    	return null;
+    }
+    if( what.length()==0 ) {
+    	return null;
+    }
     if (what.charAt(0) == MAGIC_CHAR) {
       int len = what.indexOf(MAGIC_CHAR,1);
-      if( len < 0 ) throw new IllegalArgumentException("No matching magic '"+MAGIC_CHAR+"', key name is not legal");
+      if( len < 0 ) {
+    	  throw new IllegalArgumentException("No matching magic '"+MAGIC_CHAR+"', key name is not legal");
+      }
       String tail = what.substring(len+1);
       byte[] res = new byte[(len-1)/2 + tail.length()];
       int r = 0;
@@ -469,10 +503,14 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
 
   @Override public int hashCode() { return _hash; }
   @Override public boolean equals( Object o ) {
-    if( this == o ) return true;
+    if( this == o ) {
+    	return true;
+    }
     if( o == null ) return false;
     Key k = (Key)o;
-    if( _hash != k._hash ) return false;
+    if( _hash != k._hash ) {
+    	return false;
+    }
     return Arrays.equals(k._kb,_kb);
   }
 

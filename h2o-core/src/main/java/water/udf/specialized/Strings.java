@@ -63,8 +63,9 @@ public class Strings extends DataColumns.BaseFactory<String> {
   
   @Override
   public DataColumn<String> newColumn(final Vec vec) {
-    if (vec.get_type() != Vec.T_STR)
+    if (vec.get_type() != Vec.T_STR) {
       throw new IllegalArgumentException("Expected type T_STR, got " + vec.get_type_str());
+      }
     return new StringColumn(vec, this);
   }
   

@@ -21,8 +21,9 @@ public class RequestUri {
   private boolean is_api_url;
 
   public RequestUri(String request_method, String request_url) throws MalformedURLException {
-    if (!http_methods.contains(request_method))
+    if (!http_methods.contains(request_method)) {
       throw new MalformedURLException("Bad HTTP method: " + request_method);
+      }
 
     method = request_method;
     url = request_url;
@@ -47,8 +48,9 @@ public class RequestUri {
     computePathIfNeeded();
     ArrayList<String> params_list = new ArrayList<>();
     for (int i = 2; i < path.length; i++)
-      if (path[i].startsWith("{") && path[i].endsWith("}"))
+      if (path[i].startsWith("{") && path[i].endsWith("}")) {
         params_list.add(path[i].substring(1, path[i].length()-1));
+        }
     return params_list.toArray(new String[params_list.size()]);
   }
 
@@ -81,12 +83,17 @@ public class RequestUri {
       assert path[0].isEmpty() && path.length >= 3;
 
       String ver = path[1].toUpperCase();
-      if (ver.equals("EXPERIMENTAL")) ver = ((Integer) SchemaServer.getExperimentalVersion()).toString();
-      if (ver.equals("LATEST")) ver = ((Integer) SchemaServer.getLatestOrHighestSupportedVersion()).toString();
+      if (ver.equals("EXPERIMENTAL")) {
+    	  ver = ((Integer) SchemaServer.getExperimentalVersion()).toString();
+      }
+      if (ver.equals("LATEST")) {
+    	  ver = ((Integer) SchemaServer.getLatestOrHighestSupportedVersion()).toString();
+      }
 
       // Old clients (h2o-2) tend to append .json suffix to the endpoint's name -- fixing that
-      if (path[2].endsWith(".json"))
+      if (path[2].endsWith(".json")) {
         path[2] = path[2].substring(0, path[2].length() - 5);
+        }
 
       path[1] = method;
       path[path.length - 1] = ver;

@@ -33,11 +33,16 @@ public class AstRm extends AstPrimitive {
   public ValNum apply(Env env, Env.StackHelp stk, AstRoot[] asts) {
     Key id = Key.make(env.expand(asts[1].str()));
     Value val = DKV.get(id);
-    if (val == null) return new ValNum(0);
-    if (val.isFrame())
+    if (val == null) {
+    	return new ValNum(0);
+    }
+    if (val.isFrame()) {
       env._ses.remove(val.<Frame>get()); // Remove unshared Vecs
-    else
-      Keyed.remove(id);           // Normal (e.g. Model) remove
+      }
+    else {
+    	Keyed.remove(id);           // Normal (e.g. Model) remove
+    }
+      
 
     return new ValNum(1);
   }

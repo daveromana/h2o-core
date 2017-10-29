@@ -36,8 +36,12 @@ public class Dates extends DataColumns.BaseFactory<Date> {
 
     @Override
     public void set(int idx, Date value) {
-      if (value == null) c.setNA(idx);
-      else c.set(idx, value.getTime());
+      if (value == null) {
+    	  c.setNA(idx);
+      }
+      else {
+    	  c.set(idx, value.getTime());
+      }
     }
   }
   
@@ -58,16 +62,21 @@ public class Dates extends DataColumns.BaseFactory<Date> {
 
     @Override
     public void set(long idx, Date value) {
-      if (value == null) vec().setNA(idx);
-      else vec().set(idx, value.getTime());
+      if (value == null) {
+    	  vec().setNA(idx);
+      }
+      else {
+    	  vec().set(idx, value.getTime());
+      }
     }
   }
   
   
   @Override
   public DataColumn<Date> newColumn(final Vec vec) {
-    if (vec.get_type() != Vec.T_TIME && vec.get_type() != Vec.T_NUM)
+    if (vec.get_type() != Vec.T_TIME && vec.get_type() != Vec.T_NUM) {
       throw new IllegalArgumentException("Expected a type compatible with Dates, got " + vec.get_type_str());
+      }
     return new Column(vec, this);
   }
 }

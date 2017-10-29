@@ -53,18 +53,22 @@ public class AstColSlice extends AstPrimitive {
   // name or number.  Numbers can be ranges or negative.
   public static int[] col_select(String[] names, AstParameter col_selector) {
     int[] cols = col_selector.columns(names);
-    if (cols.length == 0) return cols; // Empty inclusion list?
+    if (cols.length == 0) {
+    	return cols; // Empty inclusion list?
+    }
     if (cols[0] >= 0) { // Positive (inclusion) list
-      if (cols[cols.length - 1] >= names.length)
+      if (cols[cols.length - 1] >= names.length) {
         throw new IllegalArgumentException("Column must be an integer from 0 to " + (names.length - 1));
+      }
       return cols;
     }
 
     // Negative (exclusion) list; convert to positive inclusion list
     int[] pos = new int[names.length];
     for (int col : cols) // more or less a radix sort, filtering down to cols to ignore
-      if (0 <= -col - 1 && -col - 1 < names.length)
+      if (0 <= -col - 1 && -col - 1 < names.length) {
         pos[-col - 1] = -1;
+        }
     int j = 0;
     for (int i = 0; i < names.length; i++) if (pos[i] == 0) pos[j++] = i;
     return Arrays.copyOfRange(pos, 0, j);

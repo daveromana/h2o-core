@@ -35,14 +35,22 @@ public final class Categorical extends Iced {
   int addKey(BufferedString str) {
     // _map is shared and be cast to null (if categorical is killed) -> grab local copy
     IcedHashMap<BufferedString, Integer> m = _map;
-    if( m == null ) return Integer.MAX_VALUE;     // Nuked already
+    if( m == null ) {
+    	return Integer.MAX_VALUE;     // Nuked already
+    }
     Integer res = m.get(str);
-    if( res != null ) return res; // Recorded already
+    if( res != null ) {
+    	return res; // Recorded already
+    }
     assert str.length() < 65535; // Length limit so 65535 can be used as a sentinel
     int newVal = _id.incrementAndGet();
     res = m.putIfAbsent(new BufferedString(str), newVal);
-    if( res != null ) return res;
-    if( m.size() > MAX_CATEGORICAL_COUNT) maxDomainExceeded = true;
+    if( res != null ) {
+    	return res;
+    }
+    if( m.size() > MAX_CATEGORICAL_COUNT) {
+    	maxDomainExceeded = true;
+    }
     return newVal;
   }
   final boolean containsKey(BufferedString key){ return _map.containsKey(key); }
@@ -71,20 +79,26 @@ public final class Categorical extends Iced {
     StringBuilder hexSB = new StringBuilder();
     for (int i = 0; i < bStrs.length; i++) {
       String s = bStrs[i].toString(); // converts to String using UTF-8 encoding
-      if (bStrs[i].equalsAsciiString(s))
-        continue; // quick check for the typical case without new object allocation & map modification
+      if (bStrs[i].equalsAsciiString(s)) {
+        continue; 
+        }// quick check for the typical case without new object allocation & map modification
       if (s.contains("\uFFFD")) { // converted string contains Unicode replacement character => sanitize the (whole) string
         s = bStrs[i].toSanitizedString();
-        if (hexConvLeft-- > 0) hexSB.append(s).append(", ");
-        if (hexConvLeft == 0) hexSB.append("...");
+        if (hexConvLeft-- > 0) {
+        	hexSB.append(s).append(", ");
+        }
+        if (hexConvLeft == 0) {
+        	hexSB.append("...");
+        }
       }
       int val = _map.get(bStrs[i]);
       _map.remove(bStrs[i]);
       bStrs[i] = new BufferedString(s);
       _map.put(bStrs[i], val);
     }
-    if (hexSB.length() > 0) Log.info("Found categoricals with non-UTF-8 characters or NULL character in the " +
+    if (hexSB.length() > 0) {Log.info("Found categoricals with non-UTF-8 characters or NULL character in the " +
         PrettyPrint.withOrdinalIndicator(col) + " column. Converting unrecognized characters into hex:  " + hexSB.toString());
+    }
   }
 
   // Since this is a *concurrent* hashtable, writing it whilst its being

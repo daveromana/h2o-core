@@ -29,7 +29,9 @@ public class AstAnyFactor extends AstPrimitive {
   @Override
   public ValNum apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
-    for (Vec vec : fr.vecs()) if (vec.isCategorical()) return new ValNum(1);
+    for (Vec vec : fr.vecs()) if (vec.isCategorical()) {
+    	return new ValNum(1);
+    }
     return new ValNum(0);
   }
 }

@@ -51,8 +51,9 @@ public class AstGrep extends AstBuiltin<AstGrep> {
     boolean outputLogical = args[5].getNum() == 1;
     GrepHelper grepHelper = new GrepHelper(regex, ignoreCase, invert, outputLogical);
 
-    if ((fr.numCols() != 1) || ! (fr.anyVec().isCategorical() || fr.anyVec().isString()))
+    if ((fr.numCols() != 1) || ! (fr.anyVec().isCategorical() || fr.anyVec().isString())) {
       throw new IllegalArgumentException("can only grep on a single categorical/string column.");
+      }
 
     Vec v = fr.anyVec();
     assert v != null;
@@ -75,8 +76,9 @@ public class AstGrep extends AstBuiltin<AstGrep> {
     int cnt = 0;
     int[] filtered = new int[domain.length];
     for (int i = 0; i < domain.length; i++) {
-      if (p.matcher(domain[i]).find())
+      if (p.matcher(domain[i]).find()) {
         filtered[cnt++] = i;
+        }
     }
     int[] result = new int[cnt];
     System.arraycopy(filtered, 0, result, 0, cnt);
@@ -201,14 +203,16 @@ public class AstGrep extends AstBuiltin<AstGrep> {
 
     @Override
     void addNA(int row) {
-      if (_invert)
+      if (_invert) {
         _nc.addNum(_start + row);
+        }
     }
 
     @Override
     void addRow(int row, boolean matched) {
-      if (matched != _invert)
+      if (matched != _invert) {
         _nc.addNum(_start + row);
+        }
     }
   }
 

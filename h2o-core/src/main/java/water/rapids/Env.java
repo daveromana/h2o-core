@@ -325,7 +325,9 @@ public class Env extends Iced {
     // Push & track.  Called on every Val that spans a (nested) exec call.
     // Used to track Frames with lifetimes spanning other AstRoot executions.
     public Val track(Val v) {
-      if (v instanceof ValFrame) track(v.getFrame());
+      if (v instanceof ValFrame) {
+    	  track(v.getFrame());
+      }
       return v;
     }
 
@@ -346,13 +348,17 @@ public class Env extends Iced {
         Frame fr = _stk.remove(--sp); // Pop and stop tracking
         fs = _ses.downRefCnt(fr, fs);  // Refcnt -1 all Vecs, and delete if zero refs
       }
-      if (fs != null) fs.blockForPending();
+      if (fs != null) {
+    	  fs.blockForPending();
+      }
     }
 
     // Pop last element and lower refcnts - but do not delete.  Lifetime is
     // responsibility of the caller.
     public Val untrack(Val vfr) {
-      if (!vfr.isFrame()) return vfr;
+      if (!vfr.isFrame()) {
+    	  return vfr;
+      }
       Frame fr = vfr.getFrame();
       _ses.addRefCnt(fr, -1);           // Lower counts, but do not delete on zero
       return vfr;
@@ -365,8 +371,9 @@ public class Env extends Iced {
   // in this opcode will get deleted as the opcode exits - even if they are
   // shared in the returning output Frame.
   public <V extends Val> V returning(V val) {
-    if (val instanceof ValFrame)
+    if (val instanceof ValFrame) {
       _ses.addRefCnt(val.getFrame(), 1);
+      }
     return val;
   }
 
@@ -386,18 +393,21 @@ public class Env extends Iced {
     // Now the DKV
     Value value = DKV.get(Key.make(expand(id)));
     if (value != null) {
-      if (value.isFrame())
+      if (value.isFrame()) {
         return addGlobals((Frame) value.get());
-      if (value.isModel())
+        }
+      if (value.isModel()) {
         return new ValModel((Model) value.get());
+        }
       // Only understand Frames right now
       throw new IllegalArgumentException("DKV name lookup of " + id + " yielded an instance of type " + value.className() + ", but only Frame & Model are supported");
     }
 
     // Now the built-ins
     AstPrimitive ast = PRIMS.get(id);
-    if (ast != null)
+    if (ast != null) {
       return new ValFun(ast);
+      }
 
     throw new IllegalArgumentException("Name lookup of '" + id + "' failed");
   }

@@ -34,8 +34,9 @@ public class DMatrix  {
    * @return
    */
   public static Frame transpose(Frame src){
-    if(src.numRows() != (int)src.numRows())
+    if(src.numRows() != (int)src.numRows()) {
       throw H2O.unimpl();
+      }
     int nchunks = Math.max(1,src.numCols()/10000);
     long [] espc = new long[nchunks+1];
     int rpc = (src.numCols() / nchunks);
@@ -63,13 +64,16 @@ public class DMatrix  {
    * @return
    */
   public static Frame transpose(Frame src, Frame tgt){
-    if(src.numRows() != tgt.numCols() || src.numCols() != tgt.numRows())
+    if(src.numRows() != tgt.numCols() || src.numCols() != tgt.numRows()) {
       throw new IllegalArgumentException("dimension do not match!");
+      }
     for(Vec v:src.vecs()) {
-      if (v.isCategorical())
+      if (v.isCategorical()) {
         throw new IllegalArgumentException("transpose can only be applied to all-numeric frames (representing a matrix)");
-      if(v.length() > 1000000)
+        }
+      if(v.length() > 1000000) {
         throw new IllegalArgumentException("too many rows, transpose only works for frames with < 1M rows.");
+        }
     }
     new TransposeTsk(tgt).doAll(src);
     return tgt;
@@ -103,11 +107,12 @@ public class DMatrix  {
               tgtChunks[k].addZeros((int) (c - espc[fi]) - tgtChunks[k]._len);
               nc.extractRows(tgtChunks[k], k);
             }
-          } else
+          } else {
             for(int k = 0; k < nc._len; k++) {
               tgtChunks[k].addZeros((int) (c - espc[fi]) - tgtChunks[k]._len);
               nc.extractRows(tgtChunks[k], k);
             }
+          }
         }
         for (int j = 0; j < tgtChunks.length; ++j) { // finalize the target chunks and close them
           final int fj = j;
@@ -143,10 +148,12 @@ public class DMatrix  {
 
   public static Frame mmul(Frame x, Frame y) {
     MatrixMulTsk t = new MatrixMulTsk(null,null,x,y);
-    if(Thread.currentThread() instanceof FJWThr)
+    if(Thread.currentThread() instanceof FJWThr) {
       t.fork().join();
-    else
+      }
+    else {
       H2O.submitTask(t).join();
+      }
     return t._z;
   }
 
@@ -158,8 +165,9 @@ public class DMatrix  {
     AtomicInteger _cntr;
     public MatrixMulTsk(H2OCountedCompleter cmp, Key progressKey, Frame x, Frame y) {
       super(cmp);
-      if(x.numCols() != y.numRows())
+      if(x.numCols() != y.numRows()) {
         throw new IllegalArgumentException("dimensions do not match! x.numcols = " + x.numCols() + ", y.numRows = " + y.numRows());
+        }
       _x = x;
       _y = y;
       _progressKey = progressKey;
@@ -191,8 +199,9 @@ public class DMatrix  {
       @Override
       public void callback(H2OCountedCompleter h2OCountedCompleter) {
         int i = _cntr.incrementAndGet();
-        if(i < _y.numCols())
+        if(i < _y.numCols()) {
           forkVecTask(i);
+          }
       }
     }
   }
@@ -225,8 +234,9 @@ public class DMatrix  {
     }
 
     @Override public void reduce(GetNonZerosTsk gnz){
-      if(_idxs.length + gnz._idxs.length > _maxsz)
+      if(_idxs.length + gnz._idxs.length > _maxsz) {
         throw new RuntimeException("too many nonzeros! found at least " + (_idxs.length + gnz._idxs.length) + " nonzeros.");
+        }
       int [] idxs = MemoryManager.malloc4(_idxs.length + gnz._idxs.length);
       double [] vals = MemoryManager.malloc8d(_vals.length + gnz._vals.length);
       ArrayUtils.sortedMerge(_idxs,_vals,gnz._idxs,gnz._vals,idxs,vals);
@@ -258,8 +268,9 @@ public class DMatrix  {
           }
       }
       Chunk modChunk = new NewChunk(res).setSparseRatio(2).compress();
-      if(_progressKey != null)
+      if(_progressKey != null) {
         new UpdateProgress(modChunk.getBytes().length,modChunk.frozenType()).fork(_progressKey);
+        }
       DKV.put(zChunk.vec().chunkKey(zChunk.cidx()),modChunk,_fs);
     }
     @Override public void closeLocal(){

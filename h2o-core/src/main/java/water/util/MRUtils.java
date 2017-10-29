@@ -25,9 +25,11 @@ public class MRUtils {
    * @return Sampled frame
    */
   public static Frame sampleFrame(Frame fr, final long rows, final long seed) {
-    if (fr == null) return null;
+    if (fr == null) {
+    	return null;
     final float fraction = rows > 0 ? (float)rows / fr.numRows() : 1.f;
-    if (fraction >= 1.f) return fr;
+    if (fraction >= 1.f) {
+    	return fr;
     Key newKey = fr._key != null ? Key.make(fr._key.toString() + (fr._key.toString().contains("temporary") ? ".sample." : ".temporary.sample.") + PrettyPrint.formatPct(fraction).replace(" ","")) : null;
 
     Frame r = new MRTask() {
@@ -41,12 +43,14 @@ public class MRUtils {
           if (rng.nextFloat() < fraction || (count == 0 && r == cs[0]._len-1) ) {
             count++;
             for (int i = 0; i < ncs.length; i++) {
-              if (cs[i].isNA(r)) ncs[i].addNA();
-              else if (cs[i] instanceof CStrChunk)
+              if (cs[i].isNA(r)){
+              	 ncs[i].addNA();
+              	 else if (cs[i] instanceof CStrChunk) {
+              else if (cs[i] instanceof CStrChunk) {
                 ncs[i].addStr(cs[i].atStr(bStr,r));
-              else if (cs[i] instanceof C16Chunk)
+              else if (cs[i] instanceof C16Chunk) {
                 ncs[i].addUUID(cs[i].at16l(r),cs[i].at16h(r));
-              else
+              else {
                 ncs[i].addNum(cs[i].atd(r));
             }
           }
@@ -118,13 +122,13 @@ public class MRUtils {
     @Override public void map(Chunk ys) {
       _ys = new double[_nclass];
       for( int i=0; i<ys._len; i++ )
-        if (!ys.isNA(i))
+        if (!ys.isNA(i)) {
           _ys[(int) ys.at8(i)]++;
     }
     @Override public void map(Chunk ys, Chunk ws) {
       _ys = new double[_nclass];
       for( int i=0; i<ys._len; i++ )
-        if (!ys.isNA(i))
+        if (!ys.isNA(i)) {
           _ys[(int) ys.at8(i)] += ws.atd(i);
     }
     @Override public void reduce( ClassDist that ) { ArrayUtils.add(_ys,that._ys); }
@@ -139,9 +143,9 @@ public class MRUtils {
         if( !ys.isNA(row) ) {
           d._val = ys.atd(row);
           IcedAtomicInt oldV = _dist.get(d);
-          if(oldV == null)
+          if(oldV == null) {
             oldV = _dist.putIfAbsent(new IcedDouble(d._val), new IcedAtomicInt(1));
-          if(oldV != null)
+          if(oldV != null) {
             oldV.incrementAndGet();
         }
     }
@@ -153,7 +157,8 @@ public class MRUtils {
         if( l.size() < r.size() ) { l=r; r=_dist; }
         for( IcedDouble v: r.keySet() ) {
           IcedAtomicInt oldVal = l.putIfAbsent(v, r.get(v));
-          if( oldVal!=null ) oldVal.addAndGet(r.get(v).get());
+          if( oldVal!=null ) {
+          	oldVal.addAndGet(r.get(v).get());
         }
         _dist=l;
         mrt._dist=null;
@@ -187,7 +192,8 @@ public class MRUtils {
    * @return Sampled frame, with approximately the same number of samples from each class (or given by the requested sampling ratios)
    */
   public static Frame sampleFrameStratified(final Frame fr, Vec label, Vec weights, float[] sampling_ratios, long maxrows, final long seed, final boolean allowOversampling, final boolean verbose) {
-    if (fr == null) return null;
+    if (fr == null){
+    	 return null;
     assert(label.isCategorical());
     if (maxrows < label.domain().length) {
       Log.warn("Attempting to do stratified sampling to fewer samples than there are class labels - automatically increasing to #rows == #labels (" + label.domain().length + ").");
@@ -198,7 +204,7 @@ public class MRUtils {
     double[] dist = weights != null ? cd.doAll(label, weights).dist() : cd.doAll(label).dist();
     assert(dist.length > 0);
     Log.info("Doing stratified sampling for data set containing " + fr.numRows() + " rows from " + dist.length + " classes. Oversampling: " + (allowOversampling ? "on" : "off"));
-    if (verbose)
+    if (verbose) {
       for (int i=0; i<dist.length;++i)
         Log.info("Class " + label.factor(i) + ": count: " + dist[i] + " prior: " + (float)dist[i]/fr.numRows());
 
@@ -211,11 +217,11 @@ public class MRUtils {
       for (int i=0; i<dist.length;++i)
         sampling_ratios[i] = ((float)fr.numRows() / label.domain().length) / (float)dist[i]; // prior^-1 / num_classes
       final float inv_scale = ArrayUtils.minValue(sampling_ratios); //majority class has lowest required oversampling factor to achieve balance
-      if (!Float.isNaN(inv_scale) && !Float.isInfinite(inv_scale))
+      if (!Float.isNaN(inv_scale) && !Float.isInfinite(inv_scale)) {
         ArrayUtils.div(sampling_ratios, inv_scale); //want sampling_ratio 1.0 for majority class (no downsampling)
     }
 
-    if (!allowOversampling)
+    if (!allowOversampling) {
       for (int i=0; i<sampling_ratios.length; ++i)
         sampling_ratios[i] = Math.min(1.0f, sampling_ratios[i]);
 
@@ -234,7 +240,7 @@ public class MRUtils {
 
     if (actualnumrows != numrows) {
       ArrayUtils.mult(sampling_ratios, (float)actualnumrows/numrows); //adjust the sampling_ratios by the global rescaling factor
-      if (verbose)
+      if (verbose) {
         Log.info("Downsampling majority class by " + (float)actualnumrows/numrows
                 + " to limit number of rows to " + String.format("%,d", maxrows));
     }
@@ -262,7 +268,8 @@ public class MRUtils {
   // internal version with repeat counter
   // currently hardcoded to do up to 10 tries to get a row from each class, which can be impossible for certain wrong sampling ratios
   private static Frame sampleFrameStratified(final Frame fr, Vec label, Vec weights, final float[] sampling_ratios, final long seed, final boolean debug, int count) {
-    if (fr == null) return null;
+    if (fr == null) {
+    	return null;
     assert(label.isCategorical());
     assert(sampling_ratios != null && sampling_ratios.length == label.domain().length);
     final int labelidx = fr.find(label); //which column is the label?
@@ -277,7 +284,8 @@ public class MRUtils {
       public void map(Chunk[] cs, NewChunk[] ncs) {
         final Random rng = getRNG(seed);
         for (int r = 0; r < cs[0]._len; r++) {
-          if (cs[labelidx].isNA(r)) continue; //skip missing labels
+          if (cs[labelidx].isNA(r)){
+          	continue; //skip missing labels
           rng.setSeed(cs[0].start()+r+seed);
           final int label = (int)cs[labelidx].at8(r);
           assert(sampling_ratios.length > label && label >= 0);
@@ -310,7 +318,8 @@ public class MRUtils {
     double[] dist = wei != null ? new ClassDist(lab).doAll(lab, wei).dist() : new ClassDist(lab).doAll(lab).dist();
 
     // if there are no training labels in the test set, then there is no point in sampling the test set
-    if (dist == null) return fr;
+    if (dist == null){
+    	 return fr;
 
     if (debug) {
       double sumdist = ArrayUtils.sum(dist);

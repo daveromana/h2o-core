@@ -117,7 +117,9 @@ public class AstGroup extends AstPrimitive {
       @Override
       public double postPass(double ds[], long n) {
         double numerator = ds[0] - ds[1] * ds[1] / n;
-        if (Math.abs(numerator) < 1e-5) numerator = 0;
+        if (Math.abs(numerator) < 1e-5) {
+        	numerator = 0;
+        }
         return numerator / (n - 1);
       }
 
@@ -141,7 +143,9 @@ public class AstGroup extends AstPrimitive {
       @Override
       public double postPass(double ds[], long n) {
         double numerator = ds[0] - ds[1] * ds[1] / n;
-        if (Math.abs(numerator) < 1e-5) numerator = 0;
+        if (Math.abs(numerator) < 1e-5) {
+        	numerator = 0;
+        }
         return Math.sqrt(numerator / (n - 1));
       }
 
@@ -257,10 +261,14 @@ public class AstGroup extends AstPrimitive {
       String fn = v instanceof ValFun ? v.getFun().str() : v.getStr();
       FCN fcn = FCN.valueOf(fn);
       AstNumList col = check(ncols, asts[idx + 1]);
-      if (col.cnt() != 1) throw new IllegalArgumentException("Group-By functions take only a single column");
+      if (col.cnt() != 1) {
+    	  throw new IllegalArgumentException("Group-By functions take only a single column");
+      }
       int agg_col = (int) col.min(); // Aggregate column
-      if (fcn == FCN.mode && !fr.vec(agg_col).isCategorical())
+      if (fcn == FCN.mode && !fr.vec(agg_col).isCategorical()) {
         throw new IllegalArgumentException("Mode only allowed on categorical columns");
+        }
+      
       NAHandling na = NAHandling.valueOf(asts[idx + 2].exec(env).getStr().toUpperCase());
       aggs[(idx - 3) / 3] = new AGG(fcn, agg_col, na, (int) fr.vec(agg_col).max() + 1);
     }
@@ -270,7 +278,7 @@ public class AstGroup extends AstPrimitive {
     final G[] grps = gss.keySet().toArray(new G[gss.size()]);
 
     // apply an ORDER by here...
-    if (gbCols.length > 0)
+    if (gbCols.length > 0) {
       Arrays.sort(grps, new java.util.Comparator<G>() {
         // Compare 2 groups.  Iterate down _gs, stop when _gs[i] > that._gs[i],
         // or _gs[i] < that._gs[i].  Order by various columns specified by
@@ -278,13 +286,19 @@ public class AstGroup extends AstPrimitive {
         @Override
         public int compare(G g1, G g2) {
           for (int i = 0; i < gbCols.length; i++) {
-            if (Double.isNaN(g1._gs[i]) && !Double.isNaN(g2._gs[i])) return -1;
-            if (!Double.isNaN(g1._gs[i]) && Double.isNaN(g2._gs[i])) return 1;
-            if (g1._gs[i] != g2._gs[i]) return g1._gs[i] < g2._gs[i] ? -1 : 1;
+            if (Double.isNaN(g1._gs[i]) && !Double.isNaN(g2._gs[i])) {
+            	return -1;
+            }
+            if (!Double.isNaN(g1._gs[i]) && Double.isNaN(g2._gs[i])) {
+            	return 1;
+            }
+            if (g1._gs[i] != g2._gs[i]) {
+            	return g1._gs[i] < g2._gs[i] ? -1 : 1;
+            }
           }
           return 0;
         }
-
+      }
         // I do not believe sort() calls equals() at this time, so no need to implement
         @Override
         public boolean equals(Object o) {
@@ -325,13 +339,22 @@ public class AstGroup extends AstPrimitive {
   public static AstNumList check(long dstX, AstRoot ast) {
     // Sanity check vs dst.  To simplify logic, jam the 1 col/row case in as a AstNumList
     AstNumList dim;
-    if (ast instanceof AstNumList) dim = (AstNumList) ast;
-    else if (ast instanceof AstNum) dim = new AstNumList(((AstNum) ast).getNum());
-    else throw new IllegalArgumentException("Requires a number-list, but found a " + ast.getClass());
-    if (dim.isEmpty()) return dim; // Allow empty
+    if (ast instanceof AstNumList) {
+    	dim = (AstNumList) ast;
+    }
+    else if (ast instanceof AstNum) {
+    	dim = new AstNumList(((AstNum) ast).getNum());
+    }
+    else {
+    	throw new IllegalArgumentException("Requires a number-list, but found a " + ast.getClass());
+    }
+    if (dim.isEmpty()) {
+    	return dim; // Allow empty
+    }
     for (int col : dim.expand4())
-      if (!(0 <= col && col < dstX))
+      if (!(0 <= col && col < dstX)) {
         throw new IllegalArgumentException("Selection must be an integer from 0 to " + dstX);
+        }
     return dim;
   }
 
@@ -393,9 +416,13 @@ public class AstGroup extends AstPrimitive {
     // ns is the element count
     public void op(double[][] d0ss, long[] n0s, int i, double d1) {
       // Normal number or ALL   : call op()
-      if (!Double.isNaN(d1) || _na == NAHandling.ALL) _fcn.op(d0ss[i], d1);
+      if (!Double.isNaN(d1) || _na == NAHandling.ALL) {
+    	  _fcn.op(d0ss[i], d1);
+      }
       // Normal number or IGNORE: bump count; RM: do not bump count
-      if (!Double.isNaN(d1) || _na == NAHandling.IGNORE) n0s[i]++;
+      if (!Double.isNaN(d1) || _na == NAHandling.IGNORE) {
+    	  n0s[i]++;
+      }
     }
 
     // Atomically update the array pair {dss[i],ns[i]} with the pair {d1,n1}.
@@ -438,7 +465,9 @@ public class AstGroup extends AstPrimitive {
         if (gs.putIfAbsent(gWork, "") == null) { // Insert if not absent (note: no race, no need for atomic)
           gOld = gWork;                          // Inserted 'gWork' into table
           gWork = new G(_gbCols.length, _aggs);   // need entirely new G
-        } else gOld = gs.getk(gWork);            // Else get existing group
+        } else {
+        	gOld = gs.getk(gWork);            // Else get existing group
+        }
 
         for (int i = 0; i < _aggs.length; i++) // Accumulate aggregate reductions
           _aggs[i].op(gOld._dss, gOld._ns, i, cs[_aggs[i]._col].atd(row));
@@ -452,7 +481,9 @@ public class AstGroup extends AstPrimitive {
     // parallel map calls.
     @Override
     public void reduce(GBTask t) {
-      if (_gss != t._gss) reduce(t._gss);
+      if (_gss != t._gss) {
+    	  reduce(t._gss);
+      }
     }
 
     // Non-blocking race-safe update of the shared per-node groups hashtable

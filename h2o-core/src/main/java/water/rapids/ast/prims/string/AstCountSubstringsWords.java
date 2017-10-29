@@ -38,10 +38,11 @@ public class AstCountSubstringsWords extends AstPrimitive {
 
     //Type check
     for (Vec v : fr.vecs())
-      if (!(v.isCategorical() || v.isString()))
+      if (!(v.isCategorical() || v.isString())) {
         throw new IllegalArgumentException("num_valid_substrings() requires a string or categorical column. "
             + "Received " + fr.anyVec().get_type_str()
             + ". Please convert column to a string or categorical first.");
+        }
 
     HashSet<String> words = null;
     try {
@@ -53,10 +54,12 @@ public class AstCountSubstringsWords extends AstPrimitive {
     Vec nvs[] = new Vec[fr.numCols()];
     int i = 0;
     for (Vec v : fr.vecs()) {
-      if (v.isCategorical())
+      if (v.isCategorical()) {
         nvs[i] = countSubstringsWordsCategoricalCol(v, words);
-      else
+        }
+      else {
         nvs[i] = countSubstringsWordsStringCol(v, words);
+        }
       i++;
     }
 
@@ -79,10 +82,12 @@ public class AstCountSubstringsWords extends AstPrimitive {
         //pre-allocate since the size is known
         newChk.alloc_doubles(chk._len);
         for (int i = 0; i < chk._len; i++)
-          if (chk.isNA(i))
+          if (chk.isNA(i)) {
             newChk.addNA();
-          else
+            }
+          else {
             newChk.addNum(catCounts[(int) chk.atd(i)]);
+            }
       }
     }.doAll(1, Vec.T_NUM, new Frame(vec)).outputFrame().anyVec();
     return res;
@@ -92,13 +97,15 @@ public class AstCountSubstringsWords extends AstPrimitive {
     return new MRTask() {
       @Override
       public void map(Chunk chk, NewChunk newChk) {
-        if (chk instanceof C0DChunk) //all NAs
+        if (chk instanceof C0DChunk) { //all NAs
           newChk.addNAs(chk.len());
+          }
         else { //UTF requires Java string methods
           BufferedString tmpStr = new BufferedString();
           for (int i = 0; i < chk._len; i++) {
-            if (chk.isNA(i))
+            if (chk.isNA(i)) {
               newChk.addNA();
+              }
             else {
               String str = chk.atStr(tmpStr, i).toString();
               newChk.addNum(calcCountSubstringsWords(str, words));
@@ -115,8 +122,9 @@ public class AstCountSubstringsWords extends AstPrimitive {
     int N = str.length();
     for (int i = 0; i < N - 1; i++)
       for (int j = i + 2; j < N + 1; j++) {
-        if (words.contains(str.substring(i, j)))
+        if (words.contains(str.substring(i, j))) {
           wordCount += 1;
+          }
       }
     return wordCount;
   }

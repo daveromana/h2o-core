@@ -42,12 +42,17 @@ public class AstScale extends AstPrimitive {
     double[] means;
     if (asts[2] instanceof AstNumList) {
       means = ((AstNumList) asts[2]).expand();
-      if (means.length != ncols)
+      if (means.length != ncols) {
         throw new IllegalArgumentException("Numlist must be the same length as the columns of the Frame");
+        }
     } else {
       double d = asts[2].exec(env).getNum();
-      if (d == 0) means = new double[ncols]; // No change on means, so zero-filled
-      else if (d == 1) means = fr.means();
+      if (d == 0) {
+    	  means = new double[ncols]; // No change on means, so zero-filled
+      }
+      else if (d == 1) {
+    	  means = fr.means();
+      }
       else throw new IllegalArgumentException("Only true or false allowed");
     }
 
@@ -55,17 +60,21 @@ public class AstScale extends AstPrimitive {
     double[] mults;
     if (asts[3] instanceof AstNumList) {
       mults = ((AstNumList) asts[3]).expand();
-      if (mults.length != ncols)
+      if (mults.length != ncols) {
         throw new IllegalArgumentException("Numlist must be the same length as the columns of the Frame");
+        }
     } else {
       Val v = asts[3].exec(env);
       if (v instanceof ValFrame) {
         mults = toArray(v.getFrame().anyVec());
       } else {
         double d = v.getNum();
-        if (d == 0)
+        if (d == 0) {
           Arrays.fill(mults = new double[ncols], 1.0); // No change on mults, so one-filled
-        else if (d == 1) mults = fr.mults();
+          }
+        else if (d == 1) {
+        	mults = fr.mults();
+        }
         else throw new IllegalArgumentException("Only true or false allowed");
       }
     }

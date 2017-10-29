@@ -84,8 +84,12 @@ public final class Route extends Iced {
 
   @Override
   public boolean equals(Object o) {
-    if (o == this) return true;
-    if (!(o instanceof Route)) return false;
+    if (o == this) {
+    	return true;
+    }
+    if (!(o instanceof Route)) {
+    	return false;
+    }
     Route route = (Route) o;
     return _api_name.equals(route._api_name) &&
            _handler_class .equals(route._handler_class) &&
@@ -125,8 +129,9 @@ public final class Route extends Iced {
     for (Method method : handler_class.getMethods())
       if (method.getName().equals(handler_method)) {
         Class[] pt = method.getParameterTypes();
-        if (pt != null && pt.length == 2 && pt[0] == Integer.TYPE && Schema.class.isAssignableFrom(pt[1]))
+        if (pt != null && pt.length == 2 && pt[0] == Integer.TYPE && Schema.class.isAssignableFrom(pt[1])) {
           return method;
+          }
       }
     throw H2O.fail("Failed to find handler method: " + handler_method + " in class: " + handler_class.getSimpleName());
   }

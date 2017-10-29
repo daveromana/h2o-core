@@ -33,10 +33,14 @@ public abstract class AstRollupOp extends AstReducerOp {
     // Normal column-wise operation
     Frame fr = stk.track(arg1).getFrame();
     Vec[] vecs = fr.vecs();
-    if (vecs.length == 0 || vecs[0].naCnt() > 0) return new ValNum(Double.NaN);
+    if (vecs.length == 0 || vecs[0].naCnt() > 0) {
+    	return new ValNum(Double.NaN);
+    }
     double d = rup(vecs[0]);
     for (int i = 1; i < vecs.length; i++) {
-      if (vecs[i].naCnt() > 0) return new ValNum(Double.NaN);
+      if (vecs[i].naCnt() > 0) {
+    	  return new ValNum(Double.NaN);
+      }
       d = op(d, rup(vecs[i]));
     }
     return new ValNum(d);

@@ -44,7 +44,9 @@ public class UnfoldingColumn<X, Y> extends FunColumnBase<List<Y>> {
   
   public List<Y> get(long idx) {
     List<Y> raw = isNA(idx) ? Collections.<Y>emptyList() : f.apply(column.apply(idx));
-    if (requiredSize == 0 || raw.size() == requiredSize) return raw;
+    if (requiredSize == 0 || raw.size() == requiredSize) {
+    	return raw;
+    }
     else {
       List<Y> result = raw.subList(0, Math.min(raw.size(), requiredSize));
       if (result.size() < requiredSize) {
@@ -75,7 +77,9 @@ public class UnfoldingColumn<X, Y> extends FunColumnBase<List<Y>> {
   public static String join(String delimiter, Iterable<?> xs) {
     StringBuilder sb = new StringBuilder();
     for (Object x : xs) {
-      if (sb.length() > 0) sb.append(delimiter);
+      if (sb.length() > 0) {
+    	  sb.append(delimiter);
+      }
       sb.append(x);
     }
     return sb.toString();
@@ -83,7 +87,9 @@ public class UnfoldingColumn<X, Y> extends FunColumnBase<List<Y>> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
+    if (this == o) {
+    	return true;
+    }
     if (o instanceof UnfoldingColumn) {
       UnfoldingColumn<?, ?> that = (UnfoldingColumn<?, ?>) o;
 

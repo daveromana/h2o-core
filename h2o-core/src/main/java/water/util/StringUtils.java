@@ -121,7 +121,9 @@ public class StringUtils {
         }
       }
       int len = tokens.length;
-      if (len > maxlen) maxlen = len;
+      if (len > maxlen) {
+    	  maxlen = len;
+      }
     }
 //    System.out.println(dict);
 //    System.out.println("maxlen " + maxlen);
@@ -158,7 +160,9 @@ public class StringUtils {
   public static String join(String delimiter, Iterable<String> strings) {
     StringBuilder sb = new StringBuilder();
     for (String item : strings) {
-      if (sb.length() > 0) sb.append(delimiter);
+      if (sb.length() > 0) {
+    	  sb.append(delimiter);
+      }
       sb.append(item);
     }
     return sb.toString();
@@ -185,7 +189,9 @@ public class StringUtils {
   public static int unhex(String str) {
     int res = 0;
     for (char c : str.toCharArray()) {
-      if (!hexCode.containsKey(c)) throw new NumberFormatException("Not a hexademical character " + c);
+      if (!hexCode.containsKey(c)) {
+    	  throw new NumberFormatException("Not a hexademical character " + c);
+      }
       res = (res << 4) + hexCode.get(c);
     }
     return res;

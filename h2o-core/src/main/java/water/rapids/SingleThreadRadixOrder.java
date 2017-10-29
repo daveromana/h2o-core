@@ -114,7 +114,9 @@ class SingleThreadRadixOrder extends DTask<SingleThreadRadixOrder> {
       // TODO: We could process these in node order and or/in parallel if we
       // cumulated the counts first to know the offsets - should be doable and
       // high value
-      if (MSBnodeHeader[fromNode] == null) continue;
+      if (MSBnodeHeader[fromNode] == null) {
+    	  continue;
+      }
       // magically this works, given the outer for loop through global
       // chunk.  Relies on LINE_ANCHOR_1 above.
       int numRowsToCopy = MSBnodeHeader[fromNode]._MSBnodeChunkCounts[oxChunkIdx[fromNode]++];   
@@ -312,8 +314,9 @@ class SingleThreadRadixOrder extends DTask<SingleThreadRadixOrder> {
     if (thisHist[bin] == len) {
       // one bin has count len and the rest zero => next byte quick
       thisHist[bin] = 0;  // important, clear for reuse
-      if (Byte != 0)
+      if (Byte != 0) {
         run(start, len, Byte-1);
+        }
       return;
     }
     long rollSum = 0;
@@ -321,7 +324,9 @@ class SingleThreadRadixOrder extends DTask<SingleThreadRadixOrder> {
       final long tmp = thisHist[c];
       // important to skip zeros for logic below to undo cumulate.  Worth the
       // branch to save a deeply iterative memset back to zero
-      if (tmp == 0) continue;  
+      if (tmp == 0) {
+    	  continue;  
+      }
       thisHist[c] = rollSum;
       rollSum += tmp;
     }
@@ -355,10 +360,13 @@ class SingleThreadRadixOrder extends DTask<SingleThreadRadixOrder> {
 
     long itmp = 0;
     for (int i=0; i<256; i++) {
-      if (thisHist[i]==0) continue;
+      if (thisHist[i]==0) {
+    	  continue;
+      }
       final long thisgrpn = thisHist[i] - itmp;
-      if( !(thisgrpn == 1 || Byte == 0) )
+      if( !(thisgrpn == 1 || Byte == 0) ) {
         run(start+itmp, thisgrpn, Byte-1);
+        }
       itmp = thisHist[i];
       thisHist[i] = 0;  // important, to save clearing counts on next iteration
     }

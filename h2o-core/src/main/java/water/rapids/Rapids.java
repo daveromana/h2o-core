@@ -47,8 +47,9 @@ public class Rapids {
   public static AstRoot parse(String rapids) {
     Rapids r = new Rapids(rapids);
     AstRoot res = r.parseNext();
-    if (r.skipWS() != ' ')
+    if (r.skipWS() != ' ') {
       throw new IllegalASTException("Syntax error: illegal Rapids expression `" + rapids + "`");
+      }
     return res;
   }
 
@@ -191,11 +192,13 @@ public class Rapids {
     ids.add("");  // 1-based ID list
     while (skipWS() != '.') {
       String id = token();
-      if (!Character.isJavaIdentifierStart(id.charAt(0)))
+      if (!Character.isJavaIdentifierStart(id.charAt(0))) {
         throw new IllegalASTException("variable must be a valid Java identifier: " + id);
+        }
       for (char c : id.toCharArray())
-        if (!Character.isJavaIdentifierPart(c))
+        if (!Character.isJavaIdentifierPart(c)) {
           throw new IllegalASTException("variable must be a valid Java identifier: " + id);
+          }
       ids.add(id);
     }
 
@@ -204,8 +207,9 @@ public class Rapids {
 
     // Parse the body
     AstRoot body = parseNext();
-    if (skipWS() != '}')
+    if (skipWS() != '}') {
       throw new IllegalASTException("Expected the end of the function, but found '" + peek(0) + "'");
+      }
     eatChar('}');
 
     return new AstFunction(ids, body);
@@ -230,7 +234,9 @@ public class Rapids {
     ArrayList<String> strs = new ArrayList<>(10);
     while (isQuote(skipWS())) {
       strs.add(string());
-      if (skipWS() == ',') eatChar(',');
+      if (skipWS() == ',') {
+    	  eatChar(',');
+      }
     }
     return new AstStrList(strs);
   }
@@ -254,23 +260,28 @@ public class Rapids {
         eatChar(':');
         skipWS();
         count = number();
-        if (count < 1 || ((long) count) != count)
+        if (count < 1 || ((long) count) != count) {
           throw new IllegalASTException("Count must be a positive integer, got " + count);
+          }
       }
       if (skipWS() == ':') {
         eatChar(':');
         skipWS();
         stride = number();
-        if (stride < 0 || Double.isNaN(stride))
+        if (stride < 0 || Double.isNaN(stride)) {
           throw new IllegalASTException("Stride must be positive, got " + stride);
+          }
       }
-      if (count == 1 && stride != 1)
+      if (count == 1 && stride != 1) {
         throw new IllegalASTException("If count is 1, then stride must be one (and ignored)");
+        }
       bases.add(base);
       counts.add((long) count);
       strides.add(stride);
       // Optional comma separating span
-      if (skipWS() == ',') eatChar(',');
+      if (skipWS() == ',') {
+    	  eatChar(',');
+      }
     }
 
     return new AstNumList(bases, strides, counts);
@@ -288,8 +299,9 @@ public class Rapids {
    * Consume the next character from the parse stream, throwing an exception if it is not `c`.
    */
   private void eatChar(char c) {
-    if (peek(0) != c)
+    if (peek(0) != c) {
       throw new IllegalASTException("Expected '" + c + "'. Got: '" + peek(0));
+      }
     _x++;
   }
 
@@ -316,7 +328,9 @@ public class Rapids {
     while (!invalidTokenCharacters.contains(peek(0))){
     	_x++;
     }
-    if (start == _x) throw new IllegalASTException("Missing token");
+    if (start == _x) {
+    	throw new IllegalASTException("Missing token");
+    }
     return _str.substring(start, _x);
   }
 
@@ -328,9 +342,13 @@ public class Rapids {
     while (validNumberCharacters.contains(peek(0))){ 
     	_x++;
     }
-    if (start == _x) throw new IllegalASTException("Missing a number");
+    if (start == _x) {
+    	throw new IllegalASTException("Missing a number");
+    }
     String s = _str.substring(start, _x);
-    if (s.toLowerCase().equals("nan")) return Double.NaN;
+    if (s.toLowerCase().equals("nan")) {
+    	return Double.NaN;
+    }
     try {
       return Double.valueOf(s);
     } catch (NumberFormatException e) {
@@ -378,8 +396,9 @@ public class Rapids {
                 } catch (NumberFormatException e) {
                   throw new IllegalASTException(e.toString());
                 }
-                if (hex > 0x10FFFF)
+                if (hex > 0x10FFFF) {
                   throw new IllegalASTException("Illegal unicode codepoint " + hex);
+                  }
                 sb.append(Character.toChars(hex));
                 i += n;
               }

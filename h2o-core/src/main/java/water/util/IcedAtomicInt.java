@@ -40,7 +40,9 @@ public final class IcedAtomicInt extends AtomicInteger implements Freezable {
 
   @Override
   public int frozenType() {
-    if(_frozeType != 0) return _frozeType;
+    if(_frozeType != 0) {
+    	return _frozeType;
+    }
     return (_frozeType = TypeMap.getIcer(this).frozenType());
   }
 

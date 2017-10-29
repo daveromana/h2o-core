@@ -318,7 +318,7 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
       } else {
         try {
           Log.err(ex);
-        } catch (Throwable t) {/* do nothing */}
+        } catch (Throwable t) {System.out.println("The error is: " + t);/* do nothing */}
         new Barrier1OnExCom(ex).apply(Job.this);
       }
       _barrier = null;          // Free for GC

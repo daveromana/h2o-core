@@ -112,7 +112,7 @@ public class Session {
       Key<Vec>[] vecs = fr.keys();
       for (int i = 0; i < vecs.length; i++) {
         _addRefCnt(vecs[i], -1); // Returning frame has refcnt +1, lower it now; should go to zero internal refcnts.
-        if (GLOBALS.contains(vecs[i])) // Copy if shared with globals
+        if (GLOBALS.contains(vecs[i])) {// Copy if shared with globals
           fr.replace(i, vecs[i].get().makeCopy());
       }
     }
@@ -133,7 +133,9 @@ public class Session {
         for (Key<Vec> vec : fr.keys()) {
           Integer I = REFCNTS.get(vec);
           int i = (I == null ? 0 : I) - 1;
-          if (i > 0) REFCNTS.put(vec, i);
+          if (i > 0) {
+        	  REFCNTS.put(vec, i);
+          }
           else {
             REFCNTS.remove(vec);
             vec.remove(fs);
@@ -162,8 +164,10 @@ public class Session {
 
   private int _putRefCnt(Key<Vec> vec, int i) {
     assert i >= 0;              // No negative counts
-    if (i > 0) REFCNTS.put(vec, i);
-    else REFCNTS.remove(vec);
+    if (i > 0) {
+    	REFCNTS.put(vec, i);
+    }
+    else { REFCNTS.remove(vec);
     return i;
   }
 
@@ -192,7 +196,7 @@ public class Session {
    * RefCnt +i all Vecs this Frame.
    */
   Frame addRefCnt(Frame fr, int i) {
-    if (fr != null)  // Allow and ignore null Frame, easier calling convention
+    if (fr != null) { // Allow and ignore null Frame, easier calling convention
       for (Key<Vec> vec : fr.keys()) _addRefCnt(vec, i);
     return fr;                  // Flow coding
   }
@@ -201,7 +205,7 @@ public class Session {
    * Found in the DKV, if not a tracked TEMP make it a global
    */
   Frame addGlobals(Frame fr) {
-    if (!FRAMES.containsKey(fr._key))
+    if (!FRAMES.containsKey(fr._key)) {
       Collections.addAll(GLOBALS, fr.keys());
     return fr;                  // Flow coding
   }
@@ -224,12 +228,14 @@ public class Session {
    * Remove any newly-unshared Vecs, but keep the shared ones.
    */
   public void remove(Frame fr) {
-    if (fr == null) return;
+    if (fr == null) {
+    	return;
+    }
     Futures fs = new Futures();
     if (!FRAMES.containsKey(fr._key)) { // In globals and not temps?
       for (Key<Vec> vec : fr.keys()) {
         GLOBALS.remove(vec);         // Not a global anymore
-        if (REFCNTS.get(vec) == null) // If not shared with temps
+        if (REFCNTS.get(vec) == null) { // If not shared with temps
           vec.remove(fs);            // Remove unshared dead global
       }
     } else {                    // Else a temp and not a global
@@ -247,7 +253,9 @@ public class Session {
   Futures downRefCnt(Frame fr, Futures fs) {
     for (Key<Vec> vec : fr.keys())    // Refcnt -1 all Vecs
       if (addRefCnt(vec, -1) == 0) {
-        if (fs == null) fs = new Futures();
+        if (fs == null) {
+        	fs = new Futures();
+        }
         vec.remove(fs);
       }
     return fs;
@@ -257,7 +265,9 @@ public class Session {
    * Update a global ID, maintaining sharing of Vecs
    */
   public Frame assign(Key<Frame> id, Frame src) {
-    if (FRAMES.containsKey(id)) throw new IllegalArgumentException("Cannot reassign temp " + id);
+    if (FRAMES.containsKey(id)) {
+    	throw new IllegalArgumentException("Cannot reassign temp " + id);
+    }
     Futures fs = new Futures();
     // Vec lifetime invariant: Globals do not share with other globals (but can
     // share with temps).  All the src Vecs are about to become globals.  If
@@ -266,7 +276,7 @@ public class Session {
     Frame fr = DKV.getGet(id);
     if (fr != null) {          // Prior frame exists
       for (Key<Vec> vec : fr.keys()) {
-        if (GLOBALS.remove(vec) && _getRefCnt(vec) == 0)
+        if (GLOBALS.remove(vec) && _getRefCnt(vec) == 0) {
           vec.remove(fs);       // Remove unused global vec
       }
     }
@@ -276,7 +286,7 @@ public class Session {
     // operations.
     Vec[] svecs = src.vecs().clone();
     for (int i = 0; i < svecs.length; i++)
-      if (GLOBALS.contains(svecs[i]._key))
+      if (GLOBALS.contains(svecs[i]._key)) {
         svecs[i] = svecs[i].makeCopy();
     // Make and install new global Frame
     Frame fr2 = new Frame(id, src._names.clone(), svecs);
@@ -297,10 +307,12 @@ public class Session {
       Vec vec = vecs[col];
       int refcnt = getRefCnt(vec._key);
       assert refcnt > 0;
-      if (refcnt > 1)          // If refcnt is 1, we allow the update to take in-place
+      if (refcnt > 1)  {        // If refcnt is 1, we allow the update to take in-place
         fr.replace(col, (did_copy = vec.makeCopy()));
     }
-    if (did_copy != null && fr._key != null) DKV.put(fr); // Then update frame in the DKV
+    if (did_copy != null && fr._key != null) {
+    	DKV.put(fr); // Then update frame in the DKV
+    }
     return vecs;
   }
 
@@ -312,7 +324,9 @@ public class Session {
    *                  so that all its references can be properly accounted for.
    */
   private void sanity_check_refs(Val returning) {
-    if ((sanityChecksCounter++) % 1000 >= sanityChecksFrequency) return;
+    if ((sanityChecksCounter++) % 1000 >= sanityChecksFrequency) {
+    	return;
+    }
 
     // Compute refcnts from tracked frames only.  Since we are between Rapids
     // calls the only tracked Vecs should be those from tracked frames.
@@ -324,7 +338,7 @@ public class Session {
       }
     // Now account for the returning frame (if it is a Frame). Note that it is entirely possible that this frame is
     // already in the FRAMES list, however we need to account for it anyways -- this is how Env works...
-    if (returning != null && returning.isFrame())
+    if (returning != null && returning.isFrame()) {
       for (Key<Vec> vec : returning.getFrame().keys()) {
         Integer count = refcnts.get(vec);
         refcnts.put(vec, count == null ? 1 : count + 1);
@@ -336,15 +350,17 @@ public class Session {
       Key<Vec> vec = pair.getKey();
       Integer count = pair.getValue();
       Integer savedCount = REFCNTS.get(vec);
-      if (savedCount == null) throw new IllegalStateException("REFCNTS missing vec " + vec);
-      if (count.intValue() != savedCount.intValue())
+      if (savedCount == null) {
+    	  throw new IllegalStateException("REFCNTS missing vec " + vec);
+      }
+      if (count.intValue() != savedCount.intValue()) {
         throw new IllegalStateException(
             "Ref-count mismatch for vec " + vec + ": REFCNT = " + savedCount + ", should be " + count);
     }
     // Then check that every cached REFCNT is in the computed set as well.
-    if (refcnts.size() != REFCNTS.size())
+    if (refcnts.size() != REFCNTS.size()) {
       for (Map.Entry<Key<Vec>, Integer> pair : REFCNTS.entrySet()) {
-        if (!refcnts.containsKey(pair.getKey()))
+        if (!refcnts.containsKey(pair.getKey())) {
           throw new IllegalStateException(
               "REFCNTs contains an extra vec " + pair.getKey() + ", count = " + pair.getValue());
       }
@@ -356,7 +372,9 @@ public class Session {
   private static volatile boolean _initialized; // One-shot init
 
   static void cluster_init() {
-    if (_initialized) return;
+    if (_initialized) {
+    	return;
+    }
     // Touch a common class to force loading
     new MRTask() {
       @Override

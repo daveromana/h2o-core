@@ -44,8 +44,10 @@ public class ModelMetricsBinomialGLM extends ModelMetricsBinomial implements GLM
   }
 
   @Override public boolean equals(Object o) {
-    if(!(o instanceof ModelMetricsBinomialGLM))
-      return false;
+    if(!(o instanceof ModelMetricsBinomialGLM)) {
+    	 return false;
+    }
+     
     ModelMetricsBinomialGLM mm = (ModelMetricsBinomialGLM)o;
     return
       _residualDegressOfFreedom == mm._residualDegressOfFreedom &&
@@ -95,8 +97,10 @@ public class ModelMetricsBinomialGLM extends ModelMetricsBinomial implements GLM
     }
 
     @Override public boolean equals(Object o) {
-      if(!(o instanceof ModelMetricsMultinomialGLM))
-        return false;
+      if(!(o instanceof ModelMetricsMultinomialGLM)) {
+    	   return false;
+      }
+       
       ModelMetricsMultinomialGLM mm = (ModelMetricsMultinomialGLM)o;
       return
         _residualDegressOfFreedom == mm._residualDegressOfFreedom &&

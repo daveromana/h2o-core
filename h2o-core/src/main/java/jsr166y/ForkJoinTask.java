@@ -458,6 +458,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      * Hook for exception propagation support for tasks with completers.
      */
     void internalPropagateException(Throwable ex) {
+    	System.out.println("The error is: " + ex);
     }
 
     /**
@@ -471,6 +472,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
             try {
                 t.cancel(false);
             } catch (Throwable ignore) {
+            	System.out.println("The error is: " + ignore);
             }
         }
     }
@@ -531,8 +533,9 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
             expungeStaleExceptions();
             ExceptionNode[] t = exceptionTable;
             e = t[h & (t.length - 1)];
-            while (e != null && e.get() != this)
+            while (e != null && e.get() != this){
                 e = e.next;
+            }
         } finally {
             lock.unlock();
         }

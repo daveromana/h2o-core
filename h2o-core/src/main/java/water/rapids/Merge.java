@@ -19,8 +19,9 @@ public class Merge {
     if( cols.length==0 )        // Empty key list
       return fr;                // Return original frame
     for( int col : cols )
-      if( col < 0 || col >= fr.numCols() )
+      if( col < 0 || col >= fr.numCols() ) {
         throw new IllegalArgumentException("Column "+col+" is out of range of "+fr.numCols());
+        }
     // All identity ID maps
     int id_maps[][] = new int[cols.length][];
     for( int i=0; i<cols.length; i++ ) {
@@ -42,13 +43,19 @@ public class Merge {
     // map missing levels to -1 (rather than increasing slots after the end)
     // for now to save a deep branch later
     for (int i=0; i<id_maps.length; i++) {
-      if (id_maps[i] == null) continue;
+      if (id_maps[i] == null) {
+    	  continue;
+      }
       assert id_maps[i].length >= leftFrame.vec(leftCols[i]).max()+1;
-      if( !hasRite ) continue;
+      if( !hasRite ) {
+    	  continue;
+      }
       int right_max = (int)riteFrame.vec(riteCols[i]).max();
       for (int j=0; j<id_maps[i].length; j++) {
         assert id_maps[i][j] >= 0;
-        if (id_maps[i][j] > right_max) id_maps[i][j] = -1;
+        if (id_maps[i][j] > right_max) {
+        	id_maps[i][j] = -1;
+        }
       }
     }
 
@@ -83,11 +90,14 @@ public class Merge {
       // run the merge for the whole lefts that end before the first right.
       // The overlapping one with the right base is dealt with inside
       // BinaryMerge (if _allLeft)
-      if (allLeft) for (int leftMSB=0; leftMSB<leftMSBfrom; leftMSB++) {
-        BinaryMerge bm = new BinaryMerge(new BinaryMerge.FFSB(leftFrame, leftMSB, leftShift,
+      if (allLeft) {
+    	  for (int leftMSB=0; leftMSB<leftMSBfrom; leftMSB++) {
+      
+    		  	BinaryMerge bm = new BinaryMerge(new BinaryMerge.FFSB(leftFrame, leftMSB, leftShift,
                 leftIndex._bytesUsed, leftIndex._base), new BinaryMerge.FFSB(riteFrame,/*rightMSB*/-1, riteShift,
                 riteIndex._bytesUsed, riteIndex._base),
                 true);
+    	  }
           bmList.add(bm);
           fs.add(new RPC<>(SplitByMSBLocal.ownerOfMSB(leftMSB), bm).call());
         }
@@ -115,12 +125,13 @@ public class Merge {
         leftMSBto = -1;  // all MSBs (0-255) need to fetch the left rows only
       }
       // run the merge for the whole lefts that start after the last right
-      if (allLeft) for (int leftMSB=(int)leftMSBto+1; leftMSB<=255; leftMSB++) {
-          BinaryMerge bm = new BinaryMerge(new BinaryMerge.FFSB(leftFrame,   leftMSB    ,leftShift,
+      if (allLeft) {
+    	  for (int leftMSB=(int)leftMSBto+1; leftMSB<=255; leftMSB++) { 
+    		  		BinaryMerge bm = new BinaryMerge(new BinaryMerge.FFSB(leftFrame,   leftMSB    ,leftShift,
                   leftIndex._bytesUsed,leftIndex._base),
                                            new BinaryMerge.FFSB(riteFrame,/*rightMSB*/-1,riteShift,
                                                    riteIndex._bytesUsed,riteIndex._base),
-                                           true);
+                                           true);}
           bmList.add(bm);
           fs.add(new RPC<>(SplitByMSBLocal.ownerOfMSB(leftMSB), bm).call());
       }
@@ -145,9 +156,13 @@ public class Merge {
       int rightMSBto   = (int)((leftTo   - riteBase.longValue() + 1) >> riteShift);
 
       // the non-matching part of this region will have been dealt with above when allLeft==true
-      if (rightMSBfrom < 0) rightMSBfrom = 0;
+      if (rightMSBfrom < 0) {
+    	  rightMSBfrom = 0;
+      }
       assert rightMSBfrom <= 255;
-      if (rightMSBto > 255) rightMSBto = 255;
+      if (rightMSBto > 255) {
+    	  rightMSBto = 255;
+      }
       assert rightMSBto >= rightMSBfrom;
 
       for (int rightMSB=rightMSBfrom; rightMSB<=rightMSBto; rightMSB++) {
@@ -205,7 +220,9 @@ public class Merge {
     int chunkBatch[] = new int[numChunks];
     int k = 0;
     for( BinaryMerge thisbm : bmList ) {
-      if (thisbm._numRowsInResult == 0) continue;
+      if (thisbm._numRowsInResult == 0) {
+    	  continue;
+      }
       int thisChunkSizes[] = thisbm._chunkSizes;
       for (int j=0; j<thisChunkSizes.length; j++) {
         chunkSizes[k] = thisChunkSizes[j];

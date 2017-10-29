@@ -86,6 +86,8 @@ public abstract class CreateFrameRecipe<T extends CreateFrameRecipe<T>> extends 
 
   /** Simple helper function for parameter testing. */
   protected void check(boolean test, String msg) {
-    if (!test) throw new IllegalArgumentException(msg);
+    if (!test) {
+    	throw new IllegalArgumentException(msg);
+    }
   }
 }

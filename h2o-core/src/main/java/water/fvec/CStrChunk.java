@@ -93,7 +93,9 @@ public class CStrChunk extends Chunk {
   @Override public double atd_impl(int idx) { throw new IllegalArgumentException("Operation not allowed on string vector.");}
   @Override public BufferedString atStr_impl(BufferedString bStr, int idx) {
     int off = intAt(idx);
-    if( off == NA ) return null;
+    if( off == NA ) {
+    	return null;
+    	}
     int len = lengthAtOffset(off);
     assert len >= 0 : getClass().getSimpleName() + ".atStr_impl: len=" + len + ", idx=" + idx + ", off=" + off;
     return bStr.set(_mem,_valstart+off,len);
@@ -136,8 +138,9 @@ public class CStrChunk extends Chunk {
     nc = this.extractRows(nc, 0,_len);
     //update offsets and byte array
     for(int i= 0; i < nc._sslen; i++) {
-      if (nc._ss[i] > 0x40 && nc._ss[i] < 0x5B) // check for capital letter
+      if (nc._ss[i] > 0x40 && nc._ss[i] < 0x5B) { // check for capital letter
         nc._ss[i] += 0x20; // lower it
+        }
     }
 
     return nc;
@@ -157,8 +160,9 @@ public class CStrChunk extends Chunk {
     nc = this.extractRows(nc, 0,_len);
     //update offsets and byte array
     for(int i= 0; i < nc._sslen; i++) {
-      if (nc._ss[i] > 0x60 && nc._ss[i] < 0x7B) // check for capital letter
+      if (nc._ss[i] > 0x60 && nc._ss[i] < 0x7B) { // check for capital letter
         nc._ss[i] -= 0x20; // upper it
+        }
     }
 
     return nc;
@@ -187,7 +191,10 @@ public class CStrChunk extends Chunk {
         while( _mem[_valstart+off+j] > 0 && _mem[_valstart+off+j] < 0x21){
         		j++;
         }
-        if (j > 0) nc.set_is(i,off + j);
+        if (j > 0) {
+        	nc.set_is(i,off + j);
+        	}
+        
         while( _mem[_valstart+off+j] != 0 ){
         	j++; //Find end
         }
@@ -261,15 +268,18 @@ public class CStrChunk extends Chunk {
     nc.alloc_doubles(_len);
     for (int i = 0; i < _len; i++) {
       double entropy = entropyAt(i);
-      if (Double.isNaN(entropy)) nc.addNA();
-      else                       nc.addNum(entropy);
+      if (Double.isNaN(entropy)) {nc.addNA();}
+      else  {                     nc.addNum(entropy);
+      }
     }
     return nc;
   }
 
   double entropyAt(int i) {
     int off = intAt(i);
-    if (off == NA) return Double.NaN;
+    if (off == NA) {
+    	return Double.NaN;
+    	}
     int[] frq = new int[256];
     int len = lengthAtOffset(off);
     for (int j = 0; j < len; j++) {
@@ -306,7 +316,8 @@ public class CStrChunk extends Chunk {
         }
         int len = lengthAtOffset(off);
         nc.addStr(new BufferedString(_mem, _valstart+off, len));
-      } else nc.addNA();
+      } else {nc.addNA();
+      }
     }
     return nc;
   }
@@ -320,7 +331,7 @@ public class CStrChunk extends Chunk {
         int pos = off + lengthAtOffset(off);
         while (pos --> off && set.contains(byteAt(pos))){};
         nc.addStr(new BufferedString(_mem, _valstart+off, pos - off + 1));
-      } else nc.addNA();
+      } else {nc.addNA();}
     }
     return nc;
   }

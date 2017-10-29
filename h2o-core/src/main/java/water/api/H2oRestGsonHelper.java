@@ -40,7 +40,9 @@ public class H2oRestGsonHelper {
     }
     @Override
     public KeyV3 deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
-      if (json.isJsonNull()) return null;
+      if (json.isJsonNull()) {
+    	  return null;
+      }
       JsonObject jobj = json.getAsJsonObject();
       String type = jobj.get("type").getAsString();
       switch (type) {
@@ -62,7 +64,9 @@ public class H2oRestGsonHelper {
 
     @Override
     public FrameV3.ColSpecifierV3 deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
-      if (json.isJsonNull()) return null;
+      if (json.isJsonNull()) {
+    	  return null;
+      }
 
       return new FrameV3.ColSpecifierV3(json.getAsString());
     }

@@ -35,9 +35,15 @@ public class IcedBitSet extends Iced {
   // Fill in fields, with the bytes coming from some other large backing byte
   // array, which also contains other unrelated bits.
   public void fill(byte[] v, int byteoff, int nbits, int bitoff) {
-    if( nbits   < 0 ) throw new NegativeArraySizeException("nbits < 0: " + nbits  );
-    if( byteoff < 0 ) throw new IndexOutOfBoundsException("byteoff < 0: "+ byteoff);
-    if( bitoff  < 0 ) throw new IndexOutOfBoundsException("bitoff < 0: " + bitoff );
+    if( nbits   < 0 ) {
+    	throw new NegativeArraySizeException("nbits < 0: " + nbits  );
+    }
+    if( byteoff < 0 ) {
+    	throw new IndexOutOfBoundsException("byteoff < 0: "+ byteoff);
+    }
+    if( bitoff  < 0 ) {
+    	throw new IndexOutOfBoundsException("bitoff < 0: " + bitoff );
+    }
     assert(v.length >= bytes(nbits));
     assert v==null || byteoff+bytes(nbits) <= v.length;
     _val = v;
@@ -117,13 +123,19 @@ public class IcedBitSet extends Iced {
   @Override public String toString() { return toString(new SB()).toString(); }
   public SB toString(SB sb) {
     sb.p("{");
-    if( _bitoff>0 ) sb.p("...").p(_bitoff).p(" 0-bits... ");
+    if( _bitoff>0 ) {
+    	sb.p("...").p(_bitoff).p(" 0-bits... ");
+    }
 
     int bytes = bytes(_nbits);
     for(int i = 0; i < bytes; i++) {
-      if( i>0 && _bitoff + 8*i < size()) sb.p(' ');
+      if( i>0 && _bitoff + 8*i < size()) {
+    	  sb.p(' ');
+      }
       for( int j=0; j<8; j++ ) {
-        if (_bitoff + 8*i + j >= size()) break;
+        if (_bitoff + 8*i + j >= size()) {
+        	break;
+        }
         sb.p((_val[_byteoff + i] >> j) & 1);
       }
     }

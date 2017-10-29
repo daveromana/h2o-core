@@ -45,9 +45,12 @@ public class AstMktime extends AstPrimitive {
     int is[] = new int[nargs() - 1];
     Frame x = null;             // Sample frame (for auto-expanding constants)
     for (int i = 1; i < nargs(); i++)
-      if (asts[i] instanceof AstId || asts[i] instanceof AstExec)
+      if (asts[i] instanceof AstId || asts[i] instanceof AstExec) {
         fs[i - 1] = x = stk.track(asts[i].exec(env)).getFrame();
-      else is[i - 1] = (int) asts[i].exec(env).getNum();
+        }
+      else {
+    	  is[i - 1] = (int) asts[i].exec(env).getNum();
+      }
 
     if (x == null) {                            // Single point
       long msec = new MutableDateTime(
@@ -68,7 +71,9 @@ public class AstMktime extends AstPrimitive {
       if (fs[i] == null) {
         vecs[i] = x.anyVec().makeCon(is[i]);
       } else {
-        if (fs[i].numCols() != 1) throw new IllegalArgumentException("Expect single column");
+        if (fs[i].numCols() != 1) {
+        	throw new IllegalArgumentException("Expect single column");
+        }
         vecs[i] = fs[i].anyVec();
       }
     }
@@ -95,8 +100,10 @@ public class AstMktime extends AstPrimitive {
     }.doAll(new byte[]{Vec.T_NUM}, vecs).outputFrame(new String[]{"msec"}, null);
     // Clean up the constants
     for (int i = 0; i < nargs() - 1; i++)
-      if (fs[i] == null)
-        vecs[i].remove();
+      if (fs[i] == null) {
+    	  vecs[i].remove();
+      }
+        
     return new ValFrame(fr2);
   }
 }

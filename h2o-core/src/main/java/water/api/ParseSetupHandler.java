@@ -23,27 +23,35 @@ import static water.parser.DefaultParserProviders.GUESS_INFO;
 public class ParseSetupHandler extends Handler {
 
   public ParseSetupV3 guessSetup(int version, ParseSetupV3 p) {
-    if (p.source_frames == null)
+    if (p.source_frames == null) {
       throw new H2OIllegalArgumentException("No file names given for parsing.");
+      }
     Key[] fkeys = new Key[p.source_frames.length];
     for(int i=0; i < p.source_frames.length; i++) {
       fkeys[i] = p.source_frames[i].key();
-      if (DKV.get(fkeys[i]) == null) throw new IllegalArgumentException("Key not loaded: "+ p.source_frames[i]);
+      if (DKV.get(fkeys[i]) == null) {
+    	  throw new IllegalArgumentException("Key not loaded: "+ p.source_frames[i]);
+      }
     }
 
     // corrects for json putting in empty strings in the place of empty sub-arrays
-    if (p.na_strings != null)
+    if (p.na_strings != null) {
       for(int i = 0; i < p.na_strings.length; i++)
-        if (p.na_strings[i] != null && p.na_strings[i].length == 0) p.na_strings[i] = null;
+        if (p.na_strings[i] != null && p.na_strings[i].length == 0) {
+        	p.na_strings[i] = null;
+        }
     ParseSetup ps;
+    }
     try{
       ps = ParseSetup.guessSetup(fkeys, new ParseSetup(p));
     } catch(Throwable ex) {
       Throwable ex2 = ex;
-      if(ex instanceof DistributedException)
+      if(ex instanceof DistributedException) {
         ex2 = ex.getCause();
-      if(ex2 instanceof ParseDataset.H2OParseException)
+        }
+      if(ex2 instanceof ParseDataset.H2OParseException) {
         throw new H2OIllegalArgumentException(ex2.getMessage());
+        }
       throw ex;
     }
     if(ps.errs() != null && ps.errs().length > 0) {
@@ -71,7 +79,9 @@ public class ParseSetupHandler extends Handler {
 
         for (int column = 0; column < all_col_names.length; column++) {
           m.reset(all_col_names[column]);
-          if (m.matches()) keep_indexes.add(column);
+          if (m.matches()) {
+        	  keep_indexes.add(column);
+          }
         }
 
       } else {
@@ -83,7 +93,9 @@ public class ParseSetupHandler extends Handler {
       }
 
       int width_to_return = Math.max(0, keep_indexes.size() - p.column_offset);
-      if (p.column_count > 0) width_to_return = Math.min(width_to_return, p.column_count);
+      if (p.column_count > 0) {
+    	  width_to_return = Math.min(width_to_return, p.column_count);
+      }
       String[][] filtered_data = new String[data.length][width_to_return];
       for (int row = 0; row < data.length; row++) {
         int output_column = 0;
@@ -96,7 +108,9 @@ public class ParseSetupHandler extends Handler {
       p.total_filtered_column_count = keep_indexes.size();
     }
     p.destination_frame = ParseSetup.createHexName(p.source_frames[0].toString());
-    if( p.check_header==ParseSetup.HAS_HEADER && p.data != null && Arrays.equals(p.column_names, p.data[0])) p.data = Arrays.copyOfRange(p.data,1,p.data.length);
+    if( p.check_header==ParseSetup.HAS_HEADER && p.data != null && Arrays.equals(p.column_names, p.data[0])) {
+    	p.data = Arrays.copyOfRange(p.data,1,p.data.length);
+    }
     // Fill in data type names for each column.
     p.column_types = ps.getColumnTypeStrings();
     p.parse_type = ps.getParseType() != null ? ps.getParseType().name() : GUESS_INFO.name();

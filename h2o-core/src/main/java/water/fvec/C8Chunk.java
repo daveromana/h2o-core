@@ -10,7 +10,9 @@ public class C8Chunk extends Chunk {
   C8Chunk( byte[] bs ) { _mem=bs; _start = -1; set_len(_mem.length>>3); }
   @Override protected final long at8_impl( int i ) {
     long res = UnsafeUtils.get8(_mem,i<<3);
-    if( res == _NA ) throw new IllegalArgumentException("at8_abs but value is missing");
+    if( res == _NA ) {
+    	throw new IllegalArgumentException("at8_abs but value is missing");
+    }
     return res;
   }
   @Override protected final double atd_impl( int i ) {
@@ -33,8 +35,12 @@ public class C8Chunk extends Chunk {
 
   private final void processRow(int r, ChunkVisitor v){
     long l = UnsafeUtils.get8(_mem,(r<<3));
-    if(l == _NA) v.addNAs(1);
-    else v.addValue(l);
+    if(l == _NA) {
+    	v.addNAs(1);
+    }
+    else {
+    	v.addValue(l);
+    }
   }
 
   @Override

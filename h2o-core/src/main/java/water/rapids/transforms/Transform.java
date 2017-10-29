@@ -58,18 +58,24 @@ public abstract class Transform<T> extends Iced {
   }
 
   private static String toJavaString(String[] strs) {
-    if( strs==null || strs.length==0 ) return "\"null\"";
+    if( strs==null || strs.length==0 ) {
+    	return "\"null\"";
+    }
     SB sb = new SB();
     for(int i=0;i<strs.length;++i) {
       sb.p("\"").p(strs[i]).p("\"");
-      if( i==strs.length-1) return sb.toString();
+      if( i==strs.length-1) {
+    	  return sb.toString();
+      }
       sb.p(',');
     }
     throw new RuntimeException("Should never be here");
   }
 
   protected static String toJavaPrimitive(String vecType) {
-    if( vecType.equals("String") || vecType.equals("Enum") ) return "String";
+    if( vecType.equals("String") || vecType.equals("Enum") ) {
+    	return "String";
+    }
     return "double";
   }
 }

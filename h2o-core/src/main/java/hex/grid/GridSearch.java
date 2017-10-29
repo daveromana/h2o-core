@@ -92,14 +92,16 @@ public final class GridSearch<MP extends Model.Parameters> extends Keyed<GridSea
     final Grid<MP> grid;
     Keyed keyed = DKV.getGet(_result);
     if (keyed != null) {
-      if (! (keyed instanceof Grid))
+      if (! (keyed instanceof Grid)) {
         throw new H2OIllegalArgumentException("Name conflict: tried to create a Grid using the ID of a non-Grid object that's already in H2O: " + _job._result + "; it is a: " + keyed.getClass());
+        }
       grid = (Grid) keyed;
       Frame specTrainFrame = _hyperSpaceWalker.getParams().train();
       Frame oldTrainFrame = grid.getTrainingFrame();
       if (oldTrainFrame != null && !specTrainFrame._key.equals(oldTrainFrame._key) ||
-          oldTrainFrame != null && specTrainFrame.checksum() != oldTrainFrame.checksum())
+          oldTrainFrame != null && specTrainFrame.checksum() != oldTrainFrame.checksum()) {
         throw new H2OIllegalArgumentException("training_frame", "grid", "Cannot append new models to a grid with different training input");
+        }
       grid.write_lock(_job);
     } else {
       grid =
@@ -120,6 +122,7 @@ public final class GridSearch<MP extends Model.Parameters> extends Keyed<GridSea
           Model.Parameters parms = it.nextModelParameters(model);
           gridWork += (parms._nfolds > 0 ? (parms._nfolds+1/*main model*/) : 1) *parms.progressUnits();
         } catch(Throwable ex) {
+        	System.out.println("The error is: " + ex);
           //swallow invalid combinations
         }
       }
@@ -171,7 +174,9 @@ public final class GridSearch<MP extends Model.Parameters> extends Keyed<GridSea
       // Number of traversed model parameters
       int counter = grid.getModelCount();
       while (it.hasNext(model)) {
-        if(_job.stop_requested() ) return;  // Handle end-user cancel request
+        if(_job.stop_requested() ) {
+        	return;  // Handle end-user cancel request
+        }
         double max_runtime_secs = it.max_runtime_secs();
 
         double time_remaining_secs = Double.MAX_VALUE;
@@ -290,11 +295,13 @@ public final class GridSearch<MP extends Model.Parameters> extends Keyed<GridSea
     final Key<Model>[] modelKeys = KeySnapshot.globalSnapshot().filter(new KeySnapshot.KVFilter() {
       @Override
       public boolean filter(KeySnapshot.KeyInfo k) {
-        if (! Value.isSubclassOf(k._type, Model.class))
+        if (! Value.isSubclassOf(k._type, Model.class)) {
           return false;
+          }
         Model m = ((Model)k._key.get());
-        if ((m == null) || (m._parms == null))
+        if ((m == null) || (m._parms == null)) {
           return false;
+          }
         return m._parms.checksum() == checksum;
       }
     }).keys();
@@ -326,7 +333,7 @@ public final class GridSearch<MP extends Model.Parameters> extends Keyed<GridSea
    * build will NOT be kicked off. This is a non-blocking call.
    */
   private ModelBuilder startBuildModel(Key result, MP params, Grid<MP> grid) {
-    if (grid.getModel(params) != null) return null;
+    if (grid.getModel(params) != null) { return null;}
     ModelBuilder mb = ModelBuilder.make(params.algoName(), _job, result);
     mb._parms = params;
     mb.trainModelNested(null);

@@ -59,9 +59,15 @@ public class AstDdply extends AstPrimitive {
       @Override
       public int compare(AstGroup.G g1, AstGroup.G g2) {
         for (int i : ordCols) {
-          if (Double.isNaN(g1._gs[i]) && !Double.isNaN(g2._gs[i])) return -1;
-          if (!Double.isNaN(g1._gs[i]) && Double.isNaN(g2._gs[i])) return 1;
-          if (g1._gs[i] != g2._gs[i]) return g1._gs[i] < g2._gs[i] ? -1 : 1;
+          if (Double.isNaN(g1._gs[i]) && !Double.isNaN(g2._gs[i])) {
+        	  return -1;
+          }
+          if (!Double.isNaN(g1._gs[i]) && Double.isNaN(g2._gs[i])) {
+        	  return 1;
+          }
+          if (g1._gs[i] != g2._gs[i]) {
+        	  return g1._gs[i] < g2._gs[i] ? -1 : 1;
+          }
         }
         return 0;
       }
@@ -208,16 +214,19 @@ public class AstDdply extends AstPrimitive {
       // Result into a double[]
       if (val.isFrame()) {
         Frame res = val.getFrame();
-        if (res.numRows() != 1)
+        if (res.numRows() != 1) {
           throw new IllegalArgumentException("ddply must return a 1-row (many column) frame, found " + res.numRows());
+          }
         _result = new double[res.numCols()];
         for (int i = 0; i < res.numCols(); i++)
           _result[i] = res.vec(i).at(0);
         res.remove();
-      } else if (val.isNum())
+      } else if (val.isNum()) {
         _result = new double[]{val.getNum()};
-      else if (val.isNums())
+        }
+      else if (val.isNums()) {
         _result = val.getNums();
+        }
       else
         throw new IllegalArgumentException("ddply must return either a number or a frame, not a " + val);
 

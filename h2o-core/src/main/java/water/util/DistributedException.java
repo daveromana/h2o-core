@@ -23,6 +23,7 @@ public final class DistributedException extends RuntimeException  {
     try {
       truncateStackTrace(true);
     }catch(Throwable t) {
+    	System.out.println("The error is: " + t);
       // just in case it throws, do nothing, truncating stacktrace not really that important
     }
   }
@@ -32,8 +33,10 @@ public final class DistributedException extends RuntimeException  {
       StackTraceElement[] stackTrace = getStackTrace();
       int i = 0;
       for (; i < stackTrace.length; ++i)
-        if (stackTrace[i].getFileName() != null && stackTrace[i].getFileName().equals("JettyHTTPD.java"))
-          break;
+        if (stackTrace[i].getFileName() != null && stackTrace[i].getFileName().equals("JettyHTTPD.java")) {
+        	 break;
+        }
+         
       setStackTrace(Arrays.copyOf(stackTrace, i));
     } else setStackTrace(new StackTraceElement[0]);
   }

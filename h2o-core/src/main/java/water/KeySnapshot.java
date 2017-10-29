@@ -62,7 +62,9 @@ public class KeySnapshot {
   public KeySnapshot filter(KVFilter kvf){
     ArrayList<KeyInfo> res = new ArrayList<>();
     for(KeyInfo kinfo: _keyInfos)
-      if(kvf.filter(kinfo))res.add(kinfo);
+      if(kvf.filter(kinfo)) {
+    	  res.add(kinfo);
+      }
     return new KeySnapshot(res.toArray(new KeyInfo[res.size()]));
   }
 
@@ -117,8 +119,9 @@ public class KeySnapshot {
         if (v != null) {
           T t = v.get();
           res.put(kinfo._key.toString(), t);
-          if (res.size() == limit)
+          if (res.size() == limit) {
             break;
+            }
         }
       }
     }
@@ -144,15 +147,21 @@ public class KeySnapshot {
       Object ok = kvs[i];
       if( !(ok instanceof Key  ) ) continue; // Ignore tombstones and Primes and null's
       Key key = (Key )ok;
-      if(!key.user_allowed())continue;
-      if(homeOnly && !key.home())continue;
+      if(!key.user_allowed()) {
+    	  continue;
+      }
+      if(homeOnly && !key.home()) {
+    	  continue;
+      }
       // Raw array can contain regular and also wrapped values into Prime marker class:
       //  - if we see Value object, create instance of KeyInfo
       //  - if we do not see Value object directly (it can be wrapped in Prime marker class),
       //    try to unwrap it via calling STORE.get (~H2O.get) and then
       //    look at wrapped value again.
       Value val = Value.STORE_get(key);
-      if( val == null ) continue;
+      if( val == null ) {
+    	  continue;
+      }
       res.add(new KeyInfo(key,val));
     }
     final KeyInfo [] arr = res.toArray(new KeyInfo[res.size()]);
@@ -174,10 +183,12 @@ public class KeySnapshot {
   public static KeySnapshot globalSnapshot(long timeTolerance){
     KeySnapshot res = _cache;
     final long t = System.currentTimeMillis();
-    if(res == null || (t - res.timestamp) > timeTolerance)
+    if(res == null || (t - res.timestamp) > timeTolerance) {
       res = new KeySnapshot((new GlobalUKeySetTask().doAllNodes()._res));
-    else if(t - res.timestamp > _updateInterval)
-      H2O.submitTask(new H2O.H2OCountedCompleter() {
+      }
+    else if(t - res.timestamp > _updateInterval) {
+      H2O.submitTask(new H2O.H2OCountedCompleter()) 
+    		  }
         @Override
         public void compute2() {
           new GlobalUKeySetTask().doAllNodes();
@@ -192,7 +203,9 @@ public class KeySnapshot {
     GlobalUKeySetTask() { super(H2O.MIN_HI_PRIORITY); }
     @Override public void setupLocal(){ _res = localSnapshot(true)._keyInfos;}
     @Override public void reduce(GlobalUKeySetTask gbt){
-      if(_res == null)_res = gbt._res;
+      if(_res == null) {
+    	  _res = gbt._res;
+    	  }
       else if(gbt._res != null){ // merge sort keys together
         KeyInfo [] res = new KeyInfo[_res.length + gbt._res.length];
         int j = 0, k = 0;

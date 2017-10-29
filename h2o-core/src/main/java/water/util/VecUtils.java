@@ -249,6 +249,8 @@ public class VecUtils {
       Integer.parseInt(src.domain()[0]);
       useDomain=true;
     } catch (NumberFormatException e) {
+    	System.out.println("The error is: " + e);
+    }
       // makeCopy and return...
     }
     if( useDomain ) {

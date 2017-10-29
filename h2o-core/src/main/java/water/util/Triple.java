@@ -14,8 +14,12 @@ public class Triple<V> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Triple)) return false;
+    if (this == o) {
+    	return true;
+    }
+    if (!(o instanceof Triple)) {
+    	return false;
+    }
     Triple<?> triple = (Triple<?>) o;
     return Objects.equals(v1, triple.v1) &&
            Objects.equals(v2, triple.v2) &&

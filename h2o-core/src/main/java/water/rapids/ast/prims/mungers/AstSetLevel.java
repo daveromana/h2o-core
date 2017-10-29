@@ -33,15 +33,20 @@ public class AstSetLevel extends AstPrimitive {
   @Override
   public ValFrame apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
-    if (fr.numCols() != 1) throw new IllegalArgumentException("`setLevel` works on a single column at a time.");
+    if (fr.numCols() != 1) {
+    	throw new IllegalArgumentException("`setLevel` works on a single column at a time.");
+    }
     String[] doms = fr.anyVec().domain().clone();
-    if (doms == null)
+    if (doms == null) {
       throw new IllegalArgumentException("Cannot set the level on a non-factor column!");
+      }
 
     String lvl = asts[2].exec(env).getStr();
 
     final int idx = Arrays.asList(doms).indexOf(lvl);
-    if (idx == -1) throw new IllegalArgumentException("Did not find level `" + lvl + "` in the column.");
+    if (idx == -1) {
+    	throw new IllegalArgumentException("Did not find level `" + lvl + "` in the column.");
+    }
 
 
     // COW semantics

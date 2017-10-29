@@ -36,7 +36,9 @@ public class Assembly extends Keyed<Assembly> {
   }
 
   public String toJava(String pojoName) {
-    if (pojoName == null) pojoName = "GeneratedMungingPojo";
+    if (pojoName == null) {
+    	pojoName = "GeneratedMungingPojo";
+    }
     StringBuilder sb = new StringBuilder(
             "import hex.genmodel.GenMunger;\n"+
             "import hex.genmodel.easy.RowData;\n\n" +

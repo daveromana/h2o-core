@@ -38,8 +38,12 @@ public class ModelMetricsClustering extends ModelMetricsUnsupervised {
     sb.append(" total sum of squares: " + (float)_totss + "\n");
     sb.append(" total within sum of squares: " + (float)_tot_withinss + "\n");
     sb.append(" total between sum of squares: " + (float)_betweenss + "\n");
-    if (_size != null) sb.append(" per cluster sizes: " + Arrays.toString(_size) + "\n");
-    if (_withinss != null) sb.append(" per cluster within sum of squares: " + Arrays.toString(_withinss) + "\n");
+    if (_size != null) {
+    	sb.append(" per cluster sizes: " + Arrays.toString(_size) + "\n");
+    }
+    if (_withinss != null) {
+    	sb.append(" per cluster within sum of squares: " + Arrays.toString(_withinss) + "\n");
+    }
     return sb.toString();
   }
 
@@ -48,8 +52,9 @@ public class ModelMetricsClustering extends ModelMetricsUnsupervised {
    * @return TwoDimTable
    */
   public TwoDimTable createCentroidStatsTable() {
-    if (_size == null || _withinss == null)
+    if (_size == null || _withinss == null) {
       return null;
+      }
     List<String> colHeaders = new ArrayList<>();
     List<String> colTypes = new ArrayList<>();
     List<String> colFormat = new ArrayList<>();
@@ -120,8 +125,9 @@ public class ModelMetricsClustering extends ModelMetricsUnsupervised {
       _sumsqe += sqr;
       _within_sumsqe[clus] += sqr;
 
-      if (Double.isNaN(_sumsqe))
+      if (Double.isNaN(_sumsqe)) {
         throw new H2OIllegalArgumentException("Sum of Squares is invalid (Double.NaN) - Check for missing values in the dataset.");
+        }
       return preds;                // Flow coding
     }
 
@@ -147,18 +153,24 @@ public class ModelMetricsClustering extends ModelMetricsUnsupervised {
         mm._withinss[i] = _within_sumsqe[i];
 
       long numRows = f.numRows();
-      if( m._parms._weights_column != null) numRows = _count;
+      if( m._parms._weights_column != null) {
+    	  numRows = _count;
+      }
 
       // Sum-of-square distance from grand mean
-      if ( ((ClusteringParameters) clm._parms)._k == 1 )
+      if ( ((ClusteringParameters) clm._parms)._k == 1 ) {
         mm._totss = mm._tot_withinss;
+        }
       else {
         mm._totss = 0;
+        }
         for (int i = 0; i < _colSum.length; i++) {
-          if(((ClusteringOutput)clm._output)._mode[i] == -1)
+          if(((ClusteringOutput)clm._output)._mode[i] == -1) {
             mm._totss += _colSumSq[i] - (_colSum[i] * _colSum[i]) / numRows;
-          else
-            mm._totss += _colSum[i]; // simply add x[i] != modes[i] for categoricals
+            }
+          else {
+            mm._totss += _colSum[i];}
+          // simply add x[i] != modes[i] for categoricals
         }
       }
       mm._betweenss = mm._totss - mm._tot_withinss;

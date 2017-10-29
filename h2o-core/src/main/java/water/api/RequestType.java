@@ -32,14 +32,18 @@ enum RequestType {
    */
   static RequestType requestType(String url) {
     int i = url.indexOf('.');
-    if (i == -1) return json; // Default for no extension
+    if (i == -1) {
+    	return json; // Default for no extension
+    }
     String s = url.substring(i+1);
     int idx = s.indexOf('/');
     if (idx >= 0) {
       s = s.substring(0, idx);
     }
     for( RequestType t : _values )
-      if( s.equals(t.name()) ) return t;
+      if( s.equals(t.name()) ) {
+    	  return t;
+      }
     return json;                // None of the above; use json
   }
 

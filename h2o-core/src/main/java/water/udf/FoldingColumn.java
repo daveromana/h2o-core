@@ -67,7 +67,10 @@ public class FoldingColumn<X, Y> extends FunColumnBase<Y> {
   }
 
   @Override public boolean isNA(long idx) {
-    for (Column<X> col : columns) if (col.isNA(idx)) return true;
+    for (Column<X> col : columns) 
+    	if (col.isNA(idx)) {
+    		return true;
+    	}
     return false;
   }
 
@@ -100,7 +103,9 @@ public class FoldingColumn<X, Y> extends FunColumnBase<Y> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
+    if (this == o) {
+    	return true;
+    }
     if (o instanceof FoldingColumn) {
       FoldingColumn other = (FoldingColumn) o;
       return Objects.equals(f, other.f) && Arrays.equals(columns, other.columns);

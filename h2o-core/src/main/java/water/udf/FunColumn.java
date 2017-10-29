@@ -63,7 +63,9 @@ public class FunColumn<X, Y> extends FunColumnBase<Y> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
+    if (this == o) {
+    	return true;
+    }
     if (o instanceof FunColumn) {
       FunColumn other = (FunColumn) o;
       return Objects.equals(f, other.f) && xs.equals(other.xs);

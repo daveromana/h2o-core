@@ -89,23 +89,23 @@ public class Tabulate extends Keyed<Tabulate> {
 
   private String labelForBin(final int v, int b) {
     int missing = _stats[v]._missing;
-    if (missing == 1 && b==0) return "missing(NA)";
-    if (missing == 1) b--;
-    if (_stats[v]._isCategorical)
-      return _stats[v]._domain[b];
+    if (missing == 1 && b==0) { return "missing(NA)";}
+    if (missing == 1) {b--;}
+    if (_stats[v]._isCategorical) {
+      return _stats[v]._domain[b];}
     int bins = bins(v);
-    if (_stats[v]._isInt && (_stats[v]._max - _stats[v]._min + 1) <= bins)
-      return Integer.toString((int)(_stats[v]._min + b));
+    if (_stats[v]._isInt && (_stats[v]._max - _stats[v]._min + 1) <= bins) {
+      return Integer.toString((int)(_stats[v]._min + b));}
     double d = (_stats[v]._max - _stats[v]._min)/bins;
     return String.format("%5f", _stats[v]._min + (b + 0.5) * d);
   }
 
   public Tabulate execImpl() {
-    if (_dataset == null)     throw new H2OIllegalArgumentException("Dataset not found");
-    if (_nbins_predictor < 1) throw new H2OIllegalArgumentException("Number of bins for predictor must be >= 1");
-    if (_nbins_response < 1)  throw new H2OIllegalArgumentException("Number of bins for response must be >= 1");
+    if (_dataset == null)     {throw new H2OIllegalArgumentException("Dataset not found");}
+    if (_nbins_predictor < 1) {throw new H2OIllegalArgumentException("Number of bins for predictor must be >= 1");}
+    if (_nbins_response < 1)  {throw new H2OIllegalArgumentException("Number of bins for response must be >= 1");}
     Vec x = _dataset.vec(_predictor);
-    if (x == null)            throw new H2OIllegalArgumentException("Predictor column " + _predictor + " not found");
+    if (x == null)   {         throw new H2OIllegalArgumentException("Predictor column " + _predictor + " not found");}
     if (x.cardinality() > _nbins_predictor) {
       Interaction in = new Interaction();
       in._source_frame = _dataset._key;
@@ -117,7 +117,7 @@ public class Tabulate extends Keyed<Tabulate> {
       x = x.toCategoricalVec();
     }
     Vec y = _dataset.vec(_response);
-    if (y == null) throw new H2OIllegalArgumentException("Response column " + _response + " not found");
+    if (y == null) {throw new H2OIllegalArgumentException("Response column " + _response + " not found");}
     if (y.cardinality() > _nbins_response) {
       Interaction in = new Interaction();
       in._source_frame = _dataset._key;
@@ -128,10 +128,12 @@ public class Tabulate extends Keyed<Tabulate> {
     } else if (y.isInt() && (y.max() - y.min() + 1) <= _nbins_response) {
       y = y.toCategoricalVec();
     }
-    if (y!=null && y.cardinality() > 2)
-      Log.warn("Response column has more than two factor levels - mean response depends on lexicographic order of factors!");
+    if (y!=null && y.cardinality() > 2) {
+      Log.warn("Response column has more than two factor levels - mean response depends on lexicographic order of factors!");}
     Vec w = _dataset.vec(_weight); //can be null
-    if (w != null && (!w.isNumeric() && w.min() < 0)) throw new H2OIllegalArgumentException("Observation weights must be numeric with values >= 0");
+    if (w != null && (!w.isNumeric() && w.min() < 0)) {
+    	throw new H2OIllegalArgumentException("Observation weights must be numeric with values >= 0");
+    }
 
     if (x!=null) {
       _vecs[0] = x._key;
@@ -169,7 +171,9 @@ public class Tabulate extends Keyed<Tabulate> {
         int xbin = _sp.bin(0, x.atd(r));
         int ybin = _sp.bin(1, y.atd(r));
         double weight = w!=null?w.atd(r):1;
-        if (Double.isNaN(weight)) continue;
+        if (Double.isNaN(weight)) {
+        	continue;
+        }
         AtomicUtils.DoubleArray.add(_sp._count_data[xbin], ybin, weight); //increment co-occurrence count by w
         if (!y.isNA(r)) {
           AtomicUtils.DoubleArray.add(_sp._response_data[xbin], 0, weight * y.atd(r)); //add to mean response for x
@@ -180,7 +184,9 @@ public class Tabulate extends Keyed<Tabulate> {
 
     @Override
     public void reduce(CoOccurrence mrt) {
-      if (_sp._response_data == mrt._sp._response_data) return;
+      if (_sp._response_data == mrt._sp._response_data) {
+    	  return;
+      }
       ArrayUtils.add(_sp._response_data, mrt._sp._response_data);
     }
 
@@ -194,7 +200,9 @@ public class Tabulate extends Keyed<Tabulate> {
   }
 
   public TwoDimTable tabulationTwoDimTable() {
-    if (_response_data == null) return null;
+    if (_response_data == null) {
+    	return null;
+    }
     int predN = _count_data.length;
     int respN = _count_data[0].length;
     String tableHeader = "(Weighted) co-occurrence counts of '" + _predictor + "' and '" + _response + "'";
@@ -227,7 +235,9 @@ public class Tabulate extends Keyed<Tabulate> {
   }
 
   public TwoDimTable responseCharTwoDimTable() {
-    if (_response_data == null) return null;
+    if (_response_data == null) {
+    	return null;
+    }
     String tableHeader = "Mean value of '" + _response  + "' and (weighted) counts for '" + _predictor + "' values";
     int predN = _count_data.length;
     String[] rowHeaders = new String[predN]; //X

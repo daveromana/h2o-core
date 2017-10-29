@@ -186,10 +186,12 @@ public interface HyperSpaceWalker<MP extends Model.Parameters, C extends HyperSp
                                             C search_criteria) {
         HyperSpaceSearchCriteria.Strategy strategy = search_criteria.strategy();
 
-        if (strategy == HyperSpaceSearchCriteria.Strategy.Cartesian)
+        if (strategy == HyperSpaceSearchCriteria.Strategy.Cartesian) {
           return new HyperSpaceWalker.CartesianWalker<>(params, hyperParams, paramsBuilderFactory, (HyperSpaceSearchCriteria.CartesianSearchCriteria) search_criteria);
-        else if (strategy == HyperSpaceSearchCriteria.Strategy.RandomDiscrete )
+          }
+        else if (strategy == HyperSpaceSearchCriteria.Strategy.RandomDiscrete ) {
           return new HyperSpaceWalker.RandomDiscreteValueWalker<>(params, hyperParams, paramsBuilderFactory, (HyperSpaceSearchCriteria.RandomDiscreteValueSearchCriteria) search_criteria);
+          }
         else
           throw new H2OIllegalArgumentException("strategy", "GridSearch", strategy);
       }
@@ -225,10 +227,13 @@ public interface HyperSpaceWalker<MP extends Model.Parameters, C extends HyperSp
       for (String key : hyperParams.keySet()) {
         // Throw if the user passed an empty value list:
         Object[] values = hyperParams.get(key);
-        if (0 == values.length)
+        if (0 == values.length) {
           throw new H2OIllegalArgumentException("Grid search hyperparameter value list is empty for hyperparameter: " + key);
+          }
 
-        if ("seed".equals(key) || "_seed".equals(key)) continue;  // initialized to the wall clock
+        if ("seed".equals(key) || "_seed".equals(key)) {
+        	continue;  // initialized to the wall clock
+        }
 
         // Ugh.  Java callers, like the JUnits or Sparkling Water users, use a leading _.  REST users don't.
         String prefix = (key.startsWith("_") ? "" : "_");

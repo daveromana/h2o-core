@@ -43,9 +43,15 @@ public class IntegerColumnCfcm extends CreateFrameColumnMaker {
 
   @Override public float byteSizePerRow() {
     long integer_range = Math.max(Math.abs(upperBound), Math.abs(lowerBound));
-    if (integer_range < 128) return 1;
-    if (integer_range < 32768) return 2;
-    if (integer_range < 1L << 31) return 4;
+    if (integer_range < 128) {
+    	return 1;
+    }
+    if (integer_range < 32768) {
+    	return 2;
+    }
+    if (integer_range < 1L << 31) {
+    	return 4;
+    }
     return 8;
   }
 }

@@ -172,6 +172,8 @@ public class Weaver {
       try {
         loadClass(_name, _bytes);
       } catch (NotFoundException e) {
+    	  System.out.println("The error is: " + e);
+      }
       } catch (CannotCompileException e) {
         throw new RuntimeException(e);
       }

@@ -39,8 +39,11 @@ public class AstLevels extends AstPrimitive {
     // compute the longest vec... that's the one with the most domain levels
     int max = 0;
     for (int i = 0; i < f.numCols(); ++i)
-      if (f.vec(i).isCategorical())
-        if (max < f.vec(i).domain().length) max = f.vec(i).domain().length;
+      if (f.vec(i).isCategorical()) {
+        if (max < f.vec(i).domain().length) {
+        	max = f.vec(i).domain().length;
+        	}
+        }
 
     final int rowLayout = Vec.ESPC.rowLayout(keys[0], new long[]{0, max});
     for (int i = 0; i < f.numCols(); ++i) {
@@ -48,8 +51,9 @@ public class AstLevels extends AstPrimitive {
       NewChunk nc = new NewChunk(v, 0);
       String[] dom = f.vec(i).domain();
       int numToPad = dom == null ? max : max - dom.length;
-      if (dom != null)
+      if (dom != null) {
         for (int j = 0; j < dom.length; ++j) nc.addNum(j);
+        }
       for (int j = 0; j < numToPad; ++j) nc.addNA();
       nc.close(0, fs);
       vecs[i] = v.close(rowLayout, fs);

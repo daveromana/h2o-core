@@ -73,29 +73,36 @@ public class PreviewParseWriter extends Iced implements StreamParseWriter {
   @Override public boolean isString(int colIdx) { return false; }
   @Override public void addNumCol(int colIdx, long number, int exp) {
     if(colIdx < _ncols) {
-      if (number == 0)
+      if (number == 0) {
         ++_nzeros[colIdx];
-      else
+        }
+      else {
         ++_nnums[colIdx];
-      if (_nlines < MAX_PREVIEW_LINES)
+        }
+      if (_nlines < MAX_PREVIEW_LINES) {
         _data[_nlines][colIdx] = Double.toString(water.util.PrettyPrint.pow10(number,exp));
+        }
     }
   }
   @Override public void addNumCol(int colIdx, double d) {
     if(colIdx < _ncols) {
-      if (d == 0)
+      if (d == 0) {
         ++_nzeros[colIdx];
-      else
+        }
+      else {
         ++_nnums[colIdx];
-      if (_nlines < MAX_PREVIEW_LINES)
+        }
+      if (_nlines < MAX_PREVIEW_LINES) {
         _data[_nlines][colIdx] = Double.toString(d);
+        }
     }
   }
   @Override public void addInvalidCol(int colIdx) {
     if(colIdx < _ncols) {
       ++_nempty[colIdx];
-      if (_nlines < MAX_PREVIEW_LINES)
+      if (_nlines < MAX_PREVIEW_LINES) {
         _data[_nlines][colIdx] = "NA";
+        }
     }
   }
 
@@ -122,8 +129,9 @@ public class PreviewParseWriter extends Iced implements StreamParseWriter {
       ++_nstrings[colIdx];
       _domains[colIdx].put(str.toString(),"");
 
-      if (_nlines < MAX_PREVIEW_LINES)
+      if (_nlines < MAX_PREVIEW_LINES) {
         _data[_nlines][colIdx] = str.toString();
+        }
     }
   }
 
@@ -227,18 +235,25 @@ public class PreviewParseWriter extends Iced implements StreamParseWriter {
         empty = false;
       }
     }
-    if (empty) return null;
+    if (empty) {
+    	return null;
+    }
     else return naStrings;
   }
 
   public static PreviewParseWriter unifyColumnPreviews(PreviewParseWriter prevA, PreviewParseWriter prevB) {
-    if (prevA == null) return prevB;
-    else if (prevB == null) return prevA;
+    if (prevA == null) {
+    	return prevB;
+    }
+    else if (prevB == null) {
+    	return prevA;
+    }
     else {
       //sanity checks
-      if (prevA._ncols != prevB._ncols)
+      if (prevA._ncols != prevB._ncols) {
         throw new ParseDataset.H2OParseException("Files conflict in number of columns. "
                 + prevA._ncols + " vs. " + prevB._ncols + ".");
+        }
       prevA._nlines += prevB._nlines;
       prevA._invalidLines += prevB._invalidLines;
       for (int i = 0; i < prevA._ncols; i++) {
@@ -249,11 +264,13 @@ public class PreviewParseWriter extends Iced implements StreamParseWriter {
         prevA._nzeros[i] += prevB._nzeros[i];
         prevA._nempty[i] += prevB._nempty[i];
         if (prevA._domains[i] != null) {
-          if (prevB._domains[i] != null)
+          if (prevB._domains[i] != null) {
             for(String s:prevB._domains[i].keySet())
               prevA._domains[i].put(s,"");
-        } else if (prevB._domains[i] != null)
+            }
+        } else if (prevB._domains[i] != null) {
           prevA._domains = prevB._domains;
+          }
       }
     }
     return prevA;
@@ -266,9 +283,12 @@ public class PreviewParseWriter extends Iced implements StreamParseWriter {
 
   @Override
   public void addError(ParseErr err) {
-    if(_errs == null) _errs = new ParseErr[]{err};
-    else if(_errs.length < 20)
+    if(_errs == null) {
+    	_errs = new ParseErr[]{err};
+    }
+    else if(_errs.length < 20) {
       _errs = ArrayUtils.append(_errs,err);
+      }
   }
 
   @Override

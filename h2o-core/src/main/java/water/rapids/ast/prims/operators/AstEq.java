@@ -30,13 +30,15 @@ public class AstEq extends AstBinOp {
           Chunk chk = chks[c];
           NewChunk cres = cress[c];
           BufferedString bStr = new BufferedString();
-          if (chk.vec().isString())
+          if (chk.vec().isString()) {
             for (int i = 0; i < chk._len; i++)
               cres.addNum(str_op(chk.atStr(bStr, i), Double.isNaN(d) ? null : new BufferedString(String.valueOf(d))));
-          else if (!chk.vec().isNumeric()) cres.addZeros(chk._len);
-          else
+            }
+          else if (!chk.vec().isNumeric()) { cres.addZeros(chk._len);}
+          else {
             for (int i = 0; i < chk._len; i++)
               cres.addNum(op(chk.atd(i), d));
+            }
         }
       }
     }.doAll(fr.numCols(), Vec.T_NUM, fr).outputFrame());
@@ -48,9 +50,11 @@ public class AstEq extends AstBinOp {
   }  // Make sense to run this OP on an enm?
 
   public double str_op(BufferedString l, BufferedString r) {
-    if (StringUtils.isNullOrEmpty(l))
+    if (StringUtils.isNullOrEmpty(l)) {
       return StringUtils.isNullOrEmpty(r) ? 1 : 0;
-    else
+      }
+    else {
       return l.equals(r) ? 1 : 0;
+      }
   }
 }

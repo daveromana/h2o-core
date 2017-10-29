@@ -39,7 +39,9 @@ public class CBSChunk extends Chunk {
 
   @Override protected long at8_impl(int idx) {
     byte b = read(idx);
-    if( b == _NA ) throw new IllegalArgumentException("at8_abs but value is missing");
+    if( b == _NA ) {
+    	throw new IllegalArgumentException("at8_abs but value is missing");
+    }
     return b;
   }
   @Override protected double atd_impl(int idx) {
@@ -78,7 +80,9 @@ public class CBSChunk extends Chunk {
   }
 
   @Override boolean set_impl(int idx, double d) {
-    if(Double.isNaN(d)) return setNA_impl(idx);
+    if(Double.isNaN(d)) {
+    	return setNA_impl(idx);
+    }
     if(d == 0 || d == 1) {
       set_byte(idx,(byte)d);
       return true;
@@ -86,8 +90,9 @@ public class CBSChunk extends Chunk {
     return false;
   }
   @Override boolean set_impl(int idx, float f ) {
-    if(Float.isNaN(f))
+    if(Float.isNaN(f)) {
       return setNA_impl(idx);
+      }
     if(f == 0 || f == 1) {
       set_byte(idx,(byte)f);
       return true;
@@ -104,8 +109,12 @@ public class CBSChunk extends Chunk {
 
   private void processRow(int r, ChunkVisitor v){
     int i = read(r);
-    if(i == _NA) v.addNAs(1);
-    else v.addValue(i);
+    if(i == _NA) {
+    	v.addNAs(1);
+    }
+    else {
+    	v.addValue(i);
+    }
   }
 
   @Override public ChunkVisitor processRows(ChunkVisitor v, int from, int to){

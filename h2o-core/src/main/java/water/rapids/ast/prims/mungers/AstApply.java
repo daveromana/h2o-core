@@ -35,8 +35,9 @@ public class AstApply extends AstPrimitive {
     AstPrimitive fun = stk.track(asts[3].exec(env)).getFun();
 
     int nargs = fun.nargs();
-    if (nargs != -1 && nargs != 2)
+    if (nargs != -1 && nargs != 2) {
       throw new IllegalArgumentException("Incorrect number of arguments; '" + fun + "' expects " + nargs + " but was passed " + 2);
+      }
 
     switch ((int) margin) {
       case 1:
@@ -78,10 +79,12 @@ public class AstApply extends AstPrimitive {
         long nrows = v0.getFrame().numRows();
         for (int i = 0; i < vecs.length; i++) {
           Frame res = vals[i].getFrame(); // Since the zero column is a frame, all must be frames
-          if (res.numCols() != 1)
+          if (res.numCols() != 1) {
             throw new IllegalArgumentException("apply result Frames must have one column, found " + res.numCols() + " cols");
-          if (res.numRows() != nrows)
+          }
+          if (res.numRows() != nrows) {
             throw new IllegalArgumentException("apply result Frames must have all the same rows, found " + nrows + " rows and " + res.numRows());
+            }
           ovecs[i] = res.vec(0);
         }
         break;

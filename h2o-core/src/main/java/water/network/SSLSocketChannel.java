@@ -193,7 +193,9 @@ class SSLSocketChannel implements ByteChannel {
 
     @Override
     public int read(ByteBuffer dst) throws IOException {
-        if (closing || closed) return -1;
+        if (closing || closed) {
+        	return -1;
+        }
 
         return unwrap(dst);
     }
@@ -315,7 +317,9 @@ class SSLSocketChannel implements ByteChannel {
             netOutBuffer.flip();
 
             if (wrapResult.getStatus() == SSLEngineResult.Status.OK) {
-                if (wrapResult.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_TASK) tasks();
+                if (wrapResult.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_TASK) {
+                	tasks();
+                }
             }
 
             while (netOutBuffer.hasRemaining()) {

@@ -219,15 +219,23 @@ public class CloudV3 extends RequestSchemaV3<Iced, CloudV3> {
           if (system_total_ticks_delta > 0) {
             long system_idle_ticks_delta = hb._system_idle_ticks - lte._system_idle_ticks;
             double sys_cpu_frac_double = 1 - ((double)(system_idle_ticks_delta) / (double)system_total_ticks_delta);
-            if (sys_cpu_frac_double < 0) sys_cpu_frac_double = 0;               // Clamp at 0.
-            else if (sys_cpu_frac_double > 1) sys_cpu_frac_double = 1;          // Clamp at 1.
+            if (sys_cpu_frac_double < 0) {
+            	sys_cpu_frac_double = 0;               // Clamp at 0.
+            }
+            else if (sys_cpu_frac_double > 1) {
+            	sys_cpu_frac_double = 1;          // Clamp at 1.
+            }
             sys_cpu_pct = (int)(sys_cpu_frac_double * 100);
 
             long process_total_ticks_delta = hb._process_total_ticks - lte._process_total_ticks;
             double process_cpu_frac_double = ((double)(process_total_ticks_delta) / (double)system_total_ticks_delta);
             // Saturate at 0 and 1.
-            if (process_cpu_frac_double < 0) process_cpu_frac_double = 0;       // Clamp at 0.
-            else if (process_cpu_frac_double > 1) process_cpu_frac_double = 1;  // Clamp at 1.
+            if (process_cpu_frac_double < 0) {
+            	process_cpu_frac_double = 0;       // Clamp at 0.
+            }
+            else if (process_cpu_frac_double > 1) {
+            	process_cpu_frac_double = 1;  // Clamp at 1.
+            }
             my_cpu_pct = (int)(process_cpu_frac_double * 100);
           }
         }

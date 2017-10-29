@@ -31,10 +31,10 @@ public class AstTokenize extends AstPrimitive {
 
     // Type check
     for (Vec v : fr.vecs())
-      if (! v.isString())
+      if (! v.isString()) {
         throw new IllegalArgumentException("tokenize() requires all input columns to be of a String type. "
                 + "Received " + fr.anyVec().get_type_str() + ". Please convert column to a string column first.");
-
+      }
     Frame tokenized = new Tokenizer(regex).doAll(Vec.T_STR, fr).outputFrame();
     return new ValFrame(tokenized);
   }
@@ -51,7 +51,9 @@ public class AstTokenize extends AstPrimitive {
       BufferedString tmpStr = new BufferedString();
       for (int row = 0; row < cs[0]._len; row++) {
         for (Chunk chk : cs) {
-          if (chk.isNA(row)) continue;
+          if (chk.isNA(row)) {
+        	  continue;
+          }
           String[] ss = chk.atStr(tmpStr, row).toString().split(_regex);
           for (String s : ss)
             nc.addStr(s);

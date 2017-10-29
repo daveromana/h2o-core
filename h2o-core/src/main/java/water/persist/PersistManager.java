@@ -289,7 +289,9 @@ public class PersistManager {
         "s3a:".equals(scheme) ||
         "maprfs:".equals(scheme) ||
         (useHdfsAsFallback() && I[Value.HDFS] != null && I[Value.HDFS].canHandle(path))) {
-      if (I[Value.HDFS] == null) throw new H2OIllegalArgumentException("HDFS, S3N, and S3A support is not configured");
+      if (I[Value.HDFS] == null) {
+    	  throw new H2OIllegalArgumentException("HDFS, S3N, and S3A support is not configured");
+      }
       I[Value.HDFS].importFiles(path, pattern, files, keys, fails, dels);
     }
 
@@ -375,8 +377,12 @@ public class PersistManager {
   public boolean isEmptyDirectoryAllNodes(String path) {
     if (isHdfsPath(path)) {
       validateHdfsConfigured();
-      if (! I[Value.HDFS].exists(path)) return true;
-      if (! I[Value.HDFS].isDirectory(path)) return false;
+      if (! I[Value.HDFS].exists(path)) {
+    	  return true;
+      }
+      if (! I[Value.HDFS].isDirectory(path)) {
+    	  return false;
+      }
       PersistEntry[] content = I[Value.HDFS].list(path);
       return (content == null) || (content.length == 0);
     }
@@ -396,13 +402,15 @@ public class PersistManager {
     }
     @Override protected void setupLocal() {
       File f = new File(_path);
-      if (! f.exists())
+      if (! f.exists()) {
         _result = true;
+      }
       else if (f.isDirectory()) {
         File[] content = f.listFiles();
         _result = (content != null) && (content.length == 0);
-      } else
+      } else {
         _result = false;
+        }
     }
   }
 

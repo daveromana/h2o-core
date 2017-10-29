@@ -27,16 +27,20 @@ class SVMLightParser extends Parser {
   public static ParseSetup guessSetup(byte [] bits) {
     int lastNewline = bits.length-1;
     while(lastNewline > 0 && !CsvParser.isEOL(bits[lastNewline]))lastNewline--;
-    if(lastNewline > 0) bits = Arrays.copyOf(bits,lastNewline+1);
+    if(lastNewline > 0) {
+    	bits = Arrays.copyOf(bits,lastNewline+1);
+    }
     SVMLightParser p = new SVMLightParser(new ParseSetup(SVMLight_INFO,
             ParseSetup.GUESS_SEP, false,ParseSetup.GUESS_HEADER,ParseSetup.GUESS_COL_CNT,
             null,null,null,null,null), null);
     SVMLightInspectParseWriter dout = new SVMLightInspectParseWriter();
     p.parseChunk(0,new ByteAryData(bits,0), dout);
-    if (dout._ncols > 0 && dout._nlines > 0 && dout._nlines > dout._invalidLines)
+    if (dout._ncols > 0 && dout._nlines > 0 && dout._nlines > dout._invalidLines) {
       return new ParseSetup(SVMLight_INFO, ParseSetup.GUESS_SEP,
             false,ParseSetup.NO_HEADER,dout._ncols,null,dout.guessTypes(),null,null,dout._data, dout.removeErrors());
-    else throw new ParseDataset.H2OParseException("Could not parse file as an SVMLight file.");
+    else {
+    	throw new ParseDataset.H2OParseException("Could not parse file as an SVMLight file.");
+    }
   }
 
   public static byte[] col_types(int ncols) {
@@ -51,7 +55,9 @@ class SVMLightParser extends Parser {
   @Override public final ParseWriter parseChunk(int cidx, final ParseReader din, final ParseWriter dout) {
       BufferedString _str = new BufferedString();
       byte[] bits = din.getChunkData(cidx);
-      if( bits == null ) return dout;
+      if( bits == null ) {
+    	  return dout;
+      }
       final byte[] bits0 = bits;  // Bits for chunk0
       boolean firstChunk = true;  // Have not rolled into the 2nd chunk
       byte[] bits1 = null;        // Bits for chunk1, loaded lazily.
@@ -72,9 +78,11 @@ class SVMLightParser extends Parser {
       if( cidx == 0 ) {
         while (c == '#') {
           while ((offset   < bits.length) && (bits[offset] != CHAR_CR) && (bits[offset  ] != CHAR_LF)) ++offset;
-          if    ((offset+1 < bits.length) && (bits[offset] == CHAR_CR) && (bits[offset+1] == CHAR_LF)) ++offset;
+          if    ((offset+1 < bits.length) && (bits[offset] == CHAR_CR) && (bits[offset+1] == CHAR_LF)) { 
+        	  ++offset;
+          }
           ++offset;
-          if (offset >= bits.length)
+          if (offset >= bits.length) {
             return dout;
           c = bits[offset];
         }
@@ -85,16 +93,16 @@ class SVMLightParser extends Parser {
         switch (lstate) {
           // ---------------------------------------------------------------------
           case SKIP_LINE:
-            if (!isEOL(c))
+            if (!isEOL(c)) {
               break;
             // fall through
           case EOL:
             if (colIdx != 0) {
               colIdx = 0;
-              if(lstate != SKIP_LINE)
+              if(lstate != SKIP_LINE) {
                 dout.newLine();
             }
-            if( !firstChunk )
+            if( !firstChunk ) {
               break MAIN_LOOP; // second chunk only does the first row
             lstate = (c == CHAR_CR) ? EXPECT_COND_LF : POSSIBLE_EMPTY_LINE;
             gstate = TGT;
@@ -102,7 +110,7 @@ class SVMLightParser extends Parser {
           // ---------------------------------------------------------------------
           case EXPECT_COND_LF:
             lstate = POSSIBLE_EMPTY_LINE;
-            if (c == CHAR_LF)
+            if (c == CHAR_LF) {
               break;
             continue MAIN_LOOP;
           // ---------------------------------------------------------------------
@@ -112,7 +120,7 @@ class SVMLightParser extends Parser {
           // ---------------------------------------------------------------------
           case POSSIBLE_EMPTY_LINE:
             if (isEOL(c)) {
-              if (c == CHAR_CR)
+              if (c == CHAR_CR) {
                 lstate = EXPECT_COND_LF;
               break;
             }
@@ -120,7 +128,7 @@ class SVMLightParser extends Parser {
             // fallthrough to WHITESPACE_BEFORE_TOKEN
           // ---------------------------------------------------------------------
           case WHITESPACE_BEFORE_TOKEN:
-            if (isWhitespace(c))
+            if (isWhitespace(c)) {
                 break;
             if (isEOL(c)){
               lstate = EOL;
@@ -157,7 +165,7 @@ class SVMLightParser extends Parser {
           case NUMBER:
             if ((c >= '0') && (c <= '9')) {
               number = (number*10)+(c-'0');
-              if (number >= LARGEST_DIGIT_NUMBER)
+              if (number >= LARGEST_DIGIT_NUMBER) {
                 lstate = INVALID_NUMBER;
               break;
             } else if (c == CHAR_DECIMAL_SEP) {
@@ -189,11 +197,11 @@ class SVMLightParser extends Parser {
                     // col idx is either too small (according to spec, cols must come in strictly increasing order)
                     // or too small (col ids currently must fit into int)
                     String err;
-                    if(number <= colIdx)
+                    if(number <= colIdx) {
                       err = "Columns come in non-increasing sequence. Got " + number + " after " + colIdx + ". Rest of the line is skipped.";
-                    else if(exp != 0)
+                    else if(exp != 0) {
                       err = "Got non-integer as column id: " + PrettyPrint.pow10(number,exp) + ". Rest of the line is skipped.";
-                    else
+                    else {
                       err = "column index out of range, " + number + " does not fit into integer." + " Rest of the line is skipped.";
                     dout.invalidLine(new ParseWriter.ParseErr(err,cidx,dout.lineNum(),offset + din.getGlobalByteOffset()));
                     lstate = SKIP_LINE;
@@ -228,7 +236,7 @@ class SVMLightParser extends Parser {
               zeros = 0;
               break;
             } else if ((c == 'e') || (c == 'E')) {
-              if (decimal)
+              if (decimal) {
                 fractionDigits = offset - zeros - 1 - fractionDigits;
               lstate = NUMBER_EXP_START;
               sgnExp = 1;
@@ -236,7 +244,7 @@ class SVMLightParser extends Parser {
               break;
             }
             lstate = NUMBER_END;
-            if (decimal)
+            if (decimal) {
               fractionDigits = offset - zeros - fractionDigits-1;
             if (exp == -1) {
               number = -number;
@@ -301,9 +309,9 @@ class SVMLightParser extends Parser {
             }
             // fall through
           case SKIP_TOKEN:
-            if(isEOL(c))
+            if(isEOL(c)) {
               lstate = EOL;
-            else if(isWhitespace(c))
+            else if(isWhitespace(c)) {
               lstate = WHITESPACE_BEFORE_TOKEN;
             break;
           default:
@@ -335,11 +343,11 @@ class SVMLightParser extends Parser {
           }
           // Now parsing in the 2nd chunk.  All offsets relative to the 2nd chunk start.
           firstChunk = false;
-          if (lstate == NUMBER_FRACTION)
+          if (lstate == NUMBER_FRACTION) {
             fractionDigits -= bits.length;
           offset -= bits.length;
           bits = bits1;           // Set main parsing loop bits
-          if( bits[0] == CHAR_LF && lstate == EXPECT_COND_LF )
+          if( bits[0] == CHAR_LF && lstate == EXPECT_COND_LF ) {
             break; // when the first character we see is a line end
         }
         c = bits[offset];
@@ -360,13 +368,13 @@ class SVMLightParser extends Parser {
     // Expand columns on-demand
     @Override public void addNumCol(int colIdx, long number, int exp) {
       _ncols = Math.max(_ncols,colIdx);
-      if(colIdx < MAX_PREVIEW_COLS && _nlines < MAX_PREVIEW_LINES)
+      if(colIdx < MAX_PREVIEW_COLS && _nlines < MAX_PREVIEW_LINES) {
         _data[_nlines][colIdx] = Double.toString(PrettyPrint.pow10(number,exp));
     }
 
     @Override public void addNumCol(int colIdx, double d) {
       _ncols = Math.max(_ncols,colIdx);
-      if(colIdx < MAX_PREVIEW_COLS && _nlines < MAX_PREVIEW_LINES)
+      if(colIdx < MAX_PREVIEW_COLS && _nlines < MAX_PREVIEW_LINES) {
         _data[_nlines][colIdx] = Double.toString(d);
     }
 

@@ -21,8 +21,9 @@ public class JStackCollectorTask extends MRTask<JStackCollectorTask> {
 
   @Override public void reduce(JStackCollectorTask that) {
     for( int i=0; i<_traces.length; ++i )
-      if( _traces[i] == null )
+      if( _traces[i] == null ) {
         _traces[i] = that._traces[i];
+        }
   }
 
   private static class ThreadInfo {
@@ -60,14 +61,17 @@ public class JStackCollectorTask extends MRTask<JStackCollectorTask> {
   // bruteforce search for H2O Servlet, don't call until other obvious cases were filtered out
   private int isH2OHTTPRequestThread(StackTraceElement [] elms){
     for(int i = 0; i < elms.length; ++i)
-      if(elms[i].getClassName().equals("water.JettyHTTPD$H2oDefaultServlet"))
+      if(elms[i].getClassName().equals("water.JettyHTTPD$H2oDefaultServlet")) {
         return i;
+        }
     return elms.length;
   }
 
   @Override public void setupLocal() {
     _traces = new DStackTrace[H2O.CLOUD.size()];
-    if( H2O.SELF._heartbeat._client ) return; // Clients are not in the cloud, and do not get stack traces
+    if( H2O.SELF._heartbeat._client ) {
+    	return; // Clients are not in the cloud, and do not get stack traces
+    }
     Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
 
     // Known to be interesting
@@ -105,12 +109,15 @@ public class JStackCollectorTask extends MRTask<JStackCollectorTask> {
       int idx = elms.length;
       ArrayList<String> trace = null;
       ThreadInfo tinfo = null;
-      if(elms.length == 0) continue;
+      if(elms.length == 0) {
+    	  continue;
+      }
       if(t.getName().startsWith("FJ-") && elms[elms.length-1].getClassName().contains("ForkJoinWorkerThread")) { // H2O specific FJ Thread
         trace = fj_traces;
         Integer fjq = Integer.parseInt(t.getName().substring(3, t.getName().indexOf('-', 3)));
-        if (!fjThreadSummary.containsKey(fjq))
+        if (!fjThreadSummary.containsKey(fjq)) {
           fjThreadSummary.put(fjq, new ThreadInfo());
+          }
         tinfo = fjThreadSummary.get(fjq);
       } else if(elms[elms.length-1].getClassName().equals("water.TCPReceiverThread$TCPReaderThread")) {
         if (elms[elms.length - 2].getClassName().equals("water.AutoBuffer") && elms[elms.length - 2].getMethodName().equals("<init>")) {
@@ -148,7 +155,9 @@ public class JStackCollectorTask extends MRTask<JStackCollectorTask> {
         System.out.println("UNKNOWN STATE: " + t.getState());
       }
       SB sb = new SB().p('"').p(t.getName()).p('"');
-      if (t.isDaemon()) sb.p(" daemon");
+      if (t.isDaemon()) {
+    	  sb.p(" daemon");
+      }
       sb.p(" prio=").p(t.getPriority());
       sb.p(" tid=").p(t.getId());
       sb.p(" java.lang.Thread.State: ").p(t.getState().toString());

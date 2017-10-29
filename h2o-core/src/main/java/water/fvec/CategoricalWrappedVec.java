@@ -84,8 +84,9 @@ public class CategoricalWrappedVec extends WrappedVec {
       int min = Integer.valueOf(to[0]);
       int max = Integer.valueOf(to[to.length-1]);
       Vec mvec = masterVec();
-      if( !(mvec.isInt() && mvec.min() >= min && mvec.max() <= max) )
+      if( !(mvec.isInt() && mvec.min() >= min && mvec.max() <= max) ) {
         throw new NumberFormatException(); // Unable to figure out a valid mapping
+        }
 
       // FIXME this is a bit of a hack to allow adapTo calls to play nice with negative ints in the domain...
       if( Integer.valueOf(to[0]) < 0 ) {
@@ -93,7 +94,9 @@ public class CategoricalWrappedVec extends WrappedVec {
         _map = new int[(_p /*positive array of values*/) + (-1*min /*negative array of values*/) + 1 /*one more to store "max" value*/];
         for(int i=0;i<to.length;++i) {
           int v = Integer.valueOf(to[i]);
-          if( v < 0 ) v = -1*v+_p;
+          if( v < 0 ) {
+        	  v = -1*v+_p;
+          }
           _map[v] = i;
         }
         return;
@@ -123,7 +126,9 @@ public class CategoricalWrappedVec extends WrappedVec {
     int actualLen = extra;
     for( int j=0; j<from.length; j++ ) {
       Integer x = h.get(from[j]);
-      if( x!=null ) _map[j] = x;
+      if( x!=null ) {
+    	  _map[j] = x;
+      }
       else {
         _map[j] = extra++;
         if (extra > ss.length) {
@@ -162,8 +167,12 @@ public class CategoricalWrappedVec extends WrappedVec {
     // the normal missing-value exception when loading from the master.
     @Override protected long at8_impl(int idx) {
       int at8 = (int)_c.at8_impl(idx);
-      if( at8 >= 0 ) return _map[at8];
-      else return _map[-1*at8+_p];
+      if( at8 >= 0 ) {
+    	  return _map[at8];
+      }
+      else {
+    	  return _map[-1*at8+_p];
+      }
     }
 
     // Returns true if the masterVec is missing, false otherwise
@@ -175,14 +184,20 @@ public class CategoricalWrappedVec extends WrappedVec {
 
     @Override public ChunkVisitor processRows(ChunkVisitor nc, int from, int to){
       for( int i=from; i< to; i++ )
-        if(isNA(i))nc.addNAs(1);
-        else nc.addValue(at8(i));
+        if(isNA(i)) {
+        	nc.addNAs(1);
+        }
+        else {
+        	nc.addValue(at8(i));
+        }
       return nc;
     }
     @Override public ChunkVisitor processRows(ChunkVisitor nc, int... rows){
       for( int i:rows)
         if(isNA(i))nc.addNAs(1);
-        else nc.addValue(at8(i));
+        else {
+        	nc.addValue(at8(i));
+        }
       return nc;
     }
 

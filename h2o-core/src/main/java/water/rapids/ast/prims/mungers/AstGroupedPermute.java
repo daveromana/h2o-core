@@ -119,8 +119,9 @@ public class AstGroupedPermute extends AstPrimitive {
         int type = dom[(int) chks[_permuteBy].at8(row)].equals("D") ? 0 : 1;
         if (grps.containsKey(jid)) {
           IcedHashMap<Long, double[]>[] dcWork = grps.get(jid);
-          if (dcWork[type].putIfAbsent(rid, aci) != null)
+          if (dcWork[type].putIfAbsent(rid, aci) != null) {
             dcWork[type].get(rid)[1] += aci[1];
+            }
         } else {
           IcedHashMap<Long, double[]>[] dcAcnts = new IcedHashMap[2];
           dcAcnts[0] = new IcedHashMap<>();
@@ -134,7 +135,9 @@ public class AstGroupedPermute extends AstPrimitive {
 
     @Override
     public void reduce(BuildGroups t) {
-      if (_grps != t._grps) reduce(t._grps);
+      if (_grps != t._grps) {
+    	  reduce(t._grps);
+      }
     }
 
     private void reduce(IcedHashMap<Long, IcedHashMap<Long, double[]>[]> r) {
@@ -144,12 +147,14 @@ public class AstGroupedPermute extends AstPrimitive {
           IcedHashMap<Long, double[]>[] ldbls = _grps.get(l);
 
           for (Long rr : rdbls[0].keySet())
-            if (ldbls[0].putIfAbsent(rr, rdbls[0].get(rr)) != null)
+            if (ldbls[0].putIfAbsent(rr, rdbls[0].get(rr)) != null) {
               ldbls[0].get(rr)[1] += rdbls[0].get(rr)[1];
+              }
 
           for (Long rr : rdbls[1].keySet())
-            if (ldbls[1].putIfAbsent(rr, rdbls[1].get(rr)) != null)
+            if (ldbls[1].putIfAbsent(rr, rdbls[1].get(rr)) != null) {
               ldbls[1].get(rr)[1] += rdbls[1].get(rr)[1];
+              }
         }
       }
     }

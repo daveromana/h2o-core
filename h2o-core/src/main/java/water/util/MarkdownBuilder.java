@@ -33,11 +33,14 @@ public class MarkdownBuilder {
   private StringBuffer append(String separator, boolean addNewline, String... strings) {
     int i = 0;
     for (String string : strings) {
-      if (i++ > 0) sb.append(separator);
+      if (i++ > 0) {
+    	  sb.append(separator);
+      }
       sb.append(string);
     }
-    if (addNewline)
+    if (addNewline) {
       sb.append("\n");
+      }
     return sb;
   }
 
@@ -69,7 +72,9 @@ public class MarkdownBuilder {
     tableRow(cols);
     int i = 0;
     for (String col : cols) {
-      if (i++ > 0) sb.append(" | ");
+      if (i++ > 0) {
+    	  sb.append(" | ");
+      }
       sb.append("---");
     }
     sb.append("\n");

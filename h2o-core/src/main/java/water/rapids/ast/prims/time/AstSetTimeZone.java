@@ -31,8 +31,10 @@ public class AstSetTimeZone extends AstPrimitive {
   public ValStr apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     final String tz = asts[1].exec(env).getStr();
     Set<String> idSet = DateTimeZone.getAvailableIDs();
-    if (!idSet.contains(tz))
-      throw new IllegalArgumentException("Unacceptable timezone " + tz + " given.  For a list of acceptable names, use listTimezone().");
+    if (!idSet.contains(tz)) {
+    	throw new IllegalArgumentException("Unacceptable timezone " + tz + " given.  For a list of acceptable names, use listTimezone().");
+    }
+      
 
     //This is a distributed operation
     ParseTime.setTimezone(tz);

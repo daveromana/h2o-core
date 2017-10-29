@@ -231,7 +231,10 @@ public class ParseSetup extends Iced {
       try {
         Double.parseDouble(s);
         return false;       // Number in 1st row guesses: No Column Header
-      } catch (NumberFormatException e) { /*Pass - determining if number is possible*/ }
+      } catch (NumberFormatException e) { 
+    	  System.out.println("The error is: " + e);
+    	  /*Pass - determining if number is possible*/ }
+      }
       str.set(s);
       if(ParseTime.isTime(str)) {
     	  return false;

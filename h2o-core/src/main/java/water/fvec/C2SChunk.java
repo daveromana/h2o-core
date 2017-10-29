@@ -13,7 +13,9 @@ public class C2SChunk extends CSChunk {
       double div = PrettyPrint.pow10(1, -scale);
       for (int i = 0; i < _len; ++i) {
         int x = getMantissa(i);
-        if (x == C2Chunk._NA) continue;
+        if (x == C2Chunk._NA) {
+        	continue;
+        }
         if ((getD(x, C2Chunk._NA, Double.NaN)) != (x+bias)/div){
           setDecimal();
           break;
@@ -31,11 +33,14 @@ public class C2SChunk extends CSChunk {
   @Override protected final boolean isNA_impl( int i ) { return getMantissa(i) == C2Chunk._NA; }
 
   @Override boolean set_impl(int i, double x) {
-    if(Double.isNaN(x)) return setNA_impl(i);
+    if(Double.isNaN(x)) {
+    	return setNA_impl(i);
+    }
     int y = getScaledValue(x, C2Chunk._NA);
     short s = (short)y;
-    if(getD(s,C2Chunk._NA, Double.NaN) != x)
+    if(getD(s,C2Chunk._NA, Double.NaN) != x) {
       return false;
+      }
     setMantissa(i,s);
     assert !isNA_impl(i);
     return true;
@@ -58,8 +63,12 @@ public class C2SChunk extends CSChunk {
 
   private <T extends ChunkVisitor> void processRow(T v, int i, long bias, int exp){
     long x = getMantissa(i);
-    if(x == C2Chunk._NA) v.addNAs(1);
-    else v.addValue(x + bias, exp);
+    if(x == C2Chunk._NA) {
+    	v.addNAs(1);
+    }
+    else {
+    	v.addValue(x + bias, exp);
+    }
   }
 
   @Override

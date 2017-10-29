@@ -34,7 +34,9 @@ public class ModelsHandler<I extends ModelsHandler.Models, S extends SchemaV3<I,
      * Fetch all the Frames so we can see if they are compatible with our Model(s).
      */
     protected Map<Frame, Set<String>> fetchFrameCols() {
-      if (!find_compatible_frames) return null;
+      if (!find_compatible_frames) {
+    	  return null;
+      }
       // caches for this request
       Frame[] all_frames = Frame.fetchAll();
       Map<Frame, Set<String>> all_frames_cols = new HashMap<>();
@@ -63,9 +65,11 @@ public class ModelsHandler<I extends ModelsHandler.Models, S extends SchemaV3<I,
         if (frame_cols.containsAll(model_column_names)) {
           // See if adapt throws an exception or not.
           try {
-            if( model.adaptTestForTrain(new Frame(frame), false, false).length == 0 )
+            if( model.adaptTestForTrain(new Frame(frame), false, false).length == 0 ) {
               compatible_frames.add(frame);
+              }
           } catch( IllegalArgumentException e ) {
+        	  System.out.println("The error is: " + e);
             // skip
           }
         }
@@ -89,16 +93,19 @@ public class ModelsHandler<I extends ModelsHandler.Models, S extends SchemaV3<I,
 
   // TODO: almost identical to ModelsHandler; refactor
   public static Model getFromDKV(String param_name, Key key) {
-    if (key == null)
+    if (key == null) {
       throw new H2OIllegalArgumentException(param_name, "Models.getFromDKV()", null);
+      }
 
     Value v = DKV.get(key);
-    if (v == null)
+    if (v == null) {
       throw new H2OKeyNotFoundArgumentException(param_name, key.toString());
+      }
 
     Iced ice = v.get();
-    if (! (ice instanceof Model))
+    if (! (ice instanceof Model)) {
       throw new H2OKeyWrongTypeArgumentException(param_name, key.toString(), Model.class, ice.getClass());
+      }
 
     return (Model)ice;
   }
@@ -154,10 +161,12 @@ public class ModelsHandler<I extends ModelsHandler.Models, S extends SchemaV3<I,
   @SuppressWarnings("unused") // called from the RequestServer through reflection
   public JobV3 makePartialDependence(int version, PartialDependenceV3 s) {
     PartialDependence partialDependence;
-    if (s.destination_key != null)
+    if (s.destination_key != null) {
       partialDependence = new PartialDependence(s.destination_key.key());
-    else
+      }
+    else {
       partialDependence = new PartialDependence(Key.<PartialDependence>make());
+      }
     s.fillImpl(partialDependence); //fill frame_id/model_id/nbins/etc.
     return new JobV3(partialDependence.execImpl());
   }
@@ -194,7 +203,9 @@ public class ModelsHandler<I extends ModelsHandler.Models, S extends SchemaV3<I,
       }
     }
     fs.blockForPending();
-    if( missing.size() != 0 ) throw new H2OKeysNotFoundArgumentException("(none)", missing.toArray(new String[missing.size()]));
+    if( missing.size() != 0 ) {
+    	throw new H2OKeysNotFoundArgumentException("(none)", missing.toArray(new String[missing.size()]));
+    }
     return models;
   }
 

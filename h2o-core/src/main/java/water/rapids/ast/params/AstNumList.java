@@ -54,8 +54,12 @@ public class AstNumList extends AstParameter {
     boolean isSorted = true;
     for (int i = 1; i < n; i++)
       if (_bases[i-1] + (_cnts[i-1] - 1) * _strides[i-1] >= _bases[i]) {
-        if (_isList) isSorted = false;
-        else throw new IllegalArgumentException("Overlapping numeric ranges");
+        if (_isList) {
+        	isSorted = false;
+        }
+        else {
+        	throw new IllegalArgumentException("Overlapping numeric ranges");
+        }
       }
     _isSort = isSorted;
   }
@@ -112,10 +116,13 @@ public class AstNumList extends AstParameter {
       sb.p(_bases[i]);
       if (_cnts[i] != 1) {
         sb.p(':').p(_bases[i] + _cnts[i] * _strides[i]);
-        if (_strides[i] != 1 || ((long) _bases[i]) != _bases[i])
+        if (_strides[i] != 1 || ((long) _bases[i]) != _bases[i]) {
           sb.p(':').p(_strides[i]);
+          }
       }
-      if (i < _bases.length - 1) sb.p(',');
+      if (i < _bases.length - 1) {
+    	  sb.p(',');
+      }
     }
     return sb.p(']').toString();
   }
@@ -123,7 +130,9 @@ public class AstNumList extends AstParameter {
   @Override
   public String toJavaString() {
     double[] ary = expand();
-    if (ary == null || ary.length == 0) return "\"null\"";
+    if (ary == null || ary.length == 0) {
+    	return "\"null\"";
+    }
     SB sb = new SB().p('{');
     for (int i = 0; i < ary.length - 1; ++i) sb.p(ary[i]).p(',');
     return sb.p('}').toString();
@@ -148,7 +157,9 @@ public class AstNumList extends AstParameter {
 
   // Update-in-place sort of bases
   public AstNumList sort() {
-    if (_isSort) return this;  // Flow coding fast-path cutout
+    if (_isSort) {
+    	return this;  // Flow coding fast-path cutout
+    }
     int[] idxs = ArrayUtils.seq(0, _bases.length);
     ArrayUtils.sort(idxs, _bases);
     double[] bases = _bases.clone();
@@ -227,9 +238,13 @@ public class AstNumList extends AstParameter {
   // NB: all contiguous ranges have already been checked to have stride 1
   public boolean has(long v) {
     int idx = findBase(v);
-    if (idx >= 0) return true;
+    if (idx >= 0) {
+    	return true;
+    }
     idx = -idx - 2;  // See Arrays.binarySearch; returns (-idx-1), we want +idx-1  ... if idx == -1 => then this transformation has no effect
-    if (idx < 0) return false;
+    if (idx < 0) {
+    	return false;
+    }
     assert _bases[idx] < v;     // Sanity check binary search, AND idx >= 0
     return v < _bases[idx] + _cnts[idx] * _strides[idx] && (v - _bases[idx]) % _strides[idx] == 0;
   }
@@ -241,13 +256,19 @@ public class AstNumList extends AstParameter {
    */
   public long index(long v) {
     int bIdx = findBase(v);
-    if (bIdx >= 0) return water.util.ArrayUtils.sum(_cnts, 0, bIdx);
+    if (bIdx >= 0) {
+    	return water.util.ArrayUtils.sum(_cnts, 0, bIdx);
+    }
     bIdx = -bIdx - 2;
-    if (bIdx < 0) return -1L;
+    if (bIdx < 0) {
+    	return -1L;
+    }
     assert _bases[bIdx] < v;
     long offset = v - (long) _bases[bIdx];
     long stride = (long) _strides[bIdx];
-    if ((offset >= _cnts[bIdx] * stride) || (offset % stride != 0)) return -1L;
+    if ((offset >= _cnts[bIdx] * stride) || (offset % stride != 0)) {
+    	return -1L;
+    }
     return water.util.ArrayUtils.sum(_cnts, 0, bIdx) + (offset / stride);
   }
 
@@ -255,7 +276,9 @@ public class AstNumList extends AstParameter {
     assert _isSort; // Only called when already sorted
     // do something special for negative indexing... that does not involve
     // allocating arrays, once per list element!
-    if (v < 0) throw H2O.unimpl();
+    if (v < 0) {throw H2O.unimpl();
+    
+    }
     return Arrays.binarySearch(_bases, v);
   }
 

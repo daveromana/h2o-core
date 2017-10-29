@@ -66,7 +66,9 @@ public abstract class Persist {
   }
 
   static String getIceDirectory(Key key) {
-    if( !key.isChunkKey() ) return "not_a_Chunk";
+    if( !key.isChunkKey() ) {
+    	return "not_a_Chunk";
+    }
     // Reverse Chunk key generation
     return key2Str(key.getVecKey());
   }
@@ -100,9 +102,13 @@ public abstract class Persist {
       for( ; i <= j; i++ ) {
         byte b = k._kb[i];
         int nib0 = ((b >>> 4) & 15) + '0';
-        if( nib0 > '9' ) nib0 += 'A' - 10 - '0';
+        if( nib0 > '9' ) {
+        	nib0 += 'A' - 10 - '0';
+        }
         int nib1 = ((b >>> 0) & 15) + '0';
-        if( nib1 > '9' ) nib1 += 'A' - 10 - '0';
+        if( nib1 > '9' ) {
+        	nib1 += 'A' - 10 - '0';
+        }
         sb.append((char) nib0).append((char) nib1);
       }
       sb.append('%');
@@ -125,7 +131,9 @@ public abstract class Persist {
       case '\\':c='b'; break;
       case '\0':c='z'; break;
       }
-      if( c!=0 ) sb.append('%').append(c);
+      if( c!=0 ) {
+    	  sb.append('%').append(c);
+      }
       else sb.append(b);
     }
     return sb;
@@ -139,11 +147,17 @@ public abstract class Persist {
     if( (key.length() > 2) && (key.charAt(0) == '%') && (key.charAt(1) >= '0') && (key.charAt(1) <= '9') ) {
       // Dehexalate until '%'
       for( i = 1; i < key.length(); i += 2 ) {
-        if( key.charAt(i) == '%' ) break;
+        if( key.charAt(i) == '%' ) {
+        	break;
+        }
         char b0 = (char) (key.charAt(i    ) - '0');
-        if( b0 > 9 ) b0 += '0' + 10 - 'A';
+        if( b0 > 9 ) {
+        	b0 += '0' + 10 - 'A';
+        }
         char b1 = (char) (key.charAt(i + 1) - '0');
-        if( b1 > 9 ) b1 += '0' + 10 - 'A';
+        if( b1 > 9 ) {
+        	b1 += '0' + 10 - 'A';
+        }
         kb[j++] = (byte) ((b0 << 4) | b1);  // De-hexelated byte
       }
       i++;                      // Skip the trailing '%'
@@ -166,7 +180,9 @@ public abstract class Persist {
           Log.warn("Invalid format of filename " + s + " at index " + i);
         }
       }
-      if( j >= kb.length ) kb = Arrays.copyOf(kb, Math.max(2, j * 2));
+      if( j >= kb.length ) {
+    	  kb = Arrays.copyOf(kb, Math.max(2, j * 2));
+      }
       kb[j++] = b;
     }
     // now in kb we have the key name

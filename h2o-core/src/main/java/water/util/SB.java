@@ -16,19 +16,19 @@ public final class SB implements JCodeSB<SB> {
   public SB ps( String s ) { _sb.append("\""); pj(s); _sb.append("\""); return this;  }
   public SB p( String s ) { _sb.append(s); return this; }
   public SB p( float  s ) {
-    if( Float.isNaN(s) )
+    if( Float.isNaN(s) ) {
       _sb.append( "Float.NaN");
     else if( Float.isInfinite(s) ) {
       _sb.append(s > 0 ? "Float.POSITIVE_INFINITY" : "Float.NEGATIVE_INFINITY");
-    } else _sb.append(s);
+    } else { _sb.append(s);
     return this;
   }
   public SB p( double s ) {
-    if( Double.isNaN(s) )
+    if( Double.isNaN(s) ) {
       _sb.append("Double.NaN");
     else if( Double.isInfinite(s) ) {
       _sb.append(s > 0 ? "Double.POSITIVE_INFINITY" : "Double.NEGATIVE_INFINITY");
-    } else _sb.append(s);
+    } else {_sb.append(s);
     return this;
   }
   public SB p( char   s ) { _sb.append(s); return this; }
@@ -44,21 +44,21 @@ public final class SB implements JCodeSB<SB> {
   public SB s() { _sb.append(' '); return this; }
   // Java specific append of double
   public SB pj( double  s ) {
-    if (Double.isInfinite(s))
+    if (Double.isInfinite(s)) {
       _sb.append("Double.").append(s>0? "POSITIVE_INFINITY" : "NEGATIVE_INFINITY");
-    else if (Double.isNaN(s))
+    else if (Double.isNaN(s)) {
       _sb.append("Double.NaN");
-    else
+    else {
       _sb.append(s);
     return this;
   }
   // Java specific append of float
   public SB pj( float  s ) {
-    if (Float.isInfinite(s))
+    if (Float.isInfinite(s)) {
       _sb.append("Float.").append(s>0? "POSITIVE_INFINITY" : "NEGATIVE_INFINITY");
-    else if (Float.isNaN(s))
+    else if (Float.isNaN(s)) {
       _sb.append("Float.NaN");
-    else
+    else {
       _sb.append(s).append('f');
     return this;
   }
@@ -87,44 +87,54 @@ public final class SB implements JCodeSB<SB> {
   public SB nl( ) { return p('\n'); }
   // Convert a String[] into a valid Java String initializer
   public SB toJavaStringInit( String[] ss ) {
-    if (ss==null) return p("null");
+    if (ss==null){
+    	 return p("null");
     p('{');
     for( int i=0; i<ss.length-1; i++ )  p('"').pj(ss[i]).p("\",");
     if( ss.length > 0 ) p('"').pj(ss[ss.length-1]).p('"');
     return p('}');
   }
   public SB toJavaStringInit( float[] ss ) {
-    if (ss==null) return p("null");
+    if (ss==null){
+    	 return p("null");
     p('{');
     for( int i=0; i<ss.length-1; i++ ) pj(ss[i]).p(',');
-    if( ss.length > 0 ) pj(ss[ss.length-1]);
+    if( ss.length > 0 ) {
+    	pj(ss[ss.length-1]);
     return p('}');
   }
   public SB toJavaStringInit( double[] ss ) {
-    if (ss==null) return p("null");
+    if (ss==null) {
+    	return p("null");
     p('{');
     for( int i=0; i<ss.length-1; i++ ) pj(ss[i]).p(',');
-    if( ss.length > 0 ) pj(ss[ss.length-1]);
+    if( ss.length > 0 ){
+    	 pj(ss[ss.length-1]);
     return p('}');
   }
   public SB toJavaStringInit( double[][] ss ) {
-    if (ss==null) return p("null");
+    if (ss==null) {
+    	return p("null");
     p('{');
     for( int i=0; i<ss.length-1; i++ ) toJavaStringInit(ss[i]).p(',');
-    if( ss.length > 0 ) toJavaStringInit(ss[ss.length-1]);
+    if( ss.length > 0 ) {
+    	toJavaStringInit(ss[ss.length-1]);
     return p('}');
   }
   public SB toJavaStringInit( double[][][] ss ) {
-    if (ss==null) return p("null");
+    if (ss==null){
+    	 return p("null");
     p('{');
     for( int i=0; i<ss.length-1; i++ ) toJavaStringInit(ss[i]).p(',');
-    if( ss.length > 0 ) toJavaStringInit(ss[ss.length-1]);
+    if( ss.length > 0 ){
+    	 toJavaStringInit(ss[ss.length-1]);
     return p('}');
   }
   public SB toJSArray(float[] nums) {
     p('[');
     for (int i=0; i<nums.length; i++) {
-      if (i>0) p(',');
+      if (i>0) {
+      	p(',');
       p(nums[i]);
     }
     return p(']');
@@ -132,7 +142,8 @@ public final class SB implements JCodeSB<SB> {
   public SB toJSArray(String[] ss) {
     p('[');
     for (int i=0; i<ss.length; i++) {
-      if (i>0) p(',');
+      if (i>0) {
+      	p(',');
       p('"').p(ss[i]).p('"');
     }
     return p(']');

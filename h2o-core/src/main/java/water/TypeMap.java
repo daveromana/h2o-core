@@ -1,4 +1,4 @@
-package water;
+	package water;
 
 import water.api.schemas3.*;
 import water.nbhm.NonBlockingHashMap;
@@ -119,7 +119,9 @@ public class TypeMap {
   static int onIce(Freezable ice) { return onIce(ice.getClass().getName()); }
   public static int onIce(String className) {
     Integer I = MAP.get(className);
-    if( I != null ) return I;
+    if( I != null ) {
+    	return I;
+    }
     // Need to install a new cloud-wide type ID for className.
     assert H2O.CLOUD.size() > 0 : "No cloud when getting type id for "+className;
     // Am I leader, or not?  Lock the cloud to find out
@@ -138,11 +140,15 @@ public class TypeMap {
 
   // Reverse: convert an ID to a className possibly fetching it from leader.
   public static String className(int id) {
-    if( id == PRIM_B ) return "[B";
+    if( id == PRIM_B ) {
+    	return "[B";
+    }
     String clazs[] = CLAZZES;   // Read once, in case resizing
     if( id < clazs.length ) { // Might be installed as a className mapping no Icer (yet)
       String s = clazs[id];   // Racily read the CLAZZES array
-      if( s != null ) return s; // Has the className already
+      if( s != null ) {
+    	  return s; // Has the className already
+      }
     }
     assert H2O.CLOUD.leader() != H2O.SELF : "Leader has no mapping for id "+id; // Leaders always have the latest mapping already
     String s = FetchClazz.fetchClazz(id); // Fetch class name string from leader
@@ -160,13 +166,19 @@ public class TypeMap {
     if( id == -1 ) {            // Leader requesting a new ID
       assert H2O.CLOUD.leader() == H2O.SELF; // Only leaders get to pick new IDs
       Integer i = MAP.get(className);
-      if( i != null ) return i; // Check again under lock for already having an ID
+      if( i != null ) {
+    	  return i; // Check again under lock for already having an ID
+      }
       id = IDS++;               // Leader gets an ID under lock
     }
     MAP.put(className,id);      // No race on insert, since under lock
     // Expand lists to handle new ID, as needed
-    if( id >= CLAZZES.length ) CLAZZES = Arrays.copyOf(CLAZZES,Math.max(CLAZZES.length<<1,id+1));
-    if( id >= GOLD   .length ) GOLD    = Arrays.copyOf(GOLD   ,Math.max(CLAZZES.length<<1,id+1));
+    if( id >= CLAZZES.length ) {
+    	CLAZZES = Arrays.copyOf(CLAZZES,Math.max(CLAZZES.length<<1,id+1));
+    }
+    if( id >= GOLD   .length ) {
+    	GOLD    = Arrays.copyOf(GOLD   ,Math.max(CLAZZES.length<<1,id+1));
+    }
     CLAZZES[id] = className;
     return id;
   }
@@ -180,14 +192,18 @@ public class TypeMap {
   static Icer getIcer( int id, Freezable ice ) { return getIcer(id,ice.getClass()); }
   static Icer getIcer( int id, Class ice_clz ) {
     Icer f = goForGold(id);
-    if( f != null ) return f;
+    if( f != null ) {
+    	return f;
+    }
 
     // Lock on the Iced class during auto-gen - so we only gen the Icer for
     // a particular Iced class once.
     //noinspection SynchronizationOnLocalVariableOrMethodParameter
     synchronized( ice_clz ) {
       f = goForGold(id);        // Recheck under lock
-      if( f != null ) return f;
+      if( f != null ) {
+    	  return f;
+      }
       // Hard work: make a new delegate class
       try { f = Weaver.genDelegate(id,ice_clz); }
       catch( Exception e ) {
@@ -203,7 +219,9 @@ public class TypeMap {
   }
   static void drop(String ice_clz) {
     Integer I = MAP.get(ice_clz);
-    if( I==null ) return; // no icer, no problem
+    if( I==null ) {
+    	return; // no icer, no problem
+    }
     synchronized( TypeMap.class ) {  // install null
       GOLD[I] = null;
     }

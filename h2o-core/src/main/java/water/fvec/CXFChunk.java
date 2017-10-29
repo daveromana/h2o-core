@@ -20,18 +20,23 @@ public class CXFChunk extends CXIChunk {
   @Override public long at8_impl(int idx){
     int x = findOffset(idx);
     if(x < 0) {
-      if(_isNA) throw new RuntimeException("at4 but the value is missing!");
+      if(_isNA) {
+    	  throw new RuntimeException("at4 but the value is missing!");
+      }
       return 0;
     }
     double val = getVal(x);
-    if(Double.isNaN(val)) throw new RuntimeException("at4 but the value is missing!");
+    if(Double.isNaN(val)) {
+    	throw new RuntimeException("at4 but the value is missing!");
+    }
     return (long)val;
   }
 
   @Override public double atd_impl(int idx) {
     int x = findOffset(idx);
-    if(x < 0)
+    if(x < 0) {
       return _isNA?Double.NaN:0;
+      }
     return getVal(x);
   }
 
@@ -43,18 +48,30 @@ public class CXFChunk extends CXIChunk {
   public <T extends ChunkVisitor> T processRows(T v, int from, int to){
     int prevId = from-1;
     int x = from == 0?_OFF: findOffset(from);
-    if(x < 0) x = -x-1;
+    if(x < 0) {
+    	x = -x-1;
+    }
     while(x < _mem.length){
       int id = getId(x);
-      if(id >= to)break;
-      if(_isNA) v.addNAs(id-prevId-1);
-      else v.addZeros(id-prevId-1);
+      if(id >= to) {
+    	  break;
+      }
+      if(_isNA) {
+    	  v.addNAs(id-prevId-1);
+      }
+      else {
+    	  v.addZeros(id-prevId-1);
+      }
       v.addValue(getVal(x));
       prevId = id;
       x+=_elem_sz;
     }
-    if(_isNA) v.addNAs(to-prevId-1);
-    else v.addZeros(to-prevId-1);
+    if(_isNA) {
+    	v.addNAs(to-prevId-1);
+    }
+    else {
+    	v.addZeros(to-prevId-1);
+    }
     return v;
   }
 
@@ -73,18 +90,27 @@ public class CXFChunk extends CXIChunk {
         break;
       }
       if(idx == idk){
-        if(_isNA) v.addNAs(zeros);
-        else v.addZeros(zeros);
+        if(_isNA) {
+        	v.addNAs(zeros);
+        }
+        else {
+        	v.addZeros(zeros);
+        }
         v.addValue(getVal(x));
         zeros = 0;
         x+=_elem_sz;
-      } else
+      } else {
         zeros++;
+        }
       k++;
     }
     if(zeros > 0){
-      if(_isNA) v.addNAs(zeros);
-      else v.addZeros(zeros);
+      if(_isNA) {
+    	  v.addNAs(zeros);
+      }
+      else {
+    	  v.addZeros(zeros);
+      }
     }
     return v;
   }

@@ -39,19 +39,20 @@ public class AstTrim extends AstPrimitive {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
     // Type check
     for (Vec v : fr.vecs())
-      if (!(v.isCategorical() || v.isString()))
+      if (!(v.isCategorical() || v.isString())) {
         throw new IllegalArgumentException("trim() requires a string or categorical column. "
             + "Received " + fr.anyVec().get_type_str()
             + ". Please convert column to a string or categorical first.");
+        }
 
     // Transform each vec
     Vec nvs[] = new Vec[fr.numCols()];
     int i = 0;
     for (Vec v : fr.vecs()) {
-      if (v.isCategorical())
-        nvs[i] = trimCategoricalCol(v);
-      else
-        nvs[i] = trimStringCol(v);
+      if (v.isCategorical()) {
+        nvs[i] = trimCategoricalCol(v);}
+      else {
+        nvs[i] = trimStringCol(v);}
       i++;
     }
 
@@ -76,8 +77,9 @@ public class AstTrim extends AstPrimitive {
       }
     }
     //Check for duplicated domains
-    if (trimmedToOldDomainIndices.size() < doms.length)
+    if (trimmedToOldDomainIndices.size() < doms.length) {
       return VecUtils.DomainDedupe.domainDeduper(vec, trimmedToOldDomainIndices);
+      }
 
     return vec.makeCopy(doms);
   }
@@ -86,12 +88,13 @@ public class AstTrim extends AstPrimitive {
     return new MRTask() {
       @Override
       public void map(Chunk chk, NewChunk newChk) {
-        if (chk instanceof C0DChunk) // all NAs
+        if (chk instanceof C0DChunk) {// all NAs
           for (int i = 0; i < chk.len(); i++)
             newChk.addNA();
           // Java String.trim() only operates on ASCII whitespace
           // so UTF-8 safe methods are not needed here.
-        else ((CStrChunk) chk).asciiTrim(newChk);
+          }
+        else {((CStrChunk) chk).asciiTrim(newChk);}
       }
     }.doAll(new byte[]{Vec.T_STR}, vec).outputFrame().anyVec();
   }

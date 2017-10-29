@@ -105,10 +105,13 @@ public abstract class Paxos {
 
     // Do we have consensus now?
     H2ONode h2os[] = PROPOSED.values().toArray(new H2ONode[PROPOSED.size()]);
-    if( H2O.ARGS.client && h2os.length == 0 ) return 0; // Client stalls until it finds *some* cloud
+    if( H2O.ARGS.client && h2os.length == 0 ) {
+    	return 0; // Client stalls until it finds *some* cloud
+    }
     for( H2ONode h2o2 : h2os )
-      if( chash != h2o2._heartbeat._cloud_hash )
+      if( chash != h2o2._heartbeat._cloud_hash ) {
         return print("Heartbeat hashes differ, self=0x"+Integer.toHexString(chash)+" "+h2o2+"=0x"+Integer.toHexString(h2o2._heartbeat._cloud_hash)+" ",PROPOSED);
+        }
     // Hashes are same, so accept the new larger cloud-size
     H2O.CLOUD.set_next_Cloud(h2os,chash);
 
@@ -116,12 +119,15 @@ public abstract class Paxos {
     boolean same_size=true;
     for( H2ONode h2o2 : h2os )
       same_size &= (h2o2._heartbeat._cloud_size == H2O.CLOUD.size());
-    if( !same_size ) return 0;
+    if( !same_size ) {
+    	return 0;
+    }
 
     H2O.SELF._heartbeat._common_knowledge = true;
     for( H2ONode h2o2 : h2os )
-      if( !h2o2._heartbeat._common_knowledge )
+      if( !h2o2._heartbeat._common_knowledge ) {
         return print("Missing common knowledge from all nodes!" ,PROPOSED);
+        }
     _commonKnowledge = true;    // Yup!  Have global consensus
 
     Paxos.class.notifyAll(); // Also, wake up a worker thread stuck in DKV.put
@@ -143,7 +149,9 @@ public abstract class Paxos {
   // stabilizes.  After we start doing distributed writes, it is an error to
   // change cloud shape - the distributed writes will be in the wrong place.
   static void lockCloud(Object reason) {
-    if( _cloudLocked ) return; // Fast-path cutout
+    if( _cloudLocked ) {
+    	return; // Fast-path cutout
+    }
     lockCloud_impl(reason);
   }
   static private void lockCloud_impl(Object reason) {
@@ -151,7 +159,7 @@ public abstract class Paxos {
     Log.info("Locking cloud to new members, because "+reason.toString());
     synchronized(Paxos.class) {
       while( !_commonKnowledge )
-        try { Paxos.class.wait(); } catch( InterruptedException ignore ) { }
+        try { Paxos.class.wait(); } catch( InterruptedException ignore ) { System.out.println("The error is: " + ignore);}
       _cloudLocked = true;
       // remove nodes which are not in the cluster (e.g. nodes from flat-file which are not actually used)
       if(H2O.isFlatfileEnabled()){

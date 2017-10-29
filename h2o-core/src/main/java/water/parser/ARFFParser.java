@@ -15,7 +15,9 @@ class ARFFParser extends CsvParser {
 
   /** Try to parse the bytes as ARFF format  */
   static ParseSetup guessSetup(byte[] bits, byte sep, boolean singleQuotes, String[] columnNames, String[][] naStrings) {
-    if (columnNames != null) throw new UnsupportedOperationException("ARFFParser doesn't accept columnNames.");
+    if (columnNames != null) {
+    	throw new UnsupportedOperationException("ARFFParser doesn't accept columnNames.");
+    }
 
     // Parse all lines starting with @ until EOF or @DATA
     boolean haveData = false;
@@ -29,10 +31,10 @@ class ARFFParser extends CsvParser {
     // header section
     ArrayList<String> header = new ArrayList<>();
     offset = readArffHeader(offset, header, bits, singleQuotes);
-    if (offset < bits.length && !CsvParser.isEOL(bits[offset]))
+    if (offset < bits.length && !CsvParser.isEOL(bits[offset])) {
       haveData = true; //more than just the header
 
-    if (header.size() == 0)
+    if (header.size() == 0) {
       throw new ParseDataset.H2OParseException("No data!");
     headerlines = header.toArray(headerlines);
 
@@ -54,15 +56,23 @@ class ARFFParser extends CsvParser {
         int lineEnd = offset;
         ++offset;
         // For Windoze, skip a trailing LF after CR
-        if ((offset < bits.length) && (bits[offset] == CsvParser.CHAR_LF)) ++offset;
-        if (bits[lineStart] == '#') continue; // Ignore      comment lines
-        if (bits[lineStart] == '%') continue; // Ignore ARFF comment lines
+        if ((offset < bits.length) && (bits[offset] == CsvParser.CHAR_LF)) {
+        	++offset;
+        }
+        if (bits[lineStart] == '#') {
+        	continue; // Ignore      comment lines
+        }
+        if (bits[lineStart] == '%') {
+        	continue; // Ignore ARFF comment lines
+        }
         if (lineEnd > lineStart) {
           String str = new String(bits, lineStart, lineEnd - lineStart).trim();
-          if (!str.isEmpty()) datablock.add(str);
+          if (!str.isEmpty()) {
+        	  datablock.add(str);
+          }
         }
       }
-      if (datablock.size() == 0)
+      if (datablock.size() == 0) {
         throw new ParseDataset.H2OParseException("Unexpected line.");
       datalines = datablock.toArray(datalines);
 
@@ -73,9 +83,13 @@ class ARFFParser extends CsvParser {
       // First guess the field separator by counting occurrences in first few lines
       if (nlines2 == 1) {
         if (sep == GUESS_SEP) {
-          if (datalines[0].split(",").length > 2) sep = (byte) ',';
-          else if (datalines[0].split(" ").length > 2) sep = ' ';
-          else
+          if (datalines[0].split(",").length > 2) {
+        	  sep = (byte) ',';
+          }
+          else if (datalines[0].split(" ").length > 2) { 
+        	  sep = ' ';
+          }
+          else {
             throw new ParseDataset.H2OParseException("Failed to detect separator.");
         }
         data[0] = determineTokens(datalines[0], sep, singleQuotes);
@@ -86,9 +100,13 @@ class ARFFParser extends CsvParser {
           sep = guessSeparator(datalines[0], datalines[1], singleQuotes);
           if (sep == GUESS_SEP && nlines2 > 2) {
             sep = guessSeparator(datalines[1], datalines[2], singleQuotes);
-            if (sep == GUESS_SEP) sep = guessSeparator(datalines[0], datalines[2], singleQuotes);
+            if (sep == GUESS_SEP) {
+            	sep = guessSeparator(datalines[0], datalines[2], singleQuotes);
+            }
           }
-          if (sep == GUESS_SEP) sep = (byte) ' '; // Bail out, go for space
+          if (sep == GUESS_SEP) {
+        	  sep = (byte) ' '; // Bail out, go for space
+          }
         }
 
         for (int i = 0; i < nlines2; ++i) {
@@ -110,9 +128,15 @@ class ARFFParser extends CsvParser {
       int lineEnd = offset;
       ++offset;
       // For Windoze, skip a trailing LF after CR
-      if ((offset < bits.length) && (bits[offset] == CsvParser.CHAR_LF)) ++offset;
-      if (bits[lineStart] == '#') continue; // Ignore      comment lines
-      if (bits[lineStart] == '%') continue; // Ignore ARFF comment lines
+      if ((offset < bits.length) && (bits[offset] == CsvParser.CHAR_LF)) {
+    	  ++offset;
+      }
+      if (bits[lineStart] == '#') {
+    	  continue; // Ignore      comment lines
+      }
+      if (bits[lineStart] == '%') {
+    	  continue; // Ignore ARFF comment lines
+      }
       if (lineEnd > lineStart) {
         if (bits[lineStart] == '@' &&
                 (bits[lineStart+1] == 'D' || bits[lineStart+1] =='d' ) &&
@@ -123,8 +147,12 @@ class ARFFParser extends CsvParser {
         }
         String str = new String(bits, lineStart, lineEnd - lineStart).trim();
         String[] tok = determineTokens(str, CHAR_SPACE, singleQuotes);
-        if (tok.length > 0 && tok[0].equalsIgnoreCase("@RELATION")) continue; // Ignore name of dataset
-        if (!str.isEmpty()) header.add(str);
+        if (tok.length > 0 && tok[0].equalsIgnoreCase("@RELATION")) {
+        	continue; // Ignore name of dataset
+        }
+        if (!str.isEmpty()) {
+        	header.add(str);
+        }
       }
     }
     return offset;
@@ -164,18 +192,18 @@ class ARFFParser extends CsvParser {
         }
         else if (type.endsWith("}")) {
           int domainSpecStart = spec.lastIndexOf('{');
-          if (domainSpecStart < 0)
+          if (domainSpecStart < 0) {
             throw new ParseDataset.H2OParseException("Invalid type specification.");
           sepIdx = domainSpecStart - 1;
           String domainSpec = spec.substring(domainSpecStart + 1, line[1].length() - 1);
           domains[i] = domainSpec.split(",");
           for (int j = 0; j < domains[i].length; j++)
             domains[i][j] = domains[i][j].trim();
-          if (domains[i][0].length() > 0)
+          if (domains[i][0].length() > 0) {
             ctypes[i] = Vec.T_CAT; // case of {A,B,C} (valid list of factors)
         }
 
-        if (ctypes[i] == Vec.T_BAD)
+        if (ctypes[i] == Vec.T_BAD) {
           throw new ParseDataset.H2OParseException("Unexpected line, type not recognized. Attribute specification: " + type);
 
         // remove the whitespaces separating the label and the type specification
@@ -185,7 +213,7 @@ class ARFFParser extends CsvParser {
         String label = line[1].substring(0, sepIdx); // use the raw string before whitespace normalization
 
         // remove quotes
-        if (label.length() >= 2 && label.startsWith("'") && label.endsWith("'"))
+        if (label.length() >= 2 && label.startsWith("'") && label.endsWith("'")) {
           label = label.substring(1, label.length() - 1);
 
         labels[i] = label;

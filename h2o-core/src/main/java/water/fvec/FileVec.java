@@ -14,10 +14,12 @@ public abstract class FileVec extends ByteVec {
     final int off = k._kb[0]==Key.CHK   || k._kb[0]==Key.VEC ? Vec.KEY_PREFIX_LEN : 0;
     String p = new String(k._kb,off,k._kb.length-off);
 
-    if(p.startsWith("nfs:/"))
+    if(p.startsWith("nfs:/")) {
       p = p.substring("nfs:/".length());
-    else if (p.startsWith("nfs:\\"))
+      }
+    else if (p.startsWith("nfs:\\")) {
       p = p.substring("nfs:\\".length());
+      }
 
     return p;
   }
@@ -64,8 +66,12 @@ public abstract class FileVec extends ByteVec {
     Futures fs = new Futures();
     Keyed.remove(_key, fs);
     fs.blockForPending();
-    if (chunkSize <= 0) throw new IllegalArgumentException("Chunk sizes must be > 0.");
-    if (chunkSize > (1<<30) ) throw new IllegalArgumentException("Chunk sizes must be < 1G.");
+    if (chunkSize <= 0) {
+    	throw new IllegalArgumentException("Chunk sizes must be > 0.");
+    }
+    if (chunkSize > (1<<30) ) {
+    	throw new IllegalArgumentException("Chunk sizes must be < 1G.");
+    }
     _chunkSize = chunkSize;
     //Now reset the chunk size on each node
     fs = new Futures();
@@ -83,8 +89,9 @@ public abstract class FileVec extends ByteVec {
 
 
   @Override public int nChunks() {
-    if(_nChunks != -1) // number of chunks can be set explicitly
+    if(_nChunks != -1) { // number of chunks can be set explicitly
       return _nChunks;
+      }
     return (int)Math.max(1,_len / _chunkSize + ((_len % _chunkSize != 0)?1:0));
   }
   @Override public boolean writable() { return false; }
@@ -100,8 +107,12 @@ public abstract class FileVec extends ByteVec {
     assert 0 <= i && i <= _len : " "+i+" < "+_len;
     int cidx = (int)(i/_chunkSize);
     int nc = nChunks();
-    if( i >= _len ) return nc;
-    if( cidx >= nc ) cidx=nc-1; // Last chunk is larger
+    if( i >= _len ) {
+    	return nc;
+    }
+    if( cidx >= nc ) {
+    	cidx=nc-1; // Last chunk is larger
+    }
     assert 0 <= cidx && cidx < nc;
     return cidx;
   }
@@ -125,7 +136,9 @@ public abstract class FileVec extends ByteVec {
     assert 0 <= cidx && cidx < nchk;
     Key dkey = chunkKey(cidx);
     Value val1 = DKV.get(dkey);// Check for an existing one... will fetch data as needed
-    if( val1 != null ) return val1; // Found an existing one?
+    if( val1 != null ) {
+    	return val1; // Found an existing one?
+    }
     // Lazily create a DVec for this chunk
     int len = (int)(cidx < nchk-1 ? _chunkSize : (_len-chunk2StartElem(cidx)));
     // DVec is just the raw file data with a null-compression scheme
@@ -138,7 +151,9 @@ public abstract class FileVec extends ByteVec {
     Futures fs = dkey.home() ? null : new Futures();
     // Atomically insert: fails on a race, but then return the old version
     Value val3 = DKV.DputIfMatch(dkey,val2,null,fs);
-    if( !dkey.home() && fs != null ) fs.blockForPending();
+    if( !dkey.home() && fs != null ) {
+    	fs.blockForPending();
+    }
     return val3 == null ? val2 : val3;
   }
 
@@ -186,11 +201,16 @@ public abstract class FileVec extends ByteVec {
       }
       // Big data check
       long tmp = (localParseSize * numCols / (1 << 21)); // ~ 2M keys per node
-      if (tmp > (1 << 30)) return (1 << 30); // Max limit is 1G
+      if (tmp > (1 << 30)) {
+    	  return (1 << 30); // Max limit is 1G
+      }
       if (tmp > DFLT_CHUNK_SIZE) {
         chunkSize = 1 << MathUtils.log2((int) tmp); //closest power of 2
         return (int)chunkSize;
-      } else return DFLT_CHUNK_SIZE;
+      } 
+      else { 
+    	  return DFLT_CHUNK_SIZE;
+      }
     }
     else {
       // New Heuristic
@@ -199,8 +219,9 @@ public abstract class FileVec extends ByteVec {
       int minParseChunkSize = 1<<12; // don't read less than this many bytes
       int maxParseChunkSize = (1<<28)-1; // don't read more than this many bytes per map() thread (needs to fit into a Value object)
       long chunkSize = Math.max((localParseSize / (4*cores))+1, minParseChunkSize); //lower hard limit
-      if(chunkSize > 1024*1024)
-        chunkSize = (chunkSize & 0xFFFFFE00) + 512; // align chunk size to 512B
+      if(chunkSize > 1024*1024) {
+        chunkSize = (chunkSize & 0xFFFFFE00) + 512;
+        } // align chunk size to 512B
 
       // Super small data check - file size is smaller than 64kB
       if (totalSize <= 1<<16) {
@@ -235,7 +256,7 @@ public abstract class FileVec extends ByteVec {
       }
       assert(chunkSize >= minParseChunkSize);
       assert(chunkSize <= maxParseChunkSize);
-      if (verbose)
+      if (verbose) {
         Log.info("ParseSetup heuristic: "
           + "cloudSize: " + cloudsize
           + ", cores: " + cores
@@ -246,7 +267,8 @@ public abstract class FileVec extends ByteVec {
           + ", chunkSize: " + chunkSize
           + ", numChunks: " + Math.max(1,totalSize/chunkSize)
           + ", numChunks * cols: " + (Math.max(1,totalSize/chunkSize) * numCols)
-      );
+        		);
+        }
       return (int)chunkSize;
     }
   }

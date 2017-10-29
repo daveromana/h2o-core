@@ -136,10 +136,13 @@ public class NetworkBench extends Iced {
 
     @Override public void reduce(TestAll2All tst) {
       for(int i = 0; i < _time.length; ++i)
-        if(_time[i] == null)
-          _time[i] = tst._time[i];
-        else
-          assert tst._time[i] == null;
+        if(_time[i] == null) {
+            _time[i] = tst._time[i];
+
+        }
+        else {
+        	          assert tst._time[i] == null;
+        }
     }
   }
 

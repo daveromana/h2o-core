@@ -62,11 +62,12 @@ public final class ParserService {
   }
 
   synchronized public ParserProvider getByName(String name) {
-    if (name != null)
+    if (name != null) {
       for (ParserProvider pp : loader) {
         if (pp.info().name().equalsIgnoreCase(name)) {
           return pp;
         }
+      }
       }
     return null;
   }

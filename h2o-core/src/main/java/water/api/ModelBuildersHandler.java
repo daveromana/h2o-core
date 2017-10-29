@@ -77,9 +77,11 @@ class ModelBuildersHandler extends Handler {
     try {
       Method getMojoMethod = modelClass.getDeclaredMethod("getMojo");
       Class<?> retClass = getMojoMethod.getReturnType();
-      if (retClass == ModelMojoWriter.class || !ModelMojoWriter.class.isAssignableFrom(retClass))
-        throw new RuntimeException("Method getMojo() in " + modelClass + " must return the concrete implementation " +
+      if (retClass == ModelMojoWriter.class || !ModelMojoWriter.class.isAssignableFrom(retClass)) {
+    	   throw new RuntimeException("Method getMojo() in " + modelClass + " must return the concrete implementation " +
             "of the ModelMojoWriter class. The return type is declared as " + retClass);
+      }
+       
       try {
         ModelMojoWriter mmw = (ModelMojoWriter) retClass.newInstance();
         return mmw.mojoVersion();

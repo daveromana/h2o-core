@@ -12,7 +12,9 @@ public class C2Chunk extends Chunk {
   C2Chunk( byte[] bs ) { _mem=bs; _start = -1; set_len(_mem.length>>1); }
   @Override protected final long at8_impl( int i ) {
     int res = UnsafeUtils.get2(_mem,(i<<1)+_OFF);
-    if( res == _NA ) throw new IllegalArgumentException("at8_abs but value is missing");
+    if( res == _NA ) {
+    	throw new IllegalArgumentException("at8_abs but value is missing");
+    }
     return res;
   }
   @Override protected final double atd_impl( int i ) {
@@ -21,12 +23,16 @@ public class C2Chunk extends Chunk {
   }
   @Override protected final boolean isNA_impl( int i ) { return UnsafeUtils.get2(_mem,(i<<1)+_OFF) == _NA; }
   @Override boolean set_impl(int idx, long l) {
-    if( !(Short.MIN_VALUE < l && l <= Short.MAX_VALUE) ) return false;
+    if( !(Short.MIN_VALUE < l && l <= Short.MAX_VALUE) ) {
+    	return false;
+    }
     UnsafeUtils.set2(_mem,(idx<<1)+_OFF,(short)l);
     return true;
   }
   @Override boolean set_impl(int idx, double d) {
-    if( Double.isNaN(d) ) return setNA_impl(idx);
+    if( Double.isNaN(d) ) {
+    	return setNA_impl(idx);
+    }
     long l = (long)d;
     return l == d && set_impl(idx, l);
   }
@@ -35,8 +41,12 @@ public class C2Chunk extends Chunk {
 
   private final void processRow(int r, ChunkVisitor v){
     int i = UnsafeUtils.get2(_mem,(r<<1)+_OFF);
-    if(i == _NA) v.addNAs(1);
-    else v.addValue(i);
+    if(i == _NA) {
+    	v.addNAs(1);
+    }
+    else {
+    	v.addValue(i);
+    }
   }
 
 

@@ -41,7 +41,9 @@ public class AstStrList extends AstParameter {
     int[] idxs = new int[_strs.length];
     for (int i = 0; i < _strs.length; i++) {
       int idx = idxs[i] = water.util.ArrayUtils.find(names, _strs[i]);
-      if (idx == -1) throw new IllegalArgumentException("Column " + _strs[i] + " not found");
+      if (idx == -1) {
+    	  throw new IllegalArgumentException("Column " + _strs[i] + " not found");
+      }
     }
     return idxs;
   }

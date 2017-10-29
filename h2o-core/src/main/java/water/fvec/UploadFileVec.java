@@ -30,7 +30,9 @@ public class UploadFileVec extends FileVec {
   }
 
   private boolean checkMissing(int cidx, Value val) {
-    if( val != null ) return true;
+    if( val != null ) {
+    	return true;
+    }
     Log.err("Missing chunk " + cidx + " for " + _key);
     return false;
   }
@@ -75,7 +77,9 @@ public class UploadFileVec extends FileVec {
       int bytesInChunkSoFar = 0;
       while (true) {
         int rv = is.read(bytebuf, bytesInChunkSoFar, FileVec.DFLT_CHUNK_SIZE - bytesInChunkSoFar);
-        if (rv < 0) break;
+        if (rv < 0) {
+        	break;
+        }
         bytesInChunkSoFar += rv;
         if( bytesInChunkSoFar == FileVec.DFLT_CHUNK_SIZE ) {
           // Write full chunk of size FileVec.CHUNK_SZ.
@@ -109,7 +113,9 @@ public class UploadFileVec extends FileVec {
       Log.err("Exception caught in Frame::readPut; attempting to clean up the new frame and vector");
       Log.err(e);
       Lockable.delete(key);
-      if( uv != null ) uv.remove(newVecKey);
+      if( uv != null ) {
+    	  uv.remove(newVecKey);
+      }
       Log.err("Frame::readPut cleaned up new frame and vector successfully");
       throw e;
     }

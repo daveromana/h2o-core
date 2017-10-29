@@ -37,13 +37,15 @@ public class IcedHashMap<K, V> extends IcedHashMapBase<K,V> implements Concurren
     switch( mode ) {
     case 1:  // <String,String>
       for( int i=2; i<kvs.length; i += 2 )
-        if( kvs[i] instanceof String && kvs[i+1] instanceof String )
+        if( kvs[i] instanceof String && kvs[i+1] instanceof String ) {
           ab.putStr((String)kvs[i]).putStr((String)kvs[i+1]);
+          }
       break;
     case 2: // <String,Freezable>
       for( int i=2; i<kvs.length; i += 2 )
-        if( kvs[i] instanceof String && kvs[i+1] instanceof Iced   )
+        if( kvs[i] instanceof String && kvs[i+1] instanceof Iced   ) {
           ab.putStr((String)kvs[i]).put   ((Freezable)kvs[i+1]);
+          }
       break;
     case 3: // <Freezable,String>
       for( int i=2; i<kvs.length; i += 2 )
@@ -52,8 +54,9 @@ public class IcedHashMap<K, V> extends IcedHashMapBase<K,V> implements Concurren
       break;
     case 4: // <Freezable,Freezable>
       for( int i=2; i<kvs.length; i += 2 )
-        if( kvs[i] instanceof Freezable   && kvs[i+1] instanceof Freezable   )
+        if( kvs[i] instanceof Freezable   && kvs[i+1] instanceof Freezable   ) {
           ab.put   ((Freezable  )kvs[i]).put   ((Freezable  )kvs[i+1]);
+          }
       break;
     case 5:  // <String,Freezable[]>
       for( int i=2;i<kvs.length; i+=2 )

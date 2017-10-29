@@ -70,7 +70,9 @@ public class Fun2Column<X, Y, Z> extends FunColumnBase<Z> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
+    if (this == o) {
+    	return true;
+    }
     if (o instanceof Fun2Column) {
       Fun2Column other = (Fun2Column) o;
       return Objects.equals(f, other.f) && xs.equals(other.xs);

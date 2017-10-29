@@ -121,14 +121,18 @@ public abstract class Parser extends Iced {
               break;
             }
           }
-          if (sameColumnNames)  // only recognize current file header if it has the same column names as previous files
+          if (sameColumnNames) { // only recognize current file header if it has the same column names as previous files
             this._setup.setCheckHeader(ps._check_header);
         }
-      } else  // should refresh _setup with correct check_header
+       }    
+      else { // should refresh _setup with correct check_header
         this._setup.setCheckHeader(ps._check_header);
+      }
+        return true;  // everything is fine
+      }
     }
-    return true;  // everything is fine
   }
+
 
   /**
    * This method will try to get the next file to be parsed.  It will skip over directories if encountered.
@@ -171,8 +175,9 @@ public abstract class Parser extends Iced {
     int cidx = 0;
     StreamData din = new StreamData(is);
     // only check header for 2nd file onward since guess setup is already done on first file.
-    if ((fileIndex > 0) && (!checkFileNHeader(is, dout, din, cidx)))
-      return new StreamInfo(zidx, nextChunk);  // header is bad, quit now
+    if ((fileIndex > 0) && (!checkFileNHeader(is, dout, din, cidx))) {
+      return new StreamInfo(zidx, nextChunk);  
+      }// header is bad, quit now
     int streamAvailable = is.available();
     while (streamAvailable > 0) {
       parseChunk(cidx++, din, nextChunk);
@@ -183,7 +188,9 @@ public abstract class Parser extends Iced {
         nextChunk.close(); // Match output chunks to input zipfile chunks
         if (dout != nextChunk) {
           dout.reduce(nextChunk);
-          if (_jobKey != null && _jobKey.get().stop_requested()) break;
+          if (_jobKey != null && _jobKey.get().stop_requested()) {
+        	  break;
+          }
         }
         nextChunk = nextChunk.nextChunk();
       }
@@ -198,7 +205,9 @@ public abstract class Parser extends Iced {
   // parse local chunks; distribute chunks later.
   protected ParseWriter streamParseZip( final InputStream is, final StreamParseWriter dout, InputStream bvs ) throws IOException {
     // All output into a fresh pile of NewChunks, one per column
-    if (!_setup._parse_type.isParallelParseSupported) throw H2O.unimpl();
+    if (!_setup._parse_type.isParallelParseSupported) {
+    	throw H2O.unimpl();
+    }
     StreamParseWriter nextChunk = dout;
     int zidx = bvs.read(null, 0, 0); // Back-channel read of chunk index
     assert zidx == 1;
@@ -214,8 +223,9 @@ public abstract class Parser extends Iced {
     streamInfo._nextChunk.close();
     bvs.close();
     is.close();
-    if( dout != nextChunk ) dout.reduce(nextChunk);
+    if( dout != nextChunk ) { dout.reduce(nextChunk);
     return dout;
+    }
   }
 
   final static class ByteAryData implements ParseReader {
@@ -262,9 +272,13 @@ public abstract class Parser extends Iced {
     }
     long _gOff;
     @Override public byte[] getChunkData(int cidx) {
-      if( cidx == _cidx0 ) return _bits0;
+      if( cidx == _cidx0 ) {
+    	  return _bits0;
+      }
       _gOff = _bits0.length;
-      if( cidx == _cidx1 ) return _bits1;
+      if( cidx == _cidx1 ) {
+    	  return _bits1;
+      }
       assert cidx==_cidx0+1 || cidx==_cidx1+1;
       byte[] bits = _cidx0<_cidx1 ? _bits0 : _bits1;
       _gOff += bits.length;
@@ -282,21 +296,35 @@ public abstract class Parser extends Iced {
       } catch( IOException ioe ) {
         throw new RuntimeException(ioe);
       }
-      if( off == bits.length ) return bits;
+      if( off == bits.length ) {
+    	  return bits;
+      }
       // Final read is short; cache the short-read
       byte[] bits2 = (off == 0) ? null : Arrays.copyOf(bits,off);
-      if( _cidx0==cidx ) _bits0 = bits2;
-      else               _bits1 = bits2;
+      if( _cidx0==cidx ) {
+    	  _bits0 = bits2;
+      }
+      else           {
+    	  _bits1 = bits2;
+      }
       return bits2;
     }
     @Override public int getChunkDataStart(int cidx) {
-      if( _cidx0 == cidx ) return _coff0;
-      if( _cidx1 == cidx ) return _coff1;
+      if( _cidx0 == cidx ) {
+    	  return _coff0;
+      }
+      if( _cidx1 == cidx ) {
+    	  return _coff1;
+      }
       return 0;
     }
     @Override public void setChunkDataStart(int cidx, int offset) {
-      if( _cidx0 == cidx ) _coff0 = offset;
-      if( _cidx1 == cidx ) _coff1 = offset;
+      if( _cidx0 == cidx ) {
+    	  _coff0 = offset;
+      }
+      if( _cidx1 == cidx ) {
+    	  _coff1 = offset;
+      }
     }
 
     @Override

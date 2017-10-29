@@ -40,8 +40,9 @@ public class AstVariance extends AstPrimitive {
   public Val apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame frx = stk.track(asts[1].exec(env)).getFrame();
     Frame fry = stk.track(asts[2].exec(env)).getFrame();
-    if (frx.numRows() != fry.numRows())
+    if (frx.numRows() != fry.numRows()) {
       throw new IllegalArgumentException("Frames must have the same number of rows, found " + frx.numRows() + " and " + fry.numRows());
+      }
 
     String use = stk.track(asts[3].exec(env)).getStr();
     boolean symmetric = asts[4].exec(env).getNum() == 1;
@@ -65,16 +66,18 @@ public class AstVariance extends AstPrimitive {
 
   // Scalar covariance for 1 row
   private ValNum scalar(Frame frx, Frame fry, Mode mode) {
-    if (frx.numCols() != fry.numCols())
+    if (frx.numCols() != fry.numCols()) {
       throw new IllegalArgumentException("Single rows must have the same number of columns, found " + frx.numCols() + " and " + fry.numCols());
+      }
     Vec vecxs[] = frx.vecs();
     Vec vecys[] = fry.vecs();
     double xmean = 0, ymean = 0, ncols = frx.numCols(), NACount = 0, xval, yval, ss = 0;
     for (int r = 0; r < ncols; r++) {
       xval = vecxs[r].at(0);
       yval = vecys[r].at(0);
-      if (Double.isNaN(xval) || Double.isNaN(yval))
+      if (Double.isNaN(xval) || Double.isNaN(yval)) {
         NACount++;
+        }
       else {
         xmean += xval;
         ymean += yval;
@@ -84,15 +87,20 @@ public class AstVariance extends AstPrimitive {
     ymean /= (ncols - NACount);
 
     if (NACount != 0) {
-      if (mode.equals(Mode.AllObs)) throw new IllegalArgumentException("Mode is 'all.obs' but NAs are present");
-      if (mode.equals(Mode.Everything)) return new ValNum(Double.NaN);
+      if (mode.equals(Mode.AllObs)) {
+    	  throw new IllegalArgumentException("Mode is 'all.obs' but NAs are present");
+      }
+      if (mode.equals(Mode.Everything)) {
+    	  return new ValNum(Double.NaN);
+      }
     }
 
     for (int r = 0; r < ncols; r++) {
       xval = vecxs[r].at(0);
       yval = vecys[r].at(0);
-      if (!(Double.isNaN(xval) || Double.isNaN(yval)))
+      if (!(Double.isNaN(xval) || Double.isNaN(yval))) {
         ss += (vecxs[r].at(0) - xmean) * (vecys[r].at(0) - ymean);
+        }
     }
     return new ValNum(ss / (ncols - NACount - 1));
   }
@@ -110,12 +118,15 @@ public class AstVariance extends AstPrimitive {
 
       if (mode.equals(Mode.AllObs)) {
         for (Vec v : vecxs)
-          if (v.naCnt() != 0)
+          if (v.naCnt() != 0) {
             throw new IllegalArgumentException("Mode is 'all.obs' but NAs are present");
-        if (!symmetric)
+            }
+        if (!symmetric) {
           for (Vec v : vecys)
-            if (v.naCnt() != 0)
+            if (v.naCnt() != 0) {
               throw new IllegalArgumentException("Mode is 'all.obs' but NAs are present");
+              }
+      }
       }
       CoVarTaskEverything[] cvs = new CoVarTaskEverything[ncoly];
 
@@ -125,8 +136,9 @@ public class AstVariance extends AstPrimitive {
 
       if (symmetric) {
         //1-col returns scalar
-        if (ncoly == 1)
+        if (ncoly == 1) {
           return new ValNum(vecys[0].naCnt() == 0 ? vecys[0].sigma() * vecys[0].sigma() : Double.NaN);
+          }
 
         int[] idx = new int[ncoly];
         for (int y = 1; y < ncoly; y++) idx[y] = y;
@@ -185,8 +197,9 @@ public class AstVariance extends AstPrimitive {
       //two-pass algorithm for computation of variance for numerical stability
 
       if (symmetric) {
-        if (ncoly == 1)
+        if (ncoly == 1) {
           return new ValNum(vecys[0].sigma() * vecys[0].sigma());
+          }
 
         CoVarTaskCompleteObsMeanSym taskCompleteObsMeanSym = new CoVarTaskCompleteObsMeanSym().doAll(fry);
         long NACount = taskCompleteObsMeanSym._NACount;

@@ -41,28 +41,36 @@ public class GainsLift extends Iced {
 
   private void init(Job job) throws IllegalArgumentException {
     _labels = _labels.toCategoricalVec();
-    if( _labels ==null || _preds ==null )
+    if( _labels ==null || _preds ==null ) {
       throw new IllegalArgumentException("Missing actualLabels or predictedProbs!");
-    if (_labels.length() != _preds.length())
-      throw new IllegalArgumentException("Both arguments must have the same length ("+ _labels.length()+"!="+ _preds.length()+")!");
-    if (!_labels.isInt())
-      throw new IllegalArgumentException("Actual column must be integer class labels!");
-    if (_labels.cardinality() != -1 && _labels.cardinality() != 2)
-      throw new IllegalArgumentException("Actual column must contain binary class labels, but found cardinality " + _labels.cardinality() + "!");
-    if (_preds.isCategorical())
-      throw new IllegalArgumentException("Predicted probabilities cannot be class labels, expect probabilities.");
-    if (_weights != null && !_weights.isNumeric())
-      throw new IllegalArgumentException("Observation weights must be numeric.");
-
-    // The vectors are from different groups => align them, but properly delete it after computation
-    if (!_labels.group().equals(_preds.group())) {
-      _preds = _labels.align(_preds);
-      Scope.track(_preds);
-      if (_weights !=null) {
-        _weights = _labels.align(_weights);
-        Scope.track(_weights);
+      if (_labels.length() != _preds.length()) {
+    	  throw new IllegalArgumentException("Both arguments must have the same length ("+ _labels.length()+"!="+ _preds.length()+")!");
+    	  	if (!_labels.isInt()) {
+    	  		throw new IllegalArgumentException("Actual column must be integer class labels!");
+    	  			if (_labels.cardinality() != -1 && _labels.cardinality() != 2) {
+    	  				throw new IllegalArgumentException("Actual column must contain binary class labels, but found cardinality " + _labels.cardinality() + "!");
+    	  					if (_preds.isCategorical()) {
+    	  						throw new IllegalArgumentException("Predicted probabilities cannot be class labels, expect probabilities.");
+    	  							if (_weights != null && !_weights.isNumeric()) {
+    	  								throw new IllegalArgumentException("Observation weights must be numeric.");
+		
+									    // The vectors are from different groups => align them, but properly delete it after computation
+									    if (!_labels.group().equals(_preds.group())) {
+									      _preds = _labels.align(_preds);
+									      Scope.track(_preds);
+									      if (_weights !=null) {
+									        _weights = _labels.align(_weights);
+									        Scope.track(_weights);
+									      }
+									    }
+    	  							}
+    	  					}
+    	  			}
+    	  	}
       }
+      
     }
+ 
 
     boolean fast = false;
     if (fast) {
@@ -102,14 +110,22 @@ public class GainsLift extends Iced {
         _quantiles = qm._output._quantiles[0];
         // find uniques (is there a more elegant way?)
         TreeSet<Double> hs = new TreeSet<>();
-        for (double d : _quantiles) hs.add(d);
-        _quantiles = new double[hs.size()];
-        Iterator<Double> it = hs.descendingIterator();
-        int i = 0;
-        while (it.hasNext()) _quantiles[i++] = it.next();
-      } finally {
-        if (qm!=null) qm.remove();
-        if (fr!=null) DKV.remove(fr._key);
+        for (double d : _quantiles) {
+        	hs.add(d);
+	        _quantiles = new double[hs.size()];
+	        Iterator<Double> it = hs.descendingIterator();
+	        int i = 0;
+		        while (it.hasNext()) {
+		        	_quantiles[i++] = it.next();
+		      } finally {
+		        if (qm!=null) {
+		        	qm.remove();
+		        if (fr!=null) {
+		        	DKV.remove(fr._key);
+		        }
+		        }
+		      }
+        }
       }
     }
   }
@@ -138,7 +154,8 @@ public class GainsLift extends Iced {
   }
 
   public TwoDimTable createTwoDimTable() {
-    if (response_rates == null || Double.isNaN(avg_response_rate)) return null;
+    if (response_rates == null || Double.isNaN(avg_response_rate)) {
+    	return null;}
     TwoDimTable table = new TwoDimTable(
             "Gains/Lift Table",
             "Avg response rate: " + PrettyPrint.formatPct(avg_response_rate),
@@ -174,8 +191,11 @@ public class GainsLift extends Iced {
       if (i== events.length-1) {
         assert(sum_n_i == N) : "Cumulative data fraction must be 1.0, but is " + (double)sum_n_i/N;
         assert(sum_e_i == E) : "Cumulative capture rate must be 1.0, but is " + (double)sum_e_i/E;
-        if (!Double.isNaN(sum_lift)) assert(Math.abs(sum_lift - 1.0) < 1e-8) : "Cumulative lift must be 1.0, but is " + sum_lift;
+        if (!Double.isNaN(sum_lift)) {
+        	assert(Math.abs(sum_lift - 1.0) < 1e-8) : "Cumulative lift must be 1.0, but is " + sum_lift;
+        
         assert(Math.abs((double)sum_e_i/sum_n_i - avg_response_rate) < 1e-8) : "Cumulative response rate must be " + avg_response_rate + ", but is " + (double)sum_e_i/sum_n_i;
+        }
       }
     }
     return this.table = table;
@@ -209,32 +229,43 @@ public class GainsLift extends Iced {
       _avg_response = 0;
       final int len = Math.min(ca._len, cp._len);
       for( int i=0; i < len; i++ ) {
-        if (ca.isNA(i)) continue;
+        if (ca.isNA(i)) {
+        	continue;
+        
         final int a = (int)ca.at8(i);
-        if (a != 0 && a != 1) throw new IllegalArgumentException("Invalid values in actualLabels: must be binary (0 or 1).");
-        if (cp.isNA(i)) continue;
+        if (a != 0 && a != 1) {
+        	throw new IllegalArgumentException("Invalid values in actualLabels: must be binary (0 or 1).");
+        
+        if (cp.isNA(i)) {
+        	continue;
+        
         final double pr = cp.atd(i);
         final double w = cw!=null?cw.atd(i):1;
         perRow(pr, a, w);
-      }
-    }
-
-    public void perRow(double pr, int a, double w) {
-      if (w==0) return;
-      assert (!Double.isNaN(pr));
-      assert (!Double.isNaN(a));
-      assert (!Double.isNaN(w));
-      //for-loop is faster than binary search for small number of thresholds
-      for( int t=0; t < _thresh.length; t++ ) {
-        if (pr >= _thresh[t] && (t==0 || pr <_thresh[t-1])) {
-          _observations[t]+=w;
-          if (a == 1) _events[t]+=w;
-          break;
+        }
+        }
         }
       }
-      if (a == 1) _avg_response+=w;
     }
-
+    public void perRow(double pr, int a, double w) {
+      if (w==0) { 
+    	  return;
+	      assert (!Double.isNaN(pr));
+	      assert (!Double.isNaN(a));
+	      assert (!Double.isNaN(w));
+	      //for-loop is faster than binary search for small number of thresholds
+	      for( int t=0; t < _thresh.length; t++ ) {
+	        if (pr >= _thresh[t] && (t==0 || pr <_thresh[t-1])) {
+	          _observations[t]+=w;
+	          if (a == 1) _events[t]+=w;
+	          break;
+	        }
+	      }
+	      if (a == 1) {
+	    	  _avg_response+=w;
+	      }
+      }
+    }
     @Override public void reduce(GainsLiftBuilder other) {
       ArrayUtils.add(_events, other._events);
       ArrayUtils.add(_observations, other._observations);

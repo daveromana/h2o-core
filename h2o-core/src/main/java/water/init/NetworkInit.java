@@ -27,22 +27,25 @@ public class NetworkInit {
   public static DatagramChannel CLOUD_DGRAM;
 
   public static InetAddress findInetAddressForSelf() throws Error {
-    if (H2O.SELF_ADDRESS != null)
+    if (H2O.SELF_ADDRESS != null) {
       return H2O.SELF_ADDRESS;
-    else
+      }
+    else {
       try {
         return HostnameGuesser.findInetAddressForSelf(H2O.ARGS.ip, H2O.ARGS.network);
       } catch (HostnameGuesser.HostnameGuessingException e) {
-        if (e.getCause() != null)
+        if (e.getCause() != null) {
           Log.err(e.getCause());
-        else
+          }
+        else {
           Log.err(e.getMessage());
+          }
         H2O.exit(-1);
       }
     assert false; // should never be reached
     return null;
   }
-
+  }
   // Parse arguments and set cloud name in any case. Strip out "-name NAME"
   // and "-flatfile <filename>". Ignore the rest. Set multi-cast port as a hash
   // function of the name. Parse node ip addresses from the filename.
@@ -99,13 +102,21 @@ public class NetworkInit {
 
       } catch (Exception e) {
         for (Throwable ee = e; ee != null; ee = ee.getCause()) {
-          if (ee instanceof GeneralSecurityException)
+          if (ee instanceof GeneralSecurityException) {
             throw new RuntimeException("Jetty Server initialization failed (check keystore password)", e);
+            }
         }
         Log.trace("Cannot allocate API port " + H2O.API_PORT + " because of following exception: ", e);
-        if( apiSocket != null ) try { apiSocket.close(); } catch( IOException ohwell ) { Log.err(ohwell); }
-        if( _udpSocket != null ) try { _udpSocket.close(); } catch( IOException ie ) { }
-        if( _tcpSocket != null ) try { _tcpSocket.close(); } catch( IOException ie ) { }
+        if( apiSocket != null ) {
+        	try { apiSocket.close(); } catch( IOException ohwell ) { Log.err(ohwell); }
+        }
+        if( _udpSocket != null ) {
+        	try { _udpSocket.close(); } catch( IOException ie ) {System.out.println("The error is: " + ie); }
+        }
+        if( _tcpSocket != null ) {
+        	try { _tcpSocket.close(); } catch( IOException ie ) {System.out.println("The error is: " + ie);
+        }
+        }
         apiSocket = null;
         _udpSocket = null;
         _tcpSocket = null;
@@ -156,10 +167,12 @@ public class NetworkInit {
     }
 
     // Read a flatfile of allowed nodes
-    if (embeddedConfigFlatfile != null)
+    if (embeddedConfigFlatfile != null) {
       H2O.setFlatfile(parseFlatFileFromString(embeddedConfigFlatfile));
-    else 
+      }
+    else { 
       H2O.setFlatfile(parseFlatFile(H2O.ARGS.flatfile));
+      }
 
     // All the machines has to agree on the same multicast address (i.e., multicast group)
     // Hence use the cloud name to generate multicast address
@@ -184,8 +197,10 @@ public class NetworkInit {
    * @return IPv4 or IPv6 address which matches given IP and is in specified range
    */
   private static InetAddress getInetAddress(String ip) {
-    if (ip == null)
-      return null;
+    if (ip == null) {
+    	return null;
+    }
+      
 
     InetAddress addr = null;
     try {
@@ -202,7 +217,9 @@ public class NetworkInit {
   // disabled).
   public static void multicast( ByteBuffer bb , byte priority) {
     try { multicast2(bb, priority); }
-    catch (Exception ie) {}
+    catch (Exception ie) {
+    	System.out.println("The error is: " + ie);
+    }
   }
 
   static private void multicast2( ByteBuffer bb, byte priority ) {
@@ -224,10 +241,11 @@ public class NetworkInit {
         } catch( Exception e ) {  // On any error from anybody, close all sockets & re-open
           // No error on multicast fail: common occurrance for laptops coming
           // awake from sleep.
-          if( H2O.CLOUD_MULTICAST_SOCKET != null )
+          if( H2O.CLOUD_MULTICAST_SOCKET != null ) {
             try { H2O.CLOUD_MULTICAST_SOCKET.close(); }
             catch( Exception e2 ) { Log.err("Got",e2); }
             finally { H2O.CLOUD_MULTICAST_SOCKET = null; }
+          }
         }
       }
     } else {
@@ -260,8 +278,9 @@ public class NetworkInit {
       nodes.addAll(water.Paxos.PROPOSED.values());
       bb.mark();
       for( H2ONode h2o : nodes ) {
-        if(h2o._removed_from_cloud)
+        if(h2o._removed_from_cloud) {
           continue;
+          }
         try {
           bb.reset();
           if(H2O.ARGS.useUDP) {
@@ -296,7 +315,9 @@ public class NetworkInit {
    * 10.10.65.108:54325
    */
   private static HashSet<H2ONode> parseFlatFile( String fname ) {
-    if( fname == null ) return null;
+    if( fname == null ) {
+    	return null;
+    }
     File f = new File(fname);
     if( !f.exists() ) {
       Log.warn("-flatfile specified but not found: " + fname);
@@ -342,7 +363,9 @@ public class NetworkInit {
       while( (strLine = br.readLine()) != null) {
         strLine = strLine.trim();
         // be user friendly and skip comments and empty lines
-        if (strLine.startsWith("#") || strLine.isEmpty()) continue;
+        if (strLine.startsWith("#") || strLine.isEmpty()) {
+        	continue;
+        }
 
         String ip = null, portStr = null;
         int slashIdx = strLine.indexOf('/');
@@ -376,7 +399,9 @@ public class NetworkInit {
       }
     } catch( Exception e ) { H2O.die(e.toString()); }
     finally { 
-      if( br != null ) try { br.close(); } catch( IOException ie ) { }
+      if( br != null ) try { br.close(); } catch( IOException ie ) { 
+    	  System.out.println("The error is: " + ie);
+      }
     }
     return list;
   }

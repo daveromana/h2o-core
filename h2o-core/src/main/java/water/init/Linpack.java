@@ -320,7 +320,9 @@ matrix in column order. --dmd 3/3/97
       }
     }
     ipvt[n-1] = n-1;
-    if (a[(n-1)][(n-1)] == 0) info = n-1;
+    if (a[(n-1)][(n-1)] == 0) {
+    	info = n-1;
+    }
 
     return info;
   }
@@ -459,8 +461,12 @@ matrix in column order. --dmd 3/3/97
 
         ix = 0;
         iy = 0;
-        if (incx < 0) ix = (-n+1)*incx;
-        if (incy < 0) iy = (-n+1)*incy;
+        if (incx < 0) {
+        	ix = (-n+1)*incx;
+        }
+        if (incy < 0) {
+        	iy = (-n+1)*incy;
+        }
         for (i = 0;i < n; i++) {
           dy[iy +dy_off] += da*dx[ix +dx_off];
           ix += incx;
@@ -499,8 +505,12 @@ matrix in column order. --dmd 3/3/97
 
         ix = 0;
         iy = 0;
-        if (incx < 0) ix = (-n+1)*incx;
-        if (incy < 0) iy = (-n+1)*incy;
+        if (incx < 0) {
+        	ix = (-n+1)*incx;
+        }
+        if (incy < 0) {
+        	iy = (-n+1)*incy;
+        }
         for (i = 0;i < n; i++) {
           dtemp += dx[ix +dx_off]*dy[iy +dy_off];
           ix += incx;

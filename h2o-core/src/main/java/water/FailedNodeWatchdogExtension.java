@@ -227,7 +227,7 @@ public class FailedNodeWatchdogExtension extends AbstractH2OExtension {
 
                 try {
                     Thread.sleep(watchdogClientRetryTimeout);
-                } catch (InterruptedException ignore) {}
+                } catch (InterruptedException ignore) {System.out.println("The error is: " + ignore);}
             }
         }
     }

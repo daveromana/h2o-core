@@ -22,7 +22,7 @@ class FindHandler extends Handler {
     // Peel out an optional column; restrict to this column
     if( find.column != null ) {
       Vec vec = frame.vec(find.column);
-      if( vec==null ) throw new H2OColumnNotFoundArgumentException("column", frame, find.column);
+      if( vec==null ) { throw new H2OColumnNotFoundArgumentException("column", frame, find.column);}
       find.key = new FrameV3(new Frame(new String[]{find.column}, new Vec[]{vec}));
       // need to update frame variable
       frame = find.key._fr;
@@ -34,7 +34,7 @@ class FindHandler extends Handler {
     for( int i=0; i<vecs.length; i++ ) {
       if( vecs[i].isCategorical() ) {
         int idx = ArrayUtils.find(vecs[i].domain(),find.match);
-        if( idx==-1 && vecs.length==1 ) throw new H2OCategoricalLevelNotFoundArgumentException("match", find.match, frame._key.toString(), frame.name(i));
+        if( idx==-1 && vecs.length==1 ) {throw new H2OCategoricalLevelNotFoundArgumentException("match", find.match, frame._key.toString(), frame.name(i));}
         ds[i] = idx;
       } else if( vecs[i].isUUID() ) {
         throw H2O.unimpl();
@@ -87,8 +87,12 @@ class FindHandler extends Handler {
       }
     }
     @Override public void reduce( Find f ) {
-      if( _prev < f._prev ) _prev = f._prev;
-      if( _next > f._next ) _next = f._next;
+      if( _prev < f._prev ) {
+    	  _prev = f._prev;
+      }
+      if( _next > f._next ) {
+    	  _next = f._next;
+      }
     }
   }
 }

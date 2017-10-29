@@ -40,8 +40,9 @@ public class AstMatch extends AstPrimitive {
   public ValFrame apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
 
-    if ((fr.numCols() != 1) || ! (fr.anyVec().isCategorical() || fr.anyVec().isString()))
+    if ((fr.numCols() != 1) || ! (fr.anyVec().isCategorical() || fr.anyVec().isString())) {
       throw new IllegalArgumentException("can only match on a single categorical/string column.");
+      }
 
     final MRTask<?> matchTask;
     double noMatch = asts[3].exec(env).getNum();
@@ -131,15 +132,27 @@ public class AstMatch extends AstPrimitive {
     while (lo <= hi) {
       int mid = (lo + hi) >>> 1;
       double midVal = a[mid];
-      if (MathUtils.equalsWithinOneSmallUlp(midVal, key)) return mid;
-      if (midVal < key) lo = mid + 1;
-      else if (midVal > key) hi = mid - 1;
+      if (MathUtils.equalsWithinOneSmallUlp(midVal, key)) {
+    	  return mid;
+      }
+      if (midVal < key) {
+    	  lo = mid + 1;
+      }
+      else if (midVal > key) {
+    	  hi = mid - 1;
+      }
       else {
         long midBits = Double.doubleToLongBits(midVal);
         long keyBits = Double.doubleToLongBits(key);
-        if (midBits == keyBits) return mid;
-        else if (midBits < keyBits) lo = mid + 1;
-        else hi = mid - 1;
+        if (midBits == keyBits) {
+        	return mid;
+        }
+        else if (midBits < keyBits) {
+        	lo = mid + 1;
+        }
+        else {
+        	hi = mid - 1;
+        }
       }
     }
     return -(lo + 1);  // key not found.

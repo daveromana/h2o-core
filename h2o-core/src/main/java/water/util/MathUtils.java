@@ -148,17 +148,20 @@ public class MathUtils {
     public double variance(int i){return variance()[i];}
     public double[] variance() {
 //      if(sparse()) throw new UnsupportedOperationException("Can not do single pass sparse variance computation");
-      if (_var != null) return _var;
+      if (_var != null) {
+      	return _var;
       return _var = variance(MemoryManager.malloc8d(_mean.length));
     }
     public double sigma(int i){return sigma()[i];}
     public double[] sigma() {
-      if(_sd != null) return _sd;
-      double[] res = variance().clone();
-      for (int i = 0; i < res.length; ++i)
-        res[i] = Math.sqrt(res[i]);
-      return _sd = res;
-    }
+      if(_sd != null){
+      	 return _sd;
+      	 double[] res = variance().clone();
+      	 for (int i = 0; i < res.length; ++i) {
+      		 res[i] = Math.sqrt(res[i]);
+      	 		return _sd = res;
+      	 }
+      }
     public double[] mean() {return _mean;}
     public double mean(int i) {return _mean[i];}
     public long nobs() {return _nobs;}
@@ -199,14 +202,18 @@ public class MathUtils {
   /** Fast approximate log for values greater than 1, otherwise exact
    *  @return log(x) with up to 0.1% relative error */
   public static double approxLog(double x){
-    if (x > 1) return ((Double.doubleToLongBits(x) >> 32) - 1072632447d) / 1512775d;
+    if (x > 1) {
+    	return ((Double.doubleToLongBits(x) >> 32) - 1072632447d) / 1512775d;
     else return Math.log(x);
+  }
   }
   /** Fast calculation of log base 2 for integers.
    *  @return log base 2 of n */
   public static int log2(int n) {
-    if (n <= 0) throw new IllegalArgumentException();
+    if (n <= 0) {
+    	throw new IllegalArgumentException();
     return 31 - Integer.numberOfLeadingZeros(n);
+    }
   }
   public static int log2(long n) {
     return 63 - Long.numberOfLeadingZeros(n);
@@ -290,23 +297,25 @@ public class MathUtils {
    * @return true if a and b are essentially equal, false otherwise.
    */
   public static boolean equalsWithinOneSmallUlp(float a, float b) {
-    if (Double.isNaN(a) && Double.isNaN(b)) return true;
-    float ulp_a = Math.ulp(a);
-    float ulp_b = Math.ulp(b);
-    float small_ulp = Math.min(ulp_a, ulp_b);
-    float absdiff_a_b = Math.abs(a - b); // subtraction order does not matter, due to IEEE 754 spec
-    return absdiff_a_b <= small_ulp;
+    if (Double.isNaN(a) && Double.isNaN(b)) {
+    	return true;
+	    float ulp_a = Math.ulp(a);
+	    float ulp_b = Math.ulp(b);
+	    float small_ulp = Math.min(ulp_a, ulp_b);
+	    float absdiff_a_b = Math.abs(a - b); // subtraction order does not matter, due to IEEE 754 spec
+	    return absdiff_a_b <= small_ulp;
   }
-
+  }
   public static boolean equalsWithinOneSmallUlp(double a, double b) {
-    if (Double.isNaN(a) && Double.isNaN(b)) return true;
-    double ulp_a = Math.ulp(a);
-    double ulp_b = Math.ulp(b);
-    double small_ulp = Math.min(ulp_a, ulp_b);
-    double absdiff_a_b = Math.abs(a - b); // subtraction order does not matter, due to IEEE 754 spec
-    return absdiff_a_b <= small_ulp;
+    if (Double.isNaN(a) && Double.isNaN(b)) {
+    	return true;
+	    double ulp_a = Math.ulp(a);
+	    double ulp_b = Math.ulp(b);
+	    double small_ulp = Math.min(ulp_a, ulp_b);
+	    double absdiff_a_b = Math.abs(a - b); // subtraction order does not matter, due to IEEE 754 spec
+	    return absdiff_a_b <= small_ulp;
+    }
   }
-
   // Section 4.2: Error bound on recursive sum from Higham, Accuracy and Stability of Numerical Algorithms, 2nd Ed
   // |E_n| <= (n-1) * u * \sum_i^n |x_i| + P(u^2)
   public static boolean equalsWithinRecSumErr(double actual, double expected, int n, double absum) {
@@ -486,14 +495,16 @@ public class MathUtils {
   };
 
   public static double roundToNDigits(double d, int n) {
-    if(d == 0)return d;
-    int log = (int)Math.log10(d);
-    int exp = n;
-    exp -= log;
-    int ival = (int)(Math.round(d * Math.pow(10,exp)));
-    return ival/Math.pow(10,exp);
+    if(d == 0){
+    	return d;
+	    int log = (int)Math.log10(d);
+	    int exp = n;
+	    exp -= log;
+	    int ival = (int)(Math.round(d * Math.pow(10,exp)));
+	    return ival/Math.pow(10,exp);
+    }
   }
-
+  
   public enum Norm {L1,L2,L2_2,L_Infinite}
   public static double[] min_max_mean_stddev(long[] counts) {
     double min = Float.MAX_VALUE;
@@ -515,26 +526,30 @@ public class MathUtils {
   }
 
   public static double sign(double d) {
-    if(d == 0)return 0;
+    if(d == 0){
+    	return 0;
     return d < 0?-1:1;
   }
-
+  }
   public static class DCT {
 
     public static void initCheck(Frame input, int width, int height, int depth) {
       ConcurrencyUtils.setNumberOfThreads(1);
-      if (width < 1 || height < 1 || depth < 1)
+      if (width < 1 || height < 1 || depth < 1) {
         throw new H2OIllegalArgumentException("dimensions must be >= 1");
-      if (width*height*depth != input.numCols())
+      if (width*height*depth != input.numCols()) {
         throw new H2OIllegalArgumentException("dimensions HxWxD must match the # columns of the frame");
       for (Vec v : input.vecs()) {
-        if (v.naCnt() > 0)
+        if (v.naCnt() > 0) {
           throw new H2OIllegalArgumentException("DCT can not be computed on rows with missing values");
-        if (!v.isNumeric())
+        if (!v.isNumeric()) {
           throw new H2OIllegalArgumentException("DCT can only be computed on numeric columns");
+        	}
+        }
+      }
+      }
       }
     }
-
     /**
      * Compute the 1D discrete cosine transform for each row in the given Frame, and return a new Frame
      *
@@ -555,10 +570,10 @@ public class MathUtils {
               a[i] = cs[i].atd(row);
 
             // compute DCT for each row
-            if (!inverse)
-              new DoubleDCT_1D(N).forward(a, true);
-            else
-              new DoubleDCT_1D(N).inverse(a, true);
+            if (!inverse) {
+              new DoubleDCT_1D(N).forward(a, true);}
+            else {
+              new DoubleDCT_1D(N).inverse(a, true);}
 
             // write result to NewChunk
             for (int i = 0; i < N; ++i)
@@ -590,10 +605,10 @@ public class MathUtils {
                 a[i][j] = cs[i * width + j].atd(row);
 
             // compute 2D DCT
-            if (!inverse)
-              new DoubleDCT_2D(height, width).forward(a, true);
-            else
-              new DoubleDCT_2D(height, width).inverse(a, true);
+            if (!inverse) {
+              new DoubleDCT_2D(height, width).forward(a, true);}
+            else {
+              new DoubleDCT_2D(height, width).inverse(a, true);}
 
             // write result to NewChunk
             for (int i = 0; i < height; ++i)
@@ -630,10 +645,12 @@ public class MathUtils {
                   a[i][j][k] = cs[i*(width*depth) + j*depth + k].atd(row);
 
             // compute 3D DCT
-            if (!inverse)
+            if (!inverse) {
               new DoubleDCT_3D(height, width, depth).forward(a, true);
-            else
+              }
+            else {
               new DoubleDCT_3D(height, width, depth).inverse(a, true);
+              }
 
             // write result to NewChunk
             for (int i = 0; i < height; ++i)
@@ -660,11 +677,14 @@ public class MathUtils {
   }
 
   public static double y_log_y(double y, double mu) {
-    if(y == 0)return 0;
-    if(mu < Double.MIN_NORMAL) mu = Double.MIN_NORMAL;
-    return y * Math.log(y / mu);
+    if(y == 0){
+    	return 0;
+	    if(mu < Double.MIN_NORMAL) {
+	    	mu = Double.MIN_NORMAL;
+	    return y * Math.log(y / mu);
+	    }
+    }
   }
-
   /** Compare signed longs */
   public static int compare(long x, long y) {
     return (x < y) ? -1 : ((x == y) ? 0 : 1);

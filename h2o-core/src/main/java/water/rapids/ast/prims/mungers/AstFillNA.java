@@ -49,15 +49,18 @@ public class AstFillNA extends AstPrimitive {
 
     // Column within frame being imputed
     final String method = asts[2].exec(env).getStr();
-    if (!(Arrays.asList("forward","backward")).contains(method.toLowerCase()))
+    if (!(Arrays.asList("forward","backward")).contains(method.toLowerCase())) {
       throw new IllegalArgumentException("Method must be forward or backward");
+      }
     // Not impl yet
-    if (method.toLowerCase() == "backward")
+    if (method.toLowerCase() == "backward") {
       throw H2O.unimpl("Backward fillna not implemented yet");
+      }
 
     final int axis = (int) asts[3].exec(env).getNum();
-    if (!(Arrays.asList(0,1)).contains(axis))
+    if (!(Arrays.asList(0,1)).contains(axis)) {
       throw new IllegalArgumentException("Axis must be 0 for columnar 1 for row");
+      }
     final int limit = (int) asts[4].exec(env).getNum();
     Frame res;
     if (axis == 0) {
@@ -88,7 +91,9 @@ public class AstFillNA extends AstPrimitive {
               nc[j].addNA();
             }
           } else {
-            if (fillCount > 0) fillCount = 0;
+            if (fillCount > 0) {
+            	fillCount = 0;
+            }
             nc[j].addNum(cs[j].atd(i));
           }
         }
@@ -147,12 +152,15 @@ public class AstFillNA extends AstPrimitive {
                 }
                 fillCount = Math.min(maxFill, fillCount);
                 // We've searched back but maxlen isnt big enough to propagate here.
-                if (fillCount < 0)
+                if (fillCount < 0) {
                   nc[i].addNA();
-                else if (fillCount == 0)
+                  }
+                else if (fillCount == 0) {
                   nc[i].addNum(fillVal);
-                else
+                  }
+                else {
                   for (int f = 0; f<fillCount; f++) { nc[i].addNum(fillVal); }
+                  }
 
                 fillCount = Math.max(1,fillCount);
                 j += (fillCount - 1);

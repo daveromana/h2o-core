@@ -79,8 +79,10 @@ public class HeartBeatThread extends Thread {
 
       try {
         hb._system_load_average = ((Double)mbs.getAttribute(os, "SystemLoadAverage")).floatValue();
-        if( hb._system_load_average == -1 )  // SystemLoadAverage not available on windows
-          hb._system_load_average = ((Double)mbs.getAttribute(os, "SystemCpuLoad")).floatValue();
+        if( hb._system_load_average == -1 ) {
+        	hb._system_load_average = ((Double)mbs.getAttribute(os, "SystemCpuLoad")).floatValue();// SystemLoadAverage not available on windows
+        }
+          
       } catch( Exception e ) {
     	  System.out.println("The error is: " + e);
     	  /*Ignore, data probably not available on this VM*/ 

@@ -50,10 +50,14 @@ public class AstTmpAssign extends AstPrimitive {
 
     Value v = DKV.get(id);
     if (v != null) {
-      if (v.get().equals(srcFrame))
-        return (ValFrame) srcVal;
-      else
-        throw new IllegalArgumentException("Temp ID " + id + " already exists");
+      if (v.get().equals(srcFrame)) {
+    	  return (ValFrame) srcVal;
+      }
+        
+      else {
+    	   throw new IllegalArgumentException("Temp ID " + id + " already exists");
+      }
+       
     }
     Frame dst = new Frame(id, srcFrame._names, srcFrame.vecs());
     return new ValFrame(env._ses.track_tmp(dst)); // Track new session-wide ID

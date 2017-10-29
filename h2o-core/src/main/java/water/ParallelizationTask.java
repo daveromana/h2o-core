@@ -38,8 +38,10 @@ public class ParallelizationTask<T extends H2O.H2OCountedCompleter<T>> extends H
                 _j.update(1);
             }
             int i = _ctr.incrementAndGet();
-            if (i < _tasks.length)
-                asyncVecTask(i);
+            if (i < _tasks.length) {
+            	 asyncVecTask(i);
+            }
+               
         }
     }
 }

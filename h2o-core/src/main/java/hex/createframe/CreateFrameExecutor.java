@@ -118,8 +118,10 @@ public class CreateFrameExecutor extends H2O.H2OCountedCompleter<CreateFrameExec
   @Override public void compute2() {
     int logRowsPerChunk = (int) Math.ceil(Math.log1p(rowsPerChunk()));
     Vec dummyVec = Vec.makeCon(0, numRows, logRowsPerChunk, false);
-    if (seed == -1)
-      seed = Double.doubleToLongBits(Math.random());
+    if (seed == -1) {
+    	 seed = Double.doubleToLongBits(Math.random());
+    }
+     
 
     // Create types, names & domains
     byte[] types = new byte[numCols];
@@ -185,7 +187,9 @@ public class CreateFrameExecutor extends H2O.H2OCountedCompleter<CreateFrameExec
     }
 
     @Override public void map(Chunk[] cs, NewChunk[] ncs) {
-      if (job.stop_requested()) return;
+      if (job.stop_requested()) {
+    	  return;
+      }
       int numRowsInChunk = cs[0]._len;
       long chunkPosition = cs[0].start();
       Random rng = RandomUtils.getRNG(0);

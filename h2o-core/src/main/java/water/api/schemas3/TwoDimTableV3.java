@@ -59,7 +59,9 @@ public class TwoDimTableV3 extends SchemaV3<TwoDimTable, TwoDimTableV3> {
     rowcount = rows;
     boolean have_row_header_cols = t.getColHeaderForRowHeaders() != null;
     for (int r=0; r<rows; ++r) {
-      if (!have_row_header_cols) break;
+      if (!have_row_header_cols) {
+    	  break;
+      }
       have_row_header_cols &= t.getRowHeaders()[r] != null;
     }
     if (have_row_header_cols) {
@@ -117,11 +119,15 @@ public class TwoDimTableV3 extends SchemaV3<TwoDimTable, TwoDimTableV3> {
    * @return
    */
   private String pythonify(String n) {
-    if (n == null || name.toLowerCase().contains("confusion")) return n;
+    if (n == null || name.toLowerCase().contains("confusion")) {
+    	return n;
+    }
     StringBuilder sb = new StringBuilder();
     String [] modified = n.split("[\\s_]+");
     for (int i=0; i<modified.length; ++i) {
-      if (i!=0) sb.append("_");
+      if (i!=0) {
+    	  sb.append("_");
+      }
       String s = modified[i];
 //      if (!s.matches("^[A-Z]{2,3}$")) {
         sb.append(s.toLowerCase()); //everything goes lowercase
@@ -206,7 +212,9 @@ public class TwoDimTableV3 extends SchemaV3<TwoDimTable, TwoDimTableV3> {
     if( columns!=null ) {
       for (int i = 0; i < columns.length; ++i) {
         columns[i].writeJSON(ab);
-        if (i < columns.length - 1) ab.put1(',');
+        if (i < columns.length - 1) {
+        	ab.put1(',');
+        }
       }
     }
     ab.put1(']');
@@ -224,10 +232,14 @@ public class TwoDimTableV3 extends SchemaV3<TwoDimTable, TwoDimTableV3> {
           } else {
             data[i][j].writeUnwrappedJSON(ab);
           }
-          if (j < data[i].length - 1) ab.put1(',');
+          if (j < data[i].length - 1) {
+        	  ab.put1(',');
+          }
         }
         ab.put1(']');
-        if (i < data.length - 1) ab.put1(',');
+        if (i < data.length - 1) {
+        	ab.put1(',');
+        }
       }
     }
       ab.put1(']');

@@ -71,7 +71,7 @@ public class SchemaServer {
 
 
   public static void checkIfRegistered(Schema schema) {
-    if (schemas_registered && !schema_to_iced.containsKey(schema.getSchemaName()))
+    if (schemas_registered && !schema_to_iced.containsKey(schema.getSchemaName())) {
       throw H2O.fail("Schema " + schema.getSchemaName() + " was instantiated before it was registered...\n"
                      + "Did you forget to add an entry into your META-INF/services/water.api.Schema file, or\n"
                      + "annotate your '" + schema.getSchemaName() + "' by annotation @AutoService(water.api.Schema.class)\n"
@@ -92,7 +92,7 @@ public class SchemaServer {
       // Was there a race to get here?  If so, return.
       Class<? extends Schema> existing = schemas.get(clzname);
       if (existing != null) {
-        if (clz != existing)
+        if (clz != existing) {
           throw H2O.fail("Two schema classes have the same simpleName: " + clz + " and " + existing + ".");
         return;
       }
@@ -100,20 +100,20 @@ public class SchemaServer {
       // Check that the Schema has the correct type parameters:
       if (clz.getGenericSuperclass() instanceof ParameterizedType) {
         Type[] schema_type_parms = ((ParameterizedType) (clz.getGenericSuperclass())).getActualTypeArguments();
-        if (schema_type_parms.length < 2)
+        if (schema_type_parms.length < 2) {
           throw H2O.fail("Found a Schema that does not pass at least two type parameters.  Each Schema needs to be " +
               "parametrized on the backing class (if any, or Iced if not) and itself: " + clz);
 
         Class parm0 = ReflectionUtils.findActualClassParameter(clz, 0);
         Class parm1 = ReflectionUtils.findActualClassParameter(clz, 1);
         String clzstr = clzname + "<" + parm0.getSimpleName() + "," + parm1.getSimpleName() + ">";
-        if (!Iced.class.isAssignableFrom(parm0))
+        if (!Iced.class.isAssignableFrom(parm0)) {
           throw H2O.fail("Schema " + clzstr + " has bad type parameters: first arg should be a subclass of Iced");
-        if (Schema.class.isAssignableFrom(parm0))
+        if (Schema.class.isAssignableFrom(parm0)) {
           throw H2O.fail("Schema " + clzstr + " has bad type parameters: first arg cannot be a Schema");
-        if (!Schema.class.isAssignableFrom(parm1))
+        if (!Schema.class.isAssignableFrom(parm1)) {
           throw H2O.fail("Schema " + clzstr + " has bad type parameters: second arg should be a subclass of Schema");
-        if (!parm1.getSimpleName().equals(clzname))
+        if (!parm1.getSimpleName().equals(clzname)) {
           throw H2O.fail("Schema " + clzstr + " has bad type parameters: second arg should refer to the schema itself");
 
       } else {
@@ -125,12 +125,14 @@ public class SchemaServer {
       // NOTE: we now allow non-versioned schemas, for example base classes like ModelMetricsBaseV3, so that we can
       // fetch the metadata for them.
       int version = Schema.extractVersionFromSchemaName(clzname);
-      if (version > HIGHEST_SUPPORTED_VERSION && version != EXPERIMENTAL_VERSION)
+      if (version > HIGHEST_SUPPORTED_VERSION && version != EXPERIMENTAL_VERSION) {
         throw H2O.fail("Found a schema with a version higher than the highest supported version; you probably want  " +
             "to bump the highest supported version: " + clz);
-      if (version > LATEST_VERSION && version != EXPERIMENTAL_VERSION)
+      if (version > LATEST_VERSION && version != EXPERIMENTAL_VERSION) {
         synchronized (Schema.class) {
-          if (version > LATEST_VERSION) LATEST_VERSION = version;
+          if (version > LATEST_VERSION) {
+        	  LATEST_VERSION = version;
+          }
         }
 
       Class<? extends Iced> impl_class = ReflectionUtils.findActualClassParameter(clz, 0);
@@ -149,22 +151,30 @@ public class SchemaServer {
           // TODO: make a new @API field "ignore_naming_rules", and set to true for the names hardcoded below:
           //       After that these all checks could be eliminated...
           if (name.equals("__meta") || name.equals("__http_status") || name.equals("_exclude_fields") ||
-              name.equals("__schema") || name.equals("_fields")) continue;
-          if (name.equals("Gini")) continue; // proper name
-          if (name.endsWith("AUC")) continue; // trainAUC, validAUC
+              name.equals("__schema") || name.equals("_fields")) {
+        	  continue;
+          }
+          if (name.equals("Gini")) {
+        	  continue; // proper name
+          }
+          if (name.endsWith("AUC")) {
+        	  continue; // trainAUC, validAUC
+          }
 
           // TODO: remove after we move these into a TwoDimTable:
           if ("f0point5".equals(name) || "f0point5_for_criteria".equals(name) || "f1_for_criteria".equals(name) ||
-              "f2_for_criteria".equals(name)) continue;
+              "f2_for_criteria".equals(name)) {
+        	  continue;
+          }
 
-          if (name.startsWith("_"))
+          if (name.startsWith("_")) {
             Log.warn("Found schema field which violates the naming convention; name starts with underscore: " +
                      meta.name + "." + name);
           // allow AUC but not residualDeviance
           // Note: class Word2VecParametersV3 is left as an exception, since it's already a published schema, and it
           // is not possible to alter its field names. However no other exceptions should be created!
-          if (!name.equals(name.toLowerCase()) && !name.equals(name.toUpperCase()))
-            if (!clzname.equals("Word2VecParametersV3"))
+          if (!name.equals(name.toLowerCase()) && !name.equals(name.toUpperCase())) {
+            if (!clzname.equals("Word2VecParametersV3")) {
               Log.warn("Found schema field which violates the naming convention; name has mixed lowercase and " +
                        "uppercase characters: " + meta.name + "." + name);
         }
@@ -192,7 +202,9 @@ public class SchemaServer {
    * Find all schemas using reflection and register them.
    */
   synchronized static public void registerAllSchemasIfNecessary(Schema ... schemas) {
-    if (schemas_registered) return;
+    if (schemas_registered) {
+    	return;
+    }
     long startTime = System.currentTimeMillis();
     for (Schema schema : schemas) {
       register(schema);
@@ -215,7 +227,7 @@ public class SchemaServer {
    */
   public static Class<? extends Schema> getSchema(String name) {
     Class<? extends Schema> clz = schemas.get(name);
-    if (clz == null)
+    if (clz == null) {
       throw new H2ONotFoundArgumentException("Failed to find schema for schema_name: " + name,
           "Failed to find schema for schema_name: " + name + "\n" +
           "Did you forget to add an entry into META-INF/services/water.api.Schema?");
@@ -232,13 +244,19 @@ public class SchemaServer {
    * @deprecated
    */
   public static Class<? extends Schema> schemaClass(int version, String type) {
-    if (version < 1) return null;
+    if (version < 1) {
+    	return null;
+    }
     Class<? extends Schema> clz = iced_to_schema.get(new Pair<>(type, version));
 
-    if (clz != null) return clz; // found!
+    if (clz != null) {
+    	return clz; // found!
+    }
 
     clz = schemaClass(version==EXPERIMENTAL_VERSION? HIGHEST_SUPPORTED_VERSION : version-1, type);
-    if (clz != null) iced_to_schema.put(new Pair<>(type, version), clz); // found a lower-numbered schema: cache
+    if (clz != null) {
+    	iced_to_schema.put(new Pair<>(type, version), clz); // found a lower-numbered schema: cache
+    }
     return clz;
   }
 
@@ -248,7 +266,9 @@ public class SchemaServer {
    * @deprecated
    */
   public static Schema schema(int version, Iced impl) {
-    if (version == -1) version = getLatestVersion();
+    if (version == -1) {
+    	version = getLatestVersion();
+    }
     return schema(version, impl.getClass().getSimpleName());
   }
 
@@ -261,7 +281,9 @@ public class SchemaServer {
    * @deprecated
    */
   public static Schema schema(int version, Class<? extends Iced> impl_class) {
-    if (version == -1) version = getLatestVersion();
+    if (version == -1) {
+    	version = getLatestVersion();
+    }
     return schema(version, impl_class.getSimpleName());
   }
 
@@ -276,9 +298,11 @@ public class SchemaServer {
    */
   private static Schema schema(int version, String type) {
     Class<? extends Schema> clz = schemaClass(version, type);
-    if (clz == null) clz = schemaClass(EXPERIMENTAL_VERSION, type);
+    if (clz == null) {
+    	clz = schemaClass(EXPERIMENTAL_VERSION, type);
+    }
 
-    if (clz == null)
+    if (clz == null) {
       throw new H2ONotFoundArgumentException("Failed to find schema for version: " + version + " and type: " + type,
           "Failed to find schema for version: " + version + " and type: " + type + "\n" +
           "Did you forget to add an entry into META-INF/services/water.api.Schema?");

@@ -49,6 +49,7 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
     try {
       f = NonBlockingSetInt.class.getDeclaredField("_nbsi");
     } catch( java.lang.NoSuchFieldException e ) {
+    	System.out.println("The error is: " + e);
     }
     _nbsi_offset = _unsafe.objectFieldOffset(f);
   }
@@ -105,7 +106,9 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
    * @return <tt>true</tt> if i was added to the set.
    */
   public boolean add( final int i ) {
-    if( i < 0 ) throw new IllegalArgumentException(""+i);
+    if( i < 0 ) {
+    	throw new IllegalArgumentException(""+i);
+    }
     return _nbsi.add(i);
   }
   /**
@@ -134,7 +137,7 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
   public void    clear   (             ) {
     NBSI cleared = new NBSI(63, new ConcurrentAutoTable(), this); // An empty initial NBSI
     while( !CAS_nbsi( _nbsi, cleared ) ) // Spin until clear works
-      ;
+      {};
   }
 
   /** Verbose printout of internal structure for debugging. */
@@ -162,7 +165,9 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
           }
           _nbsi2 = _nbsi2._new; // Carry on, in the new table
         }
-        if( _nbsi2.contains(_idx) ) return;
+        if( _nbsi2.contains(_idx) ) {
+        	return;
+        }
       }
     }
     public Integer next() {
@@ -172,7 +177,9 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
       return _prev;
     }
     public void remove() {
-      if( _prev == -1 ) throw new IllegalStateException();
+      if( _prev == -1 ) {
+    	  throw new IllegalStateException();
+      }
       _nbsi2.remove(_prev);
       _prev = -1;
     }
@@ -196,7 +203,7 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
     final int len = s.readInt(); // Read max element
     _nbsi = new NBSI(len, new ConcurrentAutoTable(), this);
     for( int i=0; i<len; i++ )  // Read all bits
-      if( s.readBoolean() )
+      if( s.readBoolean() ) {
         _nbsi.add(i);
   }
 
@@ -231,6 +238,7 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
       try {
         f = NBSI.class.getDeclaredField("_new");
       } catch( java.lang.NoSuchFieldException e ) {
+    	  System.out.println("The error is: " + e);
       }
       _new_offset = _unsafe.objectFieldOffset(f);
     }
@@ -272,7 +280,7 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
     public boolean add( final int i ) {
       // Check for out-of-range for the current size bit vector.
       // If so we need to grow the bit vector.
-      if( (i>>6) >= _bits.length )
+      if( (i>>6) >= _bits.length ) {
         return install_larger_new_bits(i). // Install larger pile-o-bits (duh)
           help_copy().add(i);              // Finally, add to the new table
 
@@ -291,14 +299,16 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
         if( old < 0 )           // Not mutable?
           // Not mutable: finish copy of word, and retry on copied word
           return help_copy_impl(i).help_copy().add(i);
-        if( (old & mask) != 0 ) return false; // Bit is already set?
+        if( (old & mask) != 0 ) {
+        	return false; // Bit is already set?
+        }
       } while( !nbsi.CAS( j>>6, old, old | mask ) );
       _size.add(1);
       return true;
     }
 
     public boolean remove( final int i ) {
-      if( (i>>6) >= _bits.length ) // Out of bounds?  Not in this array!
+      if( (i>>6) >= _bits.length ) { // Out of bounds?  Not in this array!
         return _new != null && help_copy().remove(i);
 
       // Handle every 64th bit via using a nested array
@@ -313,17 +323,19 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
       long old;
       do {
         old = nbsi._bits[j>>6]; // Read old bits
-        if( old < 0 )           // Not mutable?
+        if( old < 0 )  {         // Not mutable?
           // Not mutable: finish copy of word, and retry on copied word
           return help_copy_impl(i).help_copy().remove(i);
-        if( (old & mask) == 0 ) return false; // Bit is already clear?
+        if( (old & mask) == 0 ) {
+        	return false; // Bit is already clear?
+        }
       } while( !nbsi.CAS( j>>6, old, old & ~mask ) );
       _size.add(-1);
       return true;
     }
 
     public boolean contains( final int i ) {
-      if( (i>>6) >= _bits.length ) // Out of bounds?  Not in this array!
+      if( (i>>6) >= _bits.length ) { // Out of bounds?  Not in this array!
         return _new != null && help_copy().contains(i);
 
       // Handle every 64th bit via using a nested array
@@ -336,7 +348,7 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
 
       final long mask = mask(j);
       long old = nbsi._bits[j>>6]; // Read old bits
-      if( old < 0 )             // Not mutable?
+      if( old < 0 )    {         // Not mutable?
         // Not mutable: finish copy of word, and retry on copied word
         return help_copy_impl(i).help_copy().contains(i);
       // Yes mutable: test & return bit
@@ -380,7 +392,7 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
 
       // Top level guy ready to promote?
       // Note: WE may not be the top-level guy!
-      if( top_nbsi._copyDone.get() == top_nbsi._sum_bits_length )
+      if( top_nbsi._copyDone.get() == top_nbsi._sum_bits_length ) {
         // One shot CAS to promote - it may fail since we are racing; others
         // may promote as well
         if( _non_blocking_set_int.CAS_nbsi( top_nbsi, top_nbsi._new ) ) {
@@ -402,7 +414,9 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
       // Handle every 64th bit via using a nested array
       NBSI old = this;          // The bit array being copied from
       NBSI nnn = _new;          // The bit array being copied to
-      if( nnn == null ) return this; // Promoted already
+      if( nnn == null ) {
+    	  return this; // Promoted already
+      }
       int j = i;                // The bit index being added
       while( (j&63) == 63 ) {   // Bit 64? (low 6 bits are all set)
         old = old._nbsi64;      // Recurse
@@ -417,7 +431,9 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
         long oldbits = bits;
         bits |= mask(63);       // Target state of bits: sign-bit means immutable
         if( old.CAS( j>>6, oldbits, bits ) ) {
-          if( oldbits == 0 ) _copyDone.addAndGet(1);
+          if( oldbits == 0 ) {
+        	  _copyDone.addAndGet(1);
+          }
           break;                // Success - old array word is now immutable
         }
         bits = old._bits[j>>6]; // Retry if CAS failed
@@ -430,14 +446,14 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
           new_bits = bits & ~mask(63); // Desired new value: a mutable copy of bits
           // One-shot CAS attempt, no loop, from 0 to non-zero.
           // If it fails, somebody else did the copy for us
-          if( !nnn.CAS( j>>6, 0, new_bits ) )
+          if( !nnn.CAS( j>>6, 0, new_bits ) ) {
             new_bits = nnn._bits[j>>6]; // Since it failed, get the new value
           assert new_bits != 0;
         }
 
         // Transit from state 3: non-zero in old and non-zero in new
         // One-shot CAS attempt, no loop, from non-zero to 0 (but immutable)
-        if( old.CAS( j>>6, bits, mask(63) ) )
+        if( old.CAS( j>>6, bits, mask(63) ) ) {
           _copyDone.addAndGet(1); // One more word finished copying
       }
 
@@ -471,7 +487,7 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
         System.out.println();
       }
 
-      if( _copyIdx.get() != 0 || _copyDone.get() != 0 )
+      if( _copyIdx.get() != 0 || _copyDone.get() != 0 ) {
         print(d,"_copyIdx="+_copyIdx.get()+" _copyDone="+_copyDone.get()+" _words_to_cpy="+_sum_bits_length);
       if( _new != null ) {
         print(d,"__has_new - ");

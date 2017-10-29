@@ -169,7 +169,7 @@ public final class SchemaMetadata extends Iced {
         }
 
         this.is_inherited = (superclassFields.contains(f));
-        if (this.is_inherited)
+        if (this.is_inherited) {
             this.inherited_from = f.getDeclaringClass().getSimpleName();
 
         if (null != annotation) {
@@ -204,7 +204,7 @@ public final class SchemaMetadata extends Iced {
     public static FieldMetadata createIfApiAnnotation(Schema schema, Field f, List<Field> superclassFields) {
       f.setAccessible(true); // handle private and protected fields
 
-      if (null != f.getAnnotation(API.class))
+      if (null != f.getAnnotation(API.class)) {
         return new FieldMetadata(schema, f, superclassFields);
 
       Log.warn("Skipping field that lacks an annotation: " + schema.toString() + "." + f);
@@ -217,24 +217,28 @@ public final class SchemaMetadata extends Iced {
       boolean is_array = clz.isArray();
 
       // built-in Java types:
-      if (is_enum)
+      if (is_enum) {
         return "enum";
 
-      if (String.class.isAssignableFrom(clz))
+      if (String.class.isAssignableFrom(clz)) {
         return "string"; // lower-case, to be less Java-centric
 
-      if (clz.equals(Boolean.TYPE) || clz.equals(Byte.TYPE) || clz.equals(Short.TYPE) || clz.equals(Integer.TYPE) || clz.equals(Long.TYPE) || clz.equals(Float.TYPE) || clz.equals(Double.TYPE))
+      if (clz.equals(Boolean.TYPE) || clz.equals(Byte.TYPE) || clz.equals(Short.TYPE) || clz.equals(Integer.TYPE) || clz.equals(Long.TYPE) || clz.equals(Float.TYPE) || clz.equals(Double.TYPE)) {
         return clz.toString();
-
-      if (is_array)
+        
+      if (is_array) {
         return consType(schema, clz.getComponentType(), field_name, annotation) + "[]";
 
       if (Map.class.isAssignableFrom(clz)) {
         if (IcedHashMapGeneric.class.isAssignableFrom(clz) || IcedHashMapBase.class.isAssignableFrom(clz)) {
           String type0 = ReflectionUtils.findActualClassParameter(clz, 0).getSimpleName();
           String type1 = ReflectionUtils.findActualClassParameter(clz, 1).getSimpleName();
-          if ("String".equals(type0)) type0 = "string";
-          if ("String".equals(type1)) type1 = "string";
+          if ("String".equals(type0)) {
+        	  type0 = "string";
+          }
+          if ("String".equals(type1)) {
+        	  type1 = "string";
+          }
           return "Map<" + type0 + "," + type1 + ">";
         } else {
           Log.warn("Schema Map field isn't a subclass of IcedHashMap, so its metadata won't have type parameters: " + schema.getClass().getSimpleName() + "." + field_name);
@@ -243,7 +247,7 @@ public final class SchemaMetadata extends Iced {
       }
 
 
-      if (List.class.isAssignableFrom(clz))
+      if (List.class.isAssignableFrom(clz)) {
         return "List";
 
       // H2O-specific types:
@@ -269,13 +273,13 @@ public final class SchemaMetadata extends Iced {
           return "Schema.Meta";
         } else {
           // Special cases: polymorphic metadata fields that can contain scalars, Schemas (any Iced, actually), or arrays of these:
-          if (schema instanceof ModelParameterSchemaV3 && ("default_value".equals(field_name) || "actual_value".equals(field_name)))
+          if (schema instanceof ModelParameterSchemaV3 && ("default_value".equals(field_name) || "actual_value".equals(field_name))) {
             return "Polymorphic";
 
-          if ((schema instanceof FieldMetadataV3) && "value".equals(field_name))
+          if ((schema instanceof FieldMetadataV3) && "value".equals(field_name)) {
             return "Polymorphic";
 
-          if (((schema instanceof TwoDimTableV3) && "data".equals(field_name))) // IcedWrapper
+          if (((schema instanceof TwoDimTableV3) && "data".equals(field_name))) { // IcedWrapper
             return "Polymorphic";
 
           Log.warn("WARNING: found non-Schema Iced field: " + clz.toString() + " in Schema: " + schema.getClass() + " field: " + field_name);
@@ -289,12 +293,12 @@ public final class SchemaMetadata extends Iced {
     }
 
     public static Iced consValue(Object o) {
-      if (null == o)
+      if (null == o) {
         return null;
 
       Class clz = o.getClass();
 
-      if (water.Iced.class.isAssignableFrom(clz))
+      if (water.Iced.class.isAssignableFrom(clz)) {
         return (Iced)o;
 
       if (clz.isArray()) {
@@ -326,19 +330,19 @@ public final class SchemaMetadata extends Iced {
       */
 
       // Primitive type
-      if (clz.isPrimitive())
+      if (clz.isPrimitive()) {
         return new IcedWrapper(o);
 
-      if (o instanceof Number)
+      if (o instanceof Number) {
         return new IcedWrapper(o);
 
-      if (o instanceof Boolean)
+      if (o instanceof Boolean) {
         return new IcedWrapper(o);
 
-      if (o instanceof String)
+      if (o instanceof String) {
         return new IcedWrapper(o);
 
-      if (o instanceof Enum)
+      if (o instanceof Enum) {
         return new IcedWrapper(o);
 
 
@@ -376,7 +380,7 @@ public final class SchemaMetadata extends Iced {
     // Fields up to but not including Schema
     for (Field field : Weaver.getWovenFields(schema.getClass())) {
       FieldMetadata fmd = FieldMetadata.createIfApiAnnotation(schema, field, superclassFields);
-      if (null != fmd) // skip transient or other non-annotated fields
+      if (null != fmd) {// skip transient or other non-annotated fields
         fields.add(fmd);  // NOTE: we include non-JSON fields here; remove them later if we don't want them
     }
     return fields;

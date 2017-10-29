@@ -25,16 +25,22 @@ public class MeanResidualDeviance extends Iced {
   }
 
   private void init() throws IllegalArgumentException {
-    if( _actuals ==null || _preds ==null )
+    if( _actuals ==null || _preds ==null ) {
       throw new IllegalArgumentException("Missing actual targets or predicted values!");
-    if (_actuals.length() != _preds.length())
+      }
+    if (_actuals.length() != _preds.length()) {
       throw new IllegalArgumentException("Both arguments must have the same length ("+ _actuals.length()+"!="+ _preds.length()+")!");
-    if (!_actuals.isNumeric())
+      }
+    if (!_actuals.isNumeric()) {
       throw new IllegalArgumentException("Actual target column must be numeric!");
-    if (_preds.isCategorical())
+      }
+    if (_preds.isCategorical()) {
+    	
       throw new IllegalArgumentException("Predicted targets cannot be class labels, expect continuous values.");
-    if (_weights != null && !_weights.isNumeric())
+      }
+    if (_weights != null && !_weights.isNumeric()) {
       throw new IllegalArgumentException("Observation weights must be numeric.");
+      }
 
     // The vectors are from different groups => align them, but properly delete it after computation
     if (!_actuals.group().equals(_preds.group())) {
@@ -74,8 +80,12 @@ public class MeanResidualDeviance extends Iced {
       _wcount=0;
       final int len = Math.min(ca._len, cp._len);
       for( int i=0; i < len; i++ ) {
-        if (ca.isNA(i)) continue;
-        if (cp.isNA(i)) continue;
+        if (ca.isNA(i)) {
+        	continue;
+        	}
+        if (cp.isNA(i)) {
+        	continue;
+        	}
         final double a = ca.atd(i);
         final double pr = cp.atd(i);
         final double w = cw!=null?cw.atd(i):1;
@@ -84,7 +94,9 @@ public class MeanResidualDeviance extends Iced {
     }
 
     public void perRow(double pr, double a, double w) {
-      if (w==0) return;
+      if (w==0) {
+    	  return;
+    	  }
       assert (!Double.isNaN(pr));
       assert (!Double.isNaN(a));
       assert (!Double.isNaN(w));

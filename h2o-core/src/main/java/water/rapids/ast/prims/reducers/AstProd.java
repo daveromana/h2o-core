@@ -31,8 +31,9 @@ public class AstProd extends AstPrimitive {
   public ValNum apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
     for (Vec v : fr.vecs())
-      if (v.isCategorical() || v.isUUID() || v.isString())
+      if (v.isCategorical() || v.isUUID() || v.isString()) {
         throw new IllegalArgumentException("`" + str() + "`" + " only defined on a data frame with all numeric variables");
+        }
     double prod = new AstProd.RedProd().doAll(fr)._d;
     return new ValNum(prod);
   }
@@ -48,7 +49,9 @@ public class AstProd extends AstPrimitive {
         for (int r = 0; r < rows; r++)
           prod *= C.atd(r);
         _d = prod;
-        if (Double.isNaN(prod)) break;
+        if (Double.isNaN(prod)) {
+        	break;
+        }
       }
     }
 

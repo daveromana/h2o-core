@@ -33,8 +33,10 @@ public class AstUnique extends AstPrimitive {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
     Vec vec0 = fr.vec(0);
     Vec v;
-    if (fr.numCols() != 1)
-      throw new IllegalArgumentException("Unique applies to a single column only.");
+    if (fr.numCols() != 1) {
+    	 throw new IllegalArgumentException("Unique applies to a single column only.");
+    }
+     
     if (vec0.isCategorical()) {
       v = Vec.makeSeq(0, (long) vec0.domain().length, true);
       v.setDomain(vec0.domain());
@@ -65,7 +67,9 @@ public class AstUnique extends AstPrimitive {
       for (int i = 0; i < c[0]._len; ++i) {
         g.fill(i, c, new int[]{0});
         String s_old = _uniq.putIfAbsent(g, "");
-        if (s_old == null) g = new AstGroup.G(1, null);
+        if (s_old == null) {
+        	g = new AstGroup.G(1, null);
+        }
       }
     }
 

@@ -43,7 +43,9 @@ public abstract class AstPrimitive<T extends AstPrimitive<T>> extends AstRoot<T>
 
   @Override
   public ValFun exec(Env env) {
-    if (_v == null) _v = new ValFun(this);
+    if (_v == null) {
+    	_v = new ValFun(this);
+    }
     return _v;
   }
 

@@ -32,8 +32,9 @@ public class ProfileCollectorTask extends MRTask<ProfileCollectorTask> {
 
   @Override public void reduce(ProfileCollectorTask that) {
     for (int i=0; i<_result.length; ++i)
-      if (_result[i] == null)
+      if (_result[i] == null) {
         _result[i] = that._result[i];
+        }
   }
 
   /**
@@ -67,7 +68,9 @@ public class ProfileCollectorTask extends MRTask<ProfileCollectorTask> {
           sb.append(ste.toString());
           sb.append("\n");
           j++;
-          if (j==_stack_depth) break;
+          if (j==_stack_depth) {
+        	  break;
+          }
         }
         String st = sb.toString();
         boolean found = false;
@@ -78,7 +81,9 @@ public class ProfileCollectorTask extends MRTask<ProfileCollectorTask> {
             break;
           }
         }
-        if (!found) countedStackTraces.put(st, 1);
+        if (!found) {
+        	countedStackTraces.put(st, 1);
+        }
       }
       try {
         Thread.sleep(1);
@@ -100,8 +105,9 @@ public class ProfileCollectorTask extends MRTask<ProfileCollectorTask> {
     // sort it
     Map<Integer, String> sorted = new TreeMap<>(Collections.reverseOrder());
     for (int j=0; j<_result[idx].counts.length; ++j) {
-      if (_result[idx].stacktraces[j] != null && _result[idx].stacktraces[j].length() > 0)
+      if (_result[idx].stacktraces[j] != null && _result[idx].stacktraces[j].length() > 0) {
         sorted.put(_result[idx].counts[j], _result[idx].stacktraces[j]);
+        }
     }
 
     // overwrite results

@@ -31,7 +31,9 @@ public class LineLimitOutputStreamWrapper extends OutputStream {
   public void write(int b) throws IOException {
     if (linesCnt < lineLimit) {
       os.write(b);
-      if (b == '\n') linesCnt++;
+      if (b == '\n') {
+    	  linesCnt++;
+      }
     }
   }
 
@@ -39,7 +41,9 @@ public class LineLimitOutputStreamWrapper extends OutputStream {
   public void write(byte[] b, int off, int len) throws IOException {
     if (linesCnt < lineLimit) {
       for (int i = 0; i < len; i++) {
-        if (b[off + i] == '\n') linesCnt++;
+        if (b[off + i] == '\n') {
+        	linesCnt++;
+        }
         if (linesCnt == lineLimit) {
           len = off + i;
           break;

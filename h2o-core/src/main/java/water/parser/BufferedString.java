@@ -39,14 +39,16 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
    public BufferedString() { }
 
    public final AutoBuffer write_impl(AutoBuffer ab) {
-     if( _buf == null ) return ab.putInt(-1);
+     if( _buf == null ) {
+     	return ab.putInt(-1);
      ab.putInt(_len);
      return ab.putA1(_buf,_off,_off+_len);
    }
 
   public final BufferedString read_impl(AutoBuffer ab){
     _buf = ab.getA1();
-    if(_buf != null) _len = _buf.length;
+    if(_buf != null){
+    	 _len = _buf.length;
     return this;
   }
 
@@ -59,7 +61,8 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
      int len = Math.min(_len,o._len);
      for( int i=0; i<len; i++ ) {
        int x = (0xFF&_buf[_off+i]) - (0xFF&o._buf[o._off+i]);
-       if( x != 0 ) return x;
+       if( x != 0 ) {
+       	return x;
      }
      return _len - o._len;
    }
@@ -109,7 +112,8 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
     boolean inHex = false;
     for (int i = 0; i < _len; i++) {
       if ((_buf[_off + i] & 0x80) == 128) {
-        if (!inHex) sb.append("<0x");
+        if (!inHex){
+        	 sb.append("<0x");
         formatter.format("%02X", _buf[_off + i]);
         inHex = true;
       } else { // ASCII
@@ -120,12 +124,14 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
         formatter.format("%c", _buf[_off + i]);
       }
     }
-    if (inHex) sb.append(">"); // close hex values as trailing char
+    if (inHex){
+    	 sb.append(">"); // close hex values as trailing char
     return sb.toString();
   }
 
   public static String[] toString(BufferedString bStr[]) {
-    if( bStr==null ) return null;
+    if( bStr==null ){
+    	 return null;
     String[] ss = new String[bStr.length];
     for( int i=0; i<bStr.length; i++ )
       ss[i] = bStr[i].toString();
@@ -133,7 +139,8 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
   }
 
   public static BufferedString[] toBufferedString(String[] strings) {
-    if (strings == null) return null;
+    if (strings == null){
+    	 return null;
     BufferedString[] res = new BufferedString[strings.length];
     for (int i = 0; i < strings.length; i++) {
       res[i] = new BufferedString(strings[i]);
@@ -168,7 +175,8 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
   @Override public boolean equals(Object o){
     if(o instanceof BufferedString) {
       BufferedString str = (BufferedString) o;
-      if (str._len != _len) return false;
+      if (str._len != _len) {
+      	return false;
       for (int i = 0; i < _len; ++i)
         if (_buf[_off + i] != str._buf[str._off + i]) return false;
       return true;
@@ -183,9 +191,11 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
    * string is not actually made of just ASCII characters
    */
   public boolean equalsAsciiString(String str) {
-    if (str == null || str.length() != _len) return false;
+    if (str == null || str.length() != _len){
+    	 return false;
     for (int i = 0; i < _len; ++i)
-      if (_buf[_off + i] != str.charAt(i)) return false;
+      if (_buf[_off + i] != str.charAt(i)){
+      	 return false;
     return true;
   }
 
@@ -205,17 +215,30 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
   public final byte getNumericType() {
     int i = 0;
     int decimalCnt = 0;
-    if (_len == 0) return NA;
-    if (_buf[_off] == '+' || _buf[_off] == '-') i++;
-    while( i < _len) {
-      if (_buf[_off+i] == '.') decimalCnt++;
-      else if (_buf[_off+i] < '0' || _buf[_off+i] > '9') return NA;
-      i++;
+    if (_len == 0) {
+    	return NA;
+    	if (_buf[_off] == '+' || _buf[_off] == '-'){
+    		i++;
+    		while( i < _len) {
+    			if (_buf[_off+i] == '.') {
+    				decimalCnt++;
+    				else if (_buf[_off+i] < '0' || _buf[_off+i] > '9') {
+    					return NA;
+    					i++;
+    				}
+    				if (decimalCnt > 0) {
+    					if (decimalCnt == 1) {
+    						return REAL;
+    					}
+    					else {
+    						return NA; //more than one decimal, NaN
+    					}
+    					else {
+    						return INT;
+    					}
+    				}
+    			}
+    		}
+    	}
     }
-    if (decimalCnt > 0)
-      if (decimalCnt == 1) return REAL;
-      else return NA; //more than one decimal, NaN
-    else return INT;
   }
-}
-

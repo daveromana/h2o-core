@@ -68,10 +68,18 @@ public class HostnameGuesser {
         // Make sure the given IP address can be found here
         if(!(ia.isLoopbackAddress() || ia.isAnyLocalAddress())) {
           // Always prefer IPv4
-          if (isIPv6Preferred && !isIPv4Preferred && ia instanceof Inet4Address) continue;
-          if (isIPv4Preferred && ia instanceof Inet6Address) continue;
-          if (ia.isSiteLocalAddress()) siteLocalIps.add(ia);
-          if (ia.isLinkLocalAddress()) linkLocalIps.add(ia);
+          if (isIPv6Preferred && !isIPv4Preferred && ia instanceof Inet4Address) {
+        	  continue;
+          }
+          if (isIPv4Preferred && ia instanceof Inet6Address) {
+        	  continue;
+          }
+          if (ia.isSiteLocalAddress()) {
+        	  siteLocalIps.add(ia);
+          }
+          if (ia.isLinkLocalAddress()) {
+        	  linkLocalIps.add(ia);
+          }
           globalIps.add(ia);
         }
       }
@@ -203,7 +211,9 @@ public class HostnameGuesser {
       return null;
     } finally {
       Log.warn(m);
-      if( s != null ) try { s.close(); } catch( java.io.IOException ie ) { }
+      if( s != null ) {
+    	  try { s.close(); } catch( java.io.IOException ie ) { System.out.println("The error is: " + ie);}
+      }
     }
   }
 
@@ -235,7 +245,9 @@ public class HostnameGuesser {
   private static ArrayList<CIDRBlock> calcArrayList(String networkOpt) {
     ArrayList<CIDRBlock> networkList = new ArrayList<>();
 
-    if (networkOpt == null) return networkList;
+    if (networkOpt == null) {
+    	return networkList;
+    }
 
     String[] networks;
     if (networkOpt.contains(",")) {
@@ -329,7 +341,9 @@ public class HostnameGuesser {
 
     private boolean valid() {
       for (int i = 0; i < ip.length; i++) {
-        if (!validOctet(ip[i])) return false;
+        if (!validOctet(ip[i])) {
+        	return false;
+        }
       }
       return 0 <= bits && bits <= ip.length * 8;
     }
@@ -350,7 +364,9 @@ public class HostnameGuesser {
       // Compare common byte prefix
       int i = 0;
       for (i = 0; i < bits/8; i++) {
-        if (((int) ipBytes[i] & 0xff) != ip[i]) return false;
+        if (((int) ipBytes[i] & 0xff) != ip[i]) {
+        	return false;
+        }
       }
       // Compare remaining bit-prefix
       int remaining = 0;

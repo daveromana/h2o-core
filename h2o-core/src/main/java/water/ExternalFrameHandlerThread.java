@@ -38,7 +38,9 @@ class ExternalFrameHandlerThread extends Thread {
                 }
                 new ExternalFrameHandler().process(_sock, _ab);
                 // Reuse open sockets for the next task
-                if (!_sock.isOpen()) break;
+                if (!_sock.isOpen()) {
+                	break;
+                }
                 _ab = new AutoBuffer(_sock, null);
             } catch (Exception e) {
                 // Exceptions here are *normal*, this is an idle TCP connection and

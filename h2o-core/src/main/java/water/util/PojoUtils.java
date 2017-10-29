@@ -541,6 +541,8 @@ public class PojoUtils {
         return clazz.getDeclaredField(name);
       }
       catch (Exception e) {
+    	  System.out.println("The error is: " + e);
+      }
         // ignore
       }
       clazz = clazz.getSuperclass();

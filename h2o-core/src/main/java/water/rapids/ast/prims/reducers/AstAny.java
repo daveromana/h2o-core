@@ -29,10 +29,13 @@ public class AstAny extends AstPrimitive {
   @Override
   public ValNum apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Val val = stk.track(asts[1].exec(env));
-    if (val.isNum()) return new ValNum(val.getNum() == 0 ? 0 : 1);
+    if (val.isNum()) {
+    	return new ValNum(val.getNum() == 0 ? 0 : 1);
+    }
     for (Vec vec : val.getFrame().vecs())
-      if (vec.nzCnt() + vec.naCnt() > 0)
+      if (vec.nzCnt() + vec.naCnt() > 0) {
         return new ValNum(1);   // Some nonzeros in there somewhere
+        }
     return new ValNum(0);
   }
 }

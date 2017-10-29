@@ -67,14 +67,18 @@ public abstract class CSChunk extends Chunk {
 
   @Override protected final long at8_impl( int i ) {
     double res = atd_impl(i); // note: |mantissa| <= 4B => double is ok
-    if(Double.isNaN(res)) throw new IllegalArgumentException("at8_abs but value is missing");
+    if(Double.isNaN(res)) {
+    	throw new IllegalArgumentException("at8_abs but value is missing");
+    }
     return (long)res;
   }
 
 
   @Override public final boolean set_impl(int idx, long l) {
     double d = (double)l;
-    if(d != l) return false;
+    if(d != l) {
+    	return false;
+    }
     return set_impl(idx,d);
   }
 
@@ -91,8 +95,9 @@ public abstract class CSChunk extends Chunk {
   public final <T extends ChunkVisitor> T processRows(T v, int from, int to) {
     if(v.expandedVals()){
       processRows2(v,from,to,_bias,UnsafeUtils.get4(_mem,8));
-    } else
+    } else {
       processRows2(v,from,to);
+     } 
     return v;
   }
 
@@ -100,8 +105,9 @@ public abstract class CSChunk extends Chunk {
   public <T extends ChunkVisitor> T processRows(T v, int[] ids) {
     if(v.expandedVals()){
       processRows2(v,ids,_bias,UnsafeUtils.get4(_mem,8));
-    } else
+    } else {
       processRows2(v,ids);
+      }
     return v;
   }
   protected abstract <T extends ChunkVisitor> T processRows2(T v, int from, int to, long bias, int exp) ;

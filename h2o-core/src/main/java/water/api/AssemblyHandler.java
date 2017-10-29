@@ -13,8 +13,12 @@ import java.util.ArrayList;
 
 public class AssemblyHandler extends Handler {
   public AssemblyV99 fit(int version, AssemblyV99 ass) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-    if( ass==null ) return null;
-    if( ass.steps == null ) return ass;
+    if( ass==null ) {
+    	return null;
+    }
+    if( ass.steps == null ) {
+    	return ass;
+    }
     // process assembly:
     //   of the form [name__class__ast__inplace__names, name__class__ast__inplace__names, ...]
     // s[0] : stepName

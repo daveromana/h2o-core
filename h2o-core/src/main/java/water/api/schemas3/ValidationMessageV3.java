@@ -29,10 +29,12 @@ public final class ValidationMessageV3 extends SchemaV3<ValidationMessage, Valid
    */
   public static void mapValidationMessageFieldNames(ValidationMessageV3[] validation_messages, String[] from, String[]
       to) {
-    if (from == null && to == null)
+    if (from == null && to == null) {
       return;
-    if (from == null || to == null)
+      }
+    if (from == null || to == null) {
       throw new IllegalArgumentException("Bad parameter name translation arrays; one is null and the other isn't.");
+      }
     Map<String, String> translations = new HashMap<>();
     for (int i = 0; i < from.length; i++) {
       translations.put(from[i], to[i]);
@@ -48,8 +50,9 @@ public final class ValidationMessageV3 extends SchemaV3<ValidationMessage, Valid
         Log.err("Null field_name: " + vm);
         continue;
       }
-      if (translations.containsKey(vm.field_name))
+      if (translations.containsKey(vm.field_name)) {
         vm.field_name = translations.get(vm.field_name);
+        }
     }
   }
 
@@ -62,10 +65,12 @@ public final class ValidationMessageV3 extends SchemaV3<ValidationMessage, Valid
     PojoUtils.copyProperties(this, vm, PojoUtils.FieldNaming.ORIGIN_HAS_UNDERSCORES);
     this.message_type = Log.LVLS[vm.log_level()]; // field name changed
     if (this.field_name != null) {
-      if (this.field_name.startsWith("_"))
+      if (this.field_name.startsWith("_")) {
         this.field_name = this.field_name.substring(1);
-      else
+        }
+      else {
         Log.warn("Expected all ValidationMessage field_name values to have leading underscores; ignoring: " + field_name);
+        }
     }
     return this;
   }

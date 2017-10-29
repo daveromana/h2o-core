@@ -55,26 +55,35 @@ public class AstDistance extends AstBuiltin<AstDistance> {
     Log.info("Number of references: " + references.numRows());
     Log.info("Number of queries   : " + queries.numRows());
     String[] options = new String[]{"cosine","cosine_sq","l1","l2"};
-    if (!ArrayUtils.contains(options, distanceMetric.toLowerCase()))
+    if (!ArrayUtils.contains(options, distanceMetric.toLowerCase())) {
       throw new IllegalArgumentException("Invalid distance measure provided: " + distanceMetric + ". Mustbe one of " + Arrays.toString(options));
-    if (references.numRows() * queries.numRows() * 8 > H2O.CLOUD.free_mem() )
+      }
+    if (references.numRows() * queries.numRows() * 8 > H2O.CLOUD.free_mem() ) {
       throw new IllegalArgumentException("Not enough free memory to allocate the distance matrix (" +
           references.numRows() + " rows and " + queries.numRows() + " cols. Try specifying a smaller query frame.");
-    if (references.numCols() != queries.numCols())
+      }
+    if (references.numCols() != queries.numCols()) {
       throw new IllegalArgumentException("Frames must have the same number of cols, found " + references.numCols() + " and " + queries.numCols());
-    if (queries.numRows() > Integer.MAX_VALUE)
+      }
+    if (queries.numRows() > Integer.MAX_VALUE) {
       throw new IllegalArgumentException("Queries can't be larger than 2 billion rows.");
-    if (queries.numCols() != references.numCols())
+      }
+    if (queries.numCols() != references.numCols()) {
       throw new IllegalArgumentException("Queries and References must have the same dimensionality");
+      }
     for (int i=0;i<queries.numCols();++i) {
-      if (!references.vec(i).isNumeric())
+      if (!references.vec(i).isNumeric()) {
         throw new IllegalArgumentException("References column " + references.name(i) + " is not numeric.");
-      if (!queries.vec(i).isNumeric())
+        }
+      if (!queries.vec(i).isNumeric()) {
         throw new IllegalArgumentException("Queries column " + references.name(i) + " is not numeric.");
-      if (references.vec(i).naCnt()>0)
+        }
+      if (references.vec(i).naCnt()>0) {
         throw new IllegalArgumentException("References column " + references.name(i) + " contains missing values.");
-      if (queries.vec(i).naCnt()>0)
+        }
+      if (queries.vec(i).naCnt()>0) {
         throw new IllegalArgumentException("Queries column " + references.name(i) + " contains missing values.");
+        }
     }
     return new ValFrame(new DistanceComputer(queries, distanceMetric).doAll((int)queries.numRows(), Vec.T_NUM, references).outputFrame());
   }

@@ -40,11 +40,13 @@ public class AstStrDistance extends AstPrimitive {
     Frame frY = stk.track(asts[2].exec(env)).getFrame();
     String measure = asts[3].exec(env).getStr();
 
-    if ((frX.numCols() != frY.numCols()) || (frX.numRows() != frY.numRows()))
+    if ((frX.numCols() != frY.numCols()) || (frX.numRows() != frY.numRows())) {
       throw new IllegalArgumentException("strDistance() requires the frames to have the same number of columns and rows.");
+      }
     for (int i = 0; i < frX.numCols(); i++)
-      if (! (isCharacterType(frX.vec(i)) && isCharacterType(frY.vec(i))))
+      if (! (isCharacterType(frX.vec(i)) && isCharacterType(frY.vec(i)))) {
         throw new IllegalArgumentException("Types of columns of both frames need to be String/Factor");
+        }
     // make sure that name of the comparator comparator method is correct and it can be constructed
     makeComparator(measure);
 
@@ -79,8 +81,9 @@ public class AstStrDistance extends AstPrimitive {
         Chunk cY = cs[i + N];
         String[] domainY = _fr.vec(i + N).domain();
         for (int row = 0; row < cX._len; row++) {
-          if (cX.isNA(row) || cY.isNA(row))
+          if (cX.isNA(row) || cY.isNA(row)) {
             nc[i].addNA();
+            }
           else {
             String strX = getString(tmpStr, cX, row, domainX);
             String strY = getString(tmpStr, cY, row, domainY);
@@ -92,9 +95,10 @@ public class AstStrDistance extends AstPrimitive {
     }
     private static String getString(BufferedString tmpStr, Chunk chk, int row, String[] domain) {
       if (domain != null)
-        return domain[(int) chk.at8(row)];
-      else
+      { return domain[(int) chk.at8(row)];}
+      else {
         return chk.atStr(tmpStr, row).toString();
+        }
     }
   }
 

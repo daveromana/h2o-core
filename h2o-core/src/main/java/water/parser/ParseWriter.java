@@ -11,8 +11,12 @@ public interface ParseWriter extends Freezable {
     @Override
     public int compareTo(ParseErr o) {
       long res = _gLineNum - o._gLineNum;
-      if (res == 0) res = _byteOffset - _byteOffset;
-      if (res == 0) return _err.compareTo(o._err);
+      if (res == 0) {
+    	  res = _byteOffset - _byteOffset;
+      }
+      if (res == 0) {
+    	  return _err.compareTo(o._err);
+      }
       return (int) res < 0 ? -1 : 1;
     }
     public ParseErr(){}

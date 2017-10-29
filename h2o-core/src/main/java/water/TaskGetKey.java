@@ -30,11 +30,13 @@ public class TaskGetKey extends DTask<TaskGetKey> {
   static RPC<TaskGetKey> start( H2ONode target, Key key ) {
     // Do we have an old TaskGetKey in-progress?
     RPC<TaskGetKey> old = TGKS.get(key);
-    if( old != null ) return old;
+    if( old != null ) {
+    	return old;
+    }
     // Make a new TGK.
     RPC<TaskGetKey> rpc = new RPC(target,new TaskGetKey(key),1.0f);
-    if( (old=TGKS.putIfMatchUnlocked(key,rpc,null)) != null )
-      return old;               // Failed because an old exists
+    if( (old=TGKS.putIfMatchUnlocked(key,rpc,null)) != null ) {
+      return old;      }         // Failed because an old exists
     rpc.setTaskNum().call();    // Start the op
     return rpc;                 // Successful install of a fresh RPC
   }
@@ -74,14 +76,20 @@ public class TaskGetKey extends DTask<TaskGetKey> {
     // Hence we can do a blind putIfMatch here over a null or empty Value
     // If it fails, what is there is also the TGK result.
     Value old = H2O.STORE.get(_xkey);
-    if( old != null && !old.isEmpty() ) old=null;
+    if( old != null && !old.isEmpty() ) {
+    	old=null;
+    }
     Value res = H2O.putIfMatch(_xkey,_val,old);
-    if( res != old ) _val = res;
+    if( res != old ) {
+    	_val = res;
+    }
     TGKS.remove(_xkey); // Clear from dup cache
   }
 
   // Received an ACKACK; executes on the node sending the Value
   @Override public void onAckAck() {
-    if( _val != null ) _val.lowerActiveGetCount(_h2o);
+    if( _val != null ) {
+    	_val.lowerActiveGetCount(_h2o);
+    }
   }
 }

@@ -51,7 +51,9 @@ public class AstRectangleAssign extends AstPrimitive {
     // Column selection
     AstNumList cols_numlist = new AstNumList(col_list.columns(dst.names()));
     // Special for AstAssign: "empty" really means "all"
-    if (cols_numlist.isEmpty()) cols_numlist = new AstNumList(0, dst.numCols());
+    if (cols_numlist.isEmpty()) {
+    	cols_numlist = new AstNumList(0, dst.numCols());
+    }
     // Allow R-like number list expansion: negative column numbers mean exclusion
     int[] cols = AstColSlice.col_select(dst.names(), cols_numlist);
 
@@ -66,7 +68,9 @@ public class AstRectangleAssign extends AstPrimitive {
       AstNumList rows = (asts[4] instanceof AstNum)
           ? new AstNumList(((AstNum) asts[4]).getNum())
           : ((AstNumList) asts[4]);
-      if (rows.isEmpty()) rows = new AstNumList(0, dst.numRows()); // Empty rows is really: all rows
+      if (rows.isEmpty()) {
+    	  rows = new AstNumList(0, dst.numRows()); // Empty rows is really: all rows
+      }
       switch (vsrc.type()) {
         case Val.NUM:
           assign_frame_scalar(dst, cols, rows, nanToNull(vsrc.getNum()), env._ses);
@@ -101,18 +105,22 @@ public class AstRectangleAssign extends AstPrimitive {
   // Rectangular array copy from src into dst
   private void assign_frame_frame(Frame dst, int[] cols, AstNumList rows, Frame src, Session ses) {
     // Sanity check
-    if (cols.length != src.numCols())
+    if (cols.length != src.numCols()) {
       throw new IllegalArgumentException("Source and destination frames must have the same count of columns");
+      }
     long nrows = rows.cnt();
-    if (src.numRows() != nrows)
+    if (src.numRows() != nrows) {
       throw new IllegalArgumentException("Requires same count of rows in the number-list (" + nrows + ") as in the source (" + src.numRows() + ")");
+      }
 
     // Whole-column assignment?  Directly reuse columns: Copy-On-Write
     // optimization happens here on the apply() exit.
     if (dst.numRows() == nrows && rows.isDense()) {
       for (int i = 0; i < cols.length; i++)
         dst.replace(cols[i], src.vecs()[i]);
-      if (dst._key != null) DKV.put(dst);
+      if (dst._key != null) {
+    	  DKV.put(dst);
+      }
       return;
     }
 
@@ -122,13 +130,15 @@ public class AstRectangleAssign extends AstPrimitive {
     final Vec[] svecs = src.vecs();
     for (int col = 0; col < cols.length; col++) {
       int dtype = dvecs[cols[col]].get_type();
-      if (dtype != svecs[col].get_type())
+      if (dtype != svecs[col].get_type()) {
         throw new IllegalArgumentException("Columns must be the same type; " +
                 "column " + col + ", \'" + dst._names[cols[col]] + "\', is of type " + dvecs[cols[col]].get_type_str() +
                 " and the source is " + svecs[col].get_type_str());
-      if ((dtype == Vec.T_CAT) && (! Arrays.equals(dvecs[cols[col]].domain(), svecs[col].domain())))
+        }
+      if ((dtype == Vec.T_CAT) && (! Arrays.equals(dvecs[cols[col]].domain(), svecs[col].domain()))) {
         throw new IllegalArgumentException("Cannot assign to a categorical column with a different domain; " +
                 "source column " + src._names[col] + ", target column " + dst._names[cols[col]]);
+        }
     }
 
     // Frame fill
@@ -171,7 +181,9 @@ public class AstRectangleAssign extends AstPrimitive {
       Chunk[] scs = null;
       for (int i = chkOffset; i < cs[0]._len; ++i) {
         long idx = _rows.index(start + i);
-        if (idx < 0) continue;
+        if (idx < 0) {
+        	continue;
+        }
         if ((scs == null) || (scs[0].start() < idx) || (idx >= scs[0].start() + scs[0].len())) {
           int sChkIdx = _svecs[0].elem2ChunkIdx(idx);
           scs = new Chunk[_svecs.length];
@@ -212,7 +224,9 @@ public class AstRectangleAssign extends AstPrimitive {
       Vec vsrc = anyVec.makeCon((double) src);
       for (int col : cols)
         dst.replace(col, vsrc);
-      if (dst._key != null) DKV.put(dst);
+      if (dst._key != null) {
+    	  DKV.put(dst);
+      }
       return;
     }
 
@@ -256,9 +270,10 @@ public class AstRectangleAssign extends AstPrimitive {
     void mapChunkSlice(Chunk[] cs, int chkOffset) {
       long start = cs[0].start();
       for (int i = chkOffset; i < cs[0]._len; ++i)
-        if (_rows.has(start + i))
+        if (_rows.has(start + i)) {
           for (int col = 0; col < cs.length; col++)
             _setters[col].setValue(cs[col], i);
+          }
     }
 
     /**
@@ -273,15 +288,18 @@ public class AstRectangleAssign extends AstPrimitive {
   }
 
   private boolean isScalarCompatible(Object scalar, Vec v) {
-    if (scalar == null)
+    if (scalar == null) {
       return true;
-    else if (scalar instanceof Number)
+      }
+    else if (scalar instanceof Number) {
       return v.get_type() == Vec.T_NUM || v.get_type() == Vec.T_TIME;
+      }
     else if (scalar instanceof String) {
       if (v.get_type() == Vec.T_CAT) {
         return ArrayUtils.contains(v.domain(), (String) scalar);
-      } else
+      } else {
         return v.get_type() == Vec.T_STR || (v.get_type() == Vec.T_UUID);
+        }
     } else
       return false;
   }
@@ -306,7 +324,9 @@ public class AstRectangleAssign extends AstPrimitive {
       Vec vsrc = anyVec.makeCon((double) src);
       for (int col : cols)
         dst.replace(col, vsrc);
-      if (dst._key != null) DKV.put(dst);
+      if (dst._key != null) {
+    	  DKV.put(dst);
+      }
       return;
     }
 
@@ -338,8 +358,9 @@ public class AstRectangleAssign extends AstPrimitive {
     public void map(Chunk[] cs) {
       Chunk bool = cs[cs.length - 1];
       for (int row = 0; row < cs[0]._len; row++) {
-        if (bool.at8(row) == 1)
+        if (bool.at8(row) == 1) {
           for (int col = 0; col < cs.length - 1; col++) _setters[col].setValue(cs[col], row);
+          }
       }
     }
 

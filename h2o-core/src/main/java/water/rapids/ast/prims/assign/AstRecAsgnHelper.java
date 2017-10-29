@@ -74,8 +74,9 @@ public class AstRecAsgnHelper {
           factorIdx = i;
           break;
         }
-      if (factorIdx == -1)
+      if (factorIdx == -1) {
         throw new IllegalArgumentException("Value is not in the domain of the Vec, value = " + val);
+        }
       _val = factorIdx;
     }
 

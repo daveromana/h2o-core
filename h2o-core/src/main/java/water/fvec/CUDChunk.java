@@ -38,7 +38,9 @@ public class CUDChunk extends Chunk {
   }
   @Override protected final long   at8_impl( int i ) {
     double res = atd_impl(i);
-    if( Double.isNaN(res) ) throw new IllegalArgumentException("at8_impl but value is missing");
+    if( Double.isNaN(res) ) {
+    	throw new IllegalArgumentException("at8_impl but value is missing");
+    }
     return (long)res;
   }
   @Override protected final double   atd_impl( int i ) {
@@ -53,8 +55,9 @@ public class CUDChunk extends Chunk {
     double [] uniques = new double[numUniques];
     for(int i = 0; i < numUniques; ++i) {
       uniques[i] = Double.longBitsToDouble(UnsafeUtils.get8(_mem, 8 + (i << 3)));
-      if(Double.isNaN(uniques[i]))
+      if(Double.isNaN(uniques[i])) {
         uniques[i] = NA;
+        }
     }
     for(int i = 0; i < _len; ++i)
       vals[i] = uniques[(UnsafeUtils.get1(_mem, 8 + (numUniques << 3) + i)+128)];

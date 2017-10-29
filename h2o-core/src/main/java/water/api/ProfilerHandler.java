@@ -7,7 +7,9 @@ import water.util.JProfile;
 public class ProfilerHandler extends Handler {
   @SuppressWarnings("unused") // called through reflection by RequestServer
   public ProfilerV3 fetch(int version, ProfilerV3 p) {
-    if (p.depth < 1) throw new IllegalArgumentException("depth must be >= 1.");
+    if (p.depth < 1) {
+    	throw new IllegalArgumentException("depth must be >= 1.");
+    }
 
     JProfile profile = new JProfile(p.depth).execImpl(true);
     p.nodes = new ProfilerNodeV3[profile.nodes.length];

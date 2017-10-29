@@ -32,7 +32,9 @@ public class AstFlatten extends AstPrimitive {
   @Override
   public Val apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
-    if (fr.numCols() != 1 || fr.numRows() != 1) return new ValFrame(fr); // did not flatten
+    if (fr.numCols() != 1 || fr.numRows() != 1) {
+    	return new ValFrame(fr); // did not flatten
+    }
     Vec vec = fr.anyVec();
     switch (vec.get_type()) {
       case Vec.T_BAD:

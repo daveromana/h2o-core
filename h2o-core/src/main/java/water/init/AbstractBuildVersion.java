@@ -59,7 +59,9 @@ abstract public class AbstractBuildVersion {
 
   public final boolean isTooOld() {
     Date compileTime = compiledOnDate();
-    if (compileTime == null) return false;
+    if (compileTime == null) {
+    	return false;
+    }
     long timeDiff = System.currentTimeMillis() - compileTime.getTime();
     long days = timeDiff / (24*60*60*1000L) /* msec per day */;
     return days > TOO_OLD_THRESHOLD;

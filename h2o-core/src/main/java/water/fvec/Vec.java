@@ -1397,7 +1397,7 @@ public class Vec extends Keyed<Vec> {
               double_domain[j] = Double.parseDouble(domain[i]);
               indeces[j] = i;
               j++;
-            } catch (NumberFormatException ex) {/*ignore*/}
+            } catch (NumberFormatException ex) {System.out.println("The error is: " + ex);/*ignore*/}
           }
           if (!ArrayUtils.isSorted(double_domain)) {
             ArrayUtils.sort(order_indeces, double_domain);

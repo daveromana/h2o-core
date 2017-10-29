@@ -21,13 +21,16 @@ public class ReflectionUtils {
         // The handler's Iced class is parameterized, e.g. to handle multiple layers of Schema classes as in ModelsHandler:
         TypeVariable v = (TypeVariable) (handler_type_parms[parm]);
         Type t = v.getBounds()[0];  // [0] or [parm] ?
-        if (t instanceof Class)
+        if (t instanceof Class) {
           parm_class = (Class) t;
-        else if (t instanceof ParameterizedType)
+          }
+        else if (t instanceof ParameterizedType) {
           parm_class = (Class) ((ParameterizedType) t).getRawType();
+          }
       } else if (handler_type_parms[parm] instanceof ParameterizedType) {
         // The handler's Iced class is parameterized, e.g. to handle multiple layers of Schema classes as in ModelsHandler:
-        parm_class = (Class) ((ParameterizedType) (handler_type_parms[parm])).getRawType(); // For a Key<Frame> this returns Key.class; see also getActualTypeArguments()
+        parm_class = (Class) ((ParameterizedType) (handler_type_parms[parm])).getRawType(); 
+        }// For a Key<Frame> this returns Key.class; see also getActualTypeArguments()
       } else {
         String msg = "Iced parameter for handler: " + clz + " uses a type parameterization scheme that we don't yet handle: " + handler_type_parms[parm];
         Log.warn(msg);
@@ -46,8 +49,9 @@ public class ReflectionUtils {
   public static Class findMethodParameterClass(Method method, int parm) {
     Class[] clzes = method.getParameterTypes();
 
-    if (clzes.length <= parm)
+    if (clzes.length <= parm) {
       throw H2O.fail("Asked for the class of parameter number: " + parm + " of method: " + method + ", which only has: " + clzes.length + " parameters.");
+      }
 
     return clzes[parm];
   }
@@ -65,8 +69,9 @@ public class ReflectionUtils {
   public static Class findActualFieldClass(Class clz, Field f) {
     // schema.getClass().getGenericSuperclass() instanceof ParameterizedType
     Type generic_type = f.getGenericType();
-    if (! (generic_type instanceof TypeVariable))
+    if (! (generic_type instanceof TypeVariable)) {
       return f.getType();
+      }
 
     // field is a parameterized type
     // ((TypeVariable)schema.getClass().getField("parameters").getGenericType())
@@ -76,8 +81,9 @@ public class ReflectionUtils {
 
     int which_tv = -1;
     for(int i = 0; i < tvs.length; i++)
-      if (type_param_name.equals(tvs[i].getName()))
+      if (type_param_name.equals(tvs[i].getName())) {
         which_tv = i;
+        }
 
     if (-1 == which_tv) {
       // We topped out in the type heirarchy, so just use the type from f.
@@ -88,19 +94,32 @@ public class ReflectionUtils {
 
     ParameterizedType generic_super = (ParameterizedType)clz.getGenericSuperclass();
 
-    if (generic_super.getActualTypeArguments()[which_tv] instanceof Class)
+    if (generic_super.getActualTypeArguments()[which_tv] instanceof Class) {
       return (Class)generic_super.getActualTypeArguments()[which_tv];
+    }
     return findActualFieldClass(clz.getSuperclass(), f);
   }
 
   // Best effort conversion from an Object to a double
   public static double asDouble( Object o ) {
-    if( o == null ) return Double.NaN;
-    if( o instanceof Integer ) return ((Integer)o);
-    if( o instanceof Long ) return ((Long)o);
-    if( o instanceof Float ) return ((Float)o);
-    if( o instanceof Double ) return ((Double)o);
-    if( o instanceof Enum ) return ((Enum)o).ordinal();
+    if( o == null ) {
+    	return Double.NaN;
+    	}
+    if( o instanceof Integer ) {
+    	return ((Integer)o);
+    }
+    if( o instanceof Long ) {
+    	return ((Long)o);
+    if( o instanceof Float ) {
+    	return ((Float)o);
+    	}    
+    if( o instanceof Double ) {
+    	return ((Double)o);
+    	}
+    if( o instanceof Enum ) {
+    	return ((Enum)o).ordinal();
+    	}
+    }
     System.out.println("Do not know how to convert a "+o.getClass()+" to a double");
     throw H2O.fail();
   }
@@ -122,6 +141,7 @@ public class ReflectionUtils {
         return f;
       }
       catch (NoSuchFieldException e) {
+    	  System.out.println("The error is: " + e);
         // fall through and try our parent
       }
 

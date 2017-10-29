@@ -123,10 +123,14 @@ public class AstTopN extends AstPrimitive {
     @Override
     public void reduce(GrabTopNPQ<E> other) {
       // do a combine here of two arrays.  Note the value always store values that are increasing
-      if (_csLong)
-        mergeArraysL(other._rowIndices, other._lValues);
-      else
-        mergeArraysD(other._rowIndices, other._dValues);
+      if (_csLong) {
+    	          mergeArraysL(other._rowIndices, other._lValues);
+
+      }
+      else {
+    	  mergeArraysD(other._rowIndices, other._dValues);
+      }
+        
     }
 
     public void mergeArraysL(long[] otherRow, long[] otherValue) {

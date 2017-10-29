@@ -41,10 +41,12 @@ public  class IcedHashMapGeneric<K, V> extends Iced implements Map<K, V>, Clonea
   public V get(Object key)                              { return (V)map().get(key); }
   public V put(K key, V val)                          {
     assert !_write_lock;
-    if(!isSupportedKeyType(key))
+    if(!isSupportedKeyType(key)) {
       throw new IllegalArgumentException("given key type is not supported: " + key.getClass().getName());
-    if(!isSupportedValType(val))
+      }
+    if(!isSupportedValType(val)) {
       throw new IllegalArgumentException("given val type is not supported: " + val.getClass().getName());
+      }
     return (V)map().put(key, val);
   }
   public V remove(Object key)                           { assert !_write_lock; return map().remove(key); }
@@ -114,20 +116,28 @@ public  class IcedHashMapGeneric<K, V> extends Iced implements Map<K, V>, Clonea
         }
         ab.put1(mode);              // Type of hashmap being serialized
         // put key
-        if (isStringKey(mode)) ab.putStr((String) key);
-        else ab.put((Freezable) key);
+        if (isStringKey(mode)) {
+        	ab.putStr((String) key);
+        }
+        else {
+        	ab.put((Freezable) key);
+        }
         // put value
-        if (isStringVal(mode))
+        if (isStringVal(mode)) {
           ab.putStr((String) val);
-        else if(isFreezeVal(mode))
+          }
+        else if(isFreezeVal(mode)) {
           ab.put((Freezable) val);
+          }
         else if (isFArrayVal(mode)) {
           ab.put4(((Freezable[]) val).length);
           for (Freezable v : (Freezable[]) val) ab.put(v);
-        } else if(isIntegrVal(mode))
+        } else if(isIntegrVal(mode)) {
           ab.put4((Integer)val);
-        else
+          }
+        else {
           throw H2O.fail();
+          }
       }
       ab.put1(-1);
     } catch(Throwable t){
@@ -158,18 +168,22 @@ public  class IcedHashMapGeneric<K, V> extends Iced implements Map<K, V>, Clonea
       while ((mode = ab.get1()) != -1) {
         key = isStringKey(mode)?(K)ab.getStr():(K)ab.get();
 
-        if (isStringVal(mode))
+        if (isStringVal(mode)) {
           val = (V)ab.getStr();
-        else if(isFreezeVal(mode))
+        }
+        else if(isFreezeVal(mode)) {
           val = (V)ab.get();
+          }
         else if (isFArrayVal(mode)) {
           Freezable[] vals = new Freezable[ab.get4()];
           for (int i = 0; i < vals.length; ++i) vals[i] = ab.get();
           val = (V)vals;
-        } else if(isIntegrVal(mode))
+        } else if(isIntegrVal(mode)) {
           val = (V) (new Integer(ab.get4()));
-        else
+          }
+        else {
           throw H2O.fail();
+          }
         map.put(key,val);
       }
       return this;
@@ -201,16 +215,21 @@ public  class IcedHashMapGeneric<K, V> extends Iced implements Map<K, V>, Clonea
       ab.putJSONName((String) key);
       ab.put1(':');
 
-      if (value instanceof String)
+      if (value instanceof String) {
         ab.putJSONName((String) value);
-      else if (value instanceof String[])
+        }
+      else if (value instanceof String[]) {
         ab.putJSONAStr((String[]) value);
-      else if (value instanceof Integer)
+        }
+      else if (value instanceof Integer) {
         ab.putJSON4((Integer) value);
-      else if (value instanceof Freezable)
+        }
+      else if (value instanceof Freezable) {
         ab.putJSON((Freezable) value);
-      else if (value instanceof Freezable[])
+        }
+      else if (value instanceof Freezable[]) {
         ab.putJSONA((Freezable[]) value);
+        }
     }
     // ab.put1('}'); // NOTE: the serialization framework adds this automagically
     return ab;

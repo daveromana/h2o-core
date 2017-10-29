@@ -134,8 +134,9 @@ public abstract class ChunkVisitor {
           vals[k] = 0;
         }
         _sparseLen = kmax;
-      } else
+      } else {
         _len += zeros;
+        }
     }
     @Override
     void addNAs(int nas) {
@@ -146,8 +147,9 @@ public abstract class ChunkVisitor {
           vals[k] = _na;
         }
         _sparseLen = kmax;
-      } else
+      } else {
         _len += nas;
+        }
     }
   }
   /**
@@ -170,8 +172,9 @@ public abstract class ChunkVisitor {
     @Override
     public void addValue(double val) {
       int i = (int)val;
-      if( i != val)
+      if( i != val) {
         throw new RuntimeException(val + " does not fit into int");
+        }
       vals[_k++] = i;
     }
     @Override

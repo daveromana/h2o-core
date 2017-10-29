@@ -34,18 +34,24 @@ public class AstDiffLag1 extends AstPrimitive {
   @Override
   public ValFrame apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame fr = stk.track(asts[1].exec(env).getFrame());
-    if (fr.numCols() != 1)
+    if (fr.numCols() != 1) {
       throw new IllegalArgumentException("Expected a single column for diff. Got: " + fr.numCols() + " columns.");
-    if (!fr.anyVec().isNumeric())
+      }
+    if (!fr.anyVec().isNumeric()) {
       throw new IllegalArgumentException("Expected a numeric column for diff. Got: " + fr.anyVec().get_type_str());
+      }
 
     final double[] lastElemPerChk = GetLastElemPerChunkTask.get(fr.anyVec());
 
     return new ValFrame(new MRTask() {
       @Override
       public void map(Chunk c, NewChunk nc) {
-        if (c.cidx() == 0) nc.addNA();
-        else nc.addNum(c.atd(0) - lastElemPerChk[c.cidx() - 1]);
+        if (c.cidx() == 0) {
+        	nc.addNA();
+        }
+        else {
+        	nc.addNum(c.atd(0) - lastElemPerChk[c.cidx() - 1]);
+        }
         for (int row = 1; row < c._len; ++row)
           nc.addNum(c.atd(row) - c.atd(row - 1));
       }

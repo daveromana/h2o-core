@@ -38,8 +38,12 @@ public class C4FChunk extends Chunk {
 
   private final void processRow(int r, ChunkVisitor v){
     float f = UnsafeUtils.get4f(_mem,(r<<2));
-    if(Float.isNaN(f)) v.addNAs(1);
-    else v.addValue((double)f);
+    if(Float.isNaN(f)) {
+    	v.addNAs(1);
+    }
+    else {
+    	v.addValue((double)f);
+    }
   }
 
   @Override

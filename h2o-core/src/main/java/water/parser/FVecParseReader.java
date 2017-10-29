@@ -20,10 +20,12 @@ public class FVecParseReader implements ParseReader {
     _vec = chk.vec();
   }
   @Override public byte[] getChunkData(int cidx) {
-    if(cidx != _idx)
+    if(cidx != _idx) {
       _chk = cidx < _vec.nChunks()?_vec.chunkForChunkIdx(_idx = cidx):null;
-    if(_chk == null)
+      }
+    if(_chk == null) {
       return null;
+      }
     _goffset = _chk.start();
     return _chk.getBytes();
   }

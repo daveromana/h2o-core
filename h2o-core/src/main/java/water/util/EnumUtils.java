@@ -45,8 +45,12 @@ public class EnumUtils {
       for (Enum item : enumValues) {
         String origName = item.name();
         String unifName = origName.toUpperCase().replaceAll("[^0-9A-Z]", "");
-        if (map.containsKey(origName)) throw H2O.fail("Unexpected key " + origName + " in enum " + clz);
-        if (map.containsKey(unifName)) throw H2O.fail("Non-unique key " + unifName + " in enum " + clz);
+        if (map.containsKey(origName)) {
+        	throw H2O.fail("Unexpected key " + origName + " in enum " + clz);
+        }
+        if (map.containsKey(unifName)) {
+        	throw H2O.fail("Non-unique key " + unifName + " in enum " + clz);
+        }
         map.put(origName, item);
         map.put(unifName, item);
       }
@@ -63,14 +67,17 @@ public class EnumUtils {
       String unifName = name.toUpperCase().replaceAll("[^0-9A-Z]", "");
       value = map.get(unifName);
       // Save the mapping name -> value, so that subsequent requests with the same name will be faster.
-      if (value != null)
+      if (value != null) {
         map.put(name, value);
+        }
     }
 
-    if (value == null)
+    if (value == null) {
       throw new IllegalArgumentException("No enum constant " + clz.getCanonicalName() + "." + name);
-    if (name == null)
+      }
+    if (name == null) {
       throw new NullPointerException("Name is null");
+      }
 
     // noinspection unchecked
     return (T) value;

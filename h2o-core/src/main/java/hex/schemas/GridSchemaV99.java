@@ -128,15 +128,19 @@ public class GridSchemaV99 extends SchemaV3<Grid, GridSchemaV99> {
         if (m != null) {
           Model.Output o = m._output;
 
-          if (null != o._training_metrics)
+          if (null != o._training_metrics) {
             training_metrics[i] = (ModelMetricsBaseV3) SchemaServer.schema(3, o._training_metrics).fillFromImpl(o
                 ._training_metrics);
-          if (null != o._validation_metrics) validation_metrics[i] = (ModelMetricsBaseV3) SchemaServer.schema(3, o
-              ._validation_metrics).fillFromImpl(o._validation_metrics);
-          if (null != o._cross_validation_metrics) cross_validation_metrics[i] = (ModelMetricsBaseV3) SchemaServer
-              .schema(3, o._cross_validation_metrics).fillFromImpl(o._cross_validation_metrics);
-          if (o._cross_validation_metrics_summary != null)
+            }
+          if (null != o._validation_metrics) {
+        	  validation_metrics[i] = (ModelMetricsBaseV3) SchemaServer.schema(3, o._validation_metrics).fillFromImpl(o._validation_metrics);
+        	  }
+          if (null != o._cross_validation_metrics) {
+        	  cross_validation_metrics[i] = (ModelMetricsBaseV3) SchemaServer.schema(3, o._cross_validation_metrics).fillFromImpl(o._cross_validation_metrics);
+          }
+          if (o._cross_validation_metrics_summary != null) {
             cross_validation_metrics_summary[i] = new TwoDimTableV3(o._cross_validation_metrics_summary);
+            }
         }
       }
     }
@@ -156,17 +160,21 @@ public class GridSchemaV99 extends SchemaV3<Grid, GridSchemaV99> {
     failed_raw_params = grid.getFailedRawParameters();
 
     TwoDimTable t = grid.createSummaryTable(keys, sort_by, decreasing);
-    if (t!=null)
+    if (t!=null) {
       summary_table = new TwoDimTableV3().fillFromImpl(t);
+      }
 
     TwoDimTable h = grid.createScoringHistoryTable();
-    if (h != null)
+    if (h != null) {
       scoring_history = new TwoDimTableV3().fillFromImpl(h);
+      }
     return this;
   }
 
   private ModelParametersSchemaV3[] toModelParametersSchema(Model.Parameters[] modelParameters) {
-    if (modelParameters==null) return null;
+    if (modelParameters==null) {
+    	return null;
+    }
     ModelParametersSchemaV3[] result = new ModelParametersSchemaV3[modelParameters.length];
     for (int i = 0; i < modelParameters.length; i++) {
       if (modelParameters[i] != null) {

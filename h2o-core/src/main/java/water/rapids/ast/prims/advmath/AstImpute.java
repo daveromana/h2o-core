@@ -93,8 +93,8 @@ public class AstImpute extends AstPrimitive {
 
     // Column within frame being imputed
     final int col = (int) asts[2].exec(env).getNum();
-    if (col >= fr.numCols())
-      throw new IllegalArgumentException("Column not -1 or in range 0 to " + fr.numCols());
+    if (col >= fr.numCols()) {
+      throw new IllegalArgumentException("Column not -1 or in range 0 to " + fr.numCols());}
     final boolean doAllVecs = col == -1;
     final Vec vec = doAllVecs ? null : fr.vec(col);
 
@@ -127,8 +127,12 @@ public class AstImpute extends AstPrimitive {
     // Group-by columns.  Empty is allowed, and perfectly normal.
     AstRoot ast = asts[5];
     AstNumList by2;
-    if (ast instanceof AstNumList) by2 = (AstNumList) ast;
-    else if (ast instanceof AstNum) by2 = new AstNumList(((AstNum) ast).getNum());
+    if (ast instanceof AstNumList) {
+    	by2 = (AstNumList) ast;
+    }
+    else if (ast instanceof AstNum) {
+    	by2 = new AstNumList(((AstNum) ast).getNum());
+    }
     else if (ast instanceof AstStrList) {
       String[] names = ((AstStrList) ast)._strs;
       double[] list = new double[names.length];
@@ -137,23 +141,30 @@ public class AstImpute extends AstPrimitive {
         list[i++] = fr.find(name);
       Arrays.sort(list);
       by2 = new AstNumList(list);
-    } else throw new IllegalArgumentException("Requires a number-list, but found a " + ast.getClass());
+    } else {
+    	throw new IllegalArgumentException("Requires a number-list, but found a " + ast.getClass());
+    }
 
     Frame groupByFrame = asts[6].str().equals("_") ? null : stk.track(asts[6].exec(env)).getFrame();
     AstRoot vals = asts[7];
     AstNumList values;
-    if (vals instanceof AstNumList) values = (AstNumList) vals;
-    else if (vals instanceof AstNum) values = new AstNumList(((AstNum) vals).getNum());
-    else values = null;
-    boolean doGrpBy = !by2.isEmpty() || groupByFrame != null;
-    // Compute the imputed value per-group.  Empty groups are allowed and OK.
-    IcedHashMap<AstGroup.G, Freezable[]> group_impute_map;
-    if (!doGrpBy) {        // Skip the grouping work
-      if (ffill0 || bfill0) {  // do a forward/backward fill on the NA
-        // TODO: requires chk.previousNonNA and chk.nextNonNA style methods (which may go across chk boundaries)s
-        final boolean ffill = ffill0;
-        final boolean bfill = bfill0;
-        throw H2O.unimpl("No ffill or bfill imputation supported");
+    if (vals instanceof AstNumList) { values = (AstNumList) vals;}
+    else if (vals instanceof AstNum) {
+    	values = new AstNumList(((AstNum) vals).getNum());
+    }
+    else {
+    	values = null;
+    
+		    boolean doGrpBy = !by2.isEmpty() || groupByFrame != null;
+		    // Compute the imputed value per-group.  Empty groups are allowed and OK.
+		    IcedHashMap<AstGroup.G, Freezable[]> group_impute_map;
+		    if (!doGrpBy) {        // Skip the grouping work
+		      if (ffill0 || bfill0) {  // do a forward/backward fill on the NA
+			        // TODO: requires chk.previousNonNA and chk.nextNonNA style methods (which may go across chk boundaries)s
+	        final boolean ffill = ffill0;
+	        final boolean bfill = bfill0;
+	        throw H2O.unimpl("No ffill or bfill imputation supported");}
+		      
 //        new MRTask() {
 //          @Override public void map(Chunk[] cs) {
 //            int len=cs[0]._len; // end of this chk
@@ -174,15 +185,15 @@ public class AstImpute extends AstPrimitive {
         final double[] res = values == null ? new double[fr.numCols()] : values.expand();
         if (values == null) { // fill up res if no values supplied user, common case
           if (doAllVecs) {
-            for (int i = 0; i < res.length; ++i)
-              if (fr.vec(i).isNumeric() || fr.vec(i).isCategorical())
+            for (int i = 0; i < res.length; ++i) 
+              if (fr.vec(i).isNumeric() || fr.vec(i).isCategorical()) {
                 res[i] = fr.vec(i).isNumeric() ? fr.vec(i).mean() : ArrayUtils.maxIndex(fr.vec(i).bins());
           } else {
             Arrays.fill(res, Double.NaN);
-            if (method instanceof AstMean) res[col] = vec.mean();
-            if (method instanceof AstMedian)
-              res[col] = AstMedian.median(new Frame(vec), combine);
-            if (method instanceof AstMode) res[col] = AstMode.mode(vec);
+            if (method instanceof AstMean) { res[col] = vec.mean();}
+            if (method instanceof AstMedian) {
+              res[col] = AstMedian.median(new Frame(vec), combine);}
+            if (method instanceof AstMode) {res[col] = AstMode.mode(vec);}
           }
         }
         new MRTask() {
@@ -191,17 +202,19 @@ public class AstImpute extends AstPrimitive {
             int len = cs[0]._len;
             // run down each chk
             for (int c = 0; c < cs.length; ++c)
-              if (!Double.isNaN(res[c]))
+              if (!Double.isNaN(res[c])) {
                 for (int row = 0; row < len; ++row)
-                  if (cs[c].isNA(row))
+                  if (cs[c].isNA(row)) {
                     cs[c].set(row, res[c]);
+                  }
+              }
           }
         }.doAll(fr);
         return new ValNums(res);
       }
     } else {
-      if (col >= fr.numCols())
-        throw new IllegalArgumentException("Column not -1 or in range 0 to " + fr.numCols());
+      if (col >= fr.numCols()) {
+        throw new IllegalArgumentException("Column not -1 or in range 0 to " + fr.numCols());}
       Frame imputes = groupByFrame;
       if (imputes == null) {
         // Build and run a GroupBy command
@@ -223,11 +236,11 @@ public class AstImpute extends AstPrimitive {
             }
           }
           imputes = ast_grp.apply(env, stk, aggs).getFrame();
-        } else
+        } else {
           imputes = ast_grp.apply(env, stk, new AstRoot[]{ast_grp, new AstFrame(fr), by2,  /**/method, new AstNumList(col, col + 1), new AstStr("rm") /**/}).getFrame();
       }
-      if (by2.isEmpty() && imputes.numCols() > 2) // >2 makes it ambiguous which columns are groupby cols and which are aggs, throw IAE
-        throw new IllegalArgumentException("Ambiguous group-by frame. Supply the `by` columns to proceed.");
+      if (by2.isEmpty() && imputes.numCols() > 2) { // >2 makes it ambiguous which columns are groupby cols and which are aggs, throw IAE
+        throw new IllegalArgumentException("Ambiguous group-by frame. Supply the `by` columns to proceed.");}
 
       final int[] bycols0 = ArrayUtils.seq(0, Math.max((int) by2.cnt(), 1 /* imputes.numCols()-1 */));
       group_impute_map = new Gather(by2.expand4(), bycols0, fr.numCols(), col).doAll(imputes)._group_impute_map;
@@ -248,15 +261,21 @@ public class AstImpute extends AstPrimitive {
           for (int b : bycols) _bycolz.add(b);
           AstGroup.G g = new AstGroup.G(bycols.length, null);
           for (int row = 0; row < cs[0]._len; row++)
-            for (int c = 0; c < cs.length; ++c)
-              if (!_bycolz.contains(c))
-                if (cs[c].isNA(row))
-                  cs[c].set(row, ((IcedDouble) final_group_impute_map.get(g.fill(row, cs, bycols))[c])._val);
-        }
-      }.doAll(fr);
-      return new ValFrame(imputes);
-    }
-  }
+            for (int c = 0; c < cs.length; ++c) {
+              if (!_bycolz.contains(c)) {
+                if (cs[c].isNA(row)) {
+                  cs[c].set(row, ((IcedDouble) final_group_impute_map.get(g.fill(row, cs, bycols))[c])._val);}
+                
+        
+              }
+              }
+        
+          .doAll(fr);
+          return new ValFrame(imputes);
+          	}
+      
+    
+  
 
   // flatten the GroupBy result Frame back into a IcedHashMap
   private static class Gather extends MRTask<Gather> {
@@ -286,9 +305,12 @@ public class AstImpute extends AstPrimitive {
       for (int row = 0; row < cs[0]._len; ++row) {
         IcedDouble[] imputes = new IcedDouble[_ncol];
         for (int c = 0, z = _byCols.length; c < imputes.length; ++c, ++z) {  // z used to skip over the gby cols into the columns containing the aggregated columns
-          if (_imputedCol != -1)
+          if (_imputedCol != -1) {
             imputes[c] = c == _imputedCol ? new IcedDouble(cs[cs.length - 1].atd(row)) : new IcedDouble(Double.NaN);
-          else imputes[c] = _localbyColzSet.contains(c) ? new IcedDouble(Double.NaN) : new IcedDouble(cs[z].atd(row));
+          }
+          else {
+        	  imputes[c] = _localbyColzSet.contains(c) ? new IcedDouble(Double.NaN) : new IcedDouble(cs[z].atd(row));
+          }
         }
         _group_impute_map.put(new AstGroup.G(_byCols.length, null).fill(row, cs, _byCols), imputes);
       }

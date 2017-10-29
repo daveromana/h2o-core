@@ -37,12 +37,18 @@ public class AstSeq extends AstPrimitive {
     double to = asts[2].exec(env).getNum();
     double by = asts[3].exec(env).getNum();
     double delta = to - from;
-    if (delta == 0 && to == 0)
+    if (delta == 0 && to == 0) {
       throw new IllegalArgumentException("Expected `to` and `from` to have nonzero difference.");
+      }
+    
     else {
       double n = delta / by;
-      if (n < 0) throw new IllegalArgumentException("wrong sign in 'by' argument");
-      else if (n > Double.MAX_VALUE) throw new IllegalArgumentException("'by' argument is much too small");
+      if (n < 0) {
+    	  throw new IllegalArgumentException("wrong sign in 'by' argument");
+      }
+      else if (n > Double.MAX_VALUE) {
+    	  throw new IllegalArgumentException("'by' argument is much too small");
+      }
       Futures fs = new Futures();
       AppendableVec av = new AppendableVec(Vec.newKey(), Vec.T_NUM);
       NewChunk nc = new NewChunk(av, 0);

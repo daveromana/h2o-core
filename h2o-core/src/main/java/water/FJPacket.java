@@ -27,9 +27,13 @@ class FJPacket extends H2OCountedCompleter {
     _ab.getPort(); // skip past the port
     if( _ctrl <= UDP.udp.nack.ordinal() ) {
       AutoBuffer ab = UDP.udp.UDPS[_ctrl]._udp.call(_ab);
-      if(ab != null && !ab.isClosed()) ab.close();
-    } else
-      RPC.remote_exec(_ab);
+      if(ab != null && !ab.isClosed()) {
+    	  ab.close();
+      }
+    } else {
+    	 RPC.remote_exec(_ab);
+    }
+     
     tryComplete();
   }
   /** Exceptional completion path; mostly does printing if the exception was

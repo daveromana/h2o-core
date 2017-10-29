@@ -43,8 +43,9 @@ public class AstCut extends AstPrimitive {
     final boolean rite = asts[5].exec(env).getNum() == 1;
     final int digits = Math.min((int) asts[6].exec(env).getNum(), 12); // cap at 12
 
-    if (fr.vecs().length != 1 || fr.vecs()[0].isCategorical())
+    if (fr.vecs().length != 1 || fr.vecs()[0].isCategorical()) {
       throw new IllegalArgumentException("First argument must be a numeric column vector");
+      }
 
     double fmin = fr.anyVec().min();
     double fmax = fr.anyVec().max();
@@ -52,7 +53,9 @@ public class AstCut extends AstPrimitive {
     int nbins = cuts.length - 1;  // c(0,10,100) -> 2 bins (0,10] U (10, 100]
     double width;
     if (nbins == 0) {
-      if (cuts[0] < 2) throw new IllegalArgumentException("The number of cuts must be >= 2. Got: " + cuts[0]);
+      if (cuts[0] < 2) {
+    	  throw new IllegalArgumentException("The number of cuts must be >= 2. Got: " + cuts[0]);
+      }
       // in this case, cut the vec into _cuts[0] many pieces of equal length
       nbins = (int) Math.floor(cuts[0]);
       width = (fmax - fmin) / nbins;
@@ -63,8 +66,9 @@ public class AstCut extends AstPrimitive {
     }
     // width = (fmax - fmin)/nbins;
     // if(width == 0) throw new IllegalArgumentException("Data vector is constant!");
-    if (labels != null && labels.length != nbins)
+    if (labels != null && labels.length != nbins) {
       throw new IllegalArgumentException("`labels` vector does not match the number of cuts.");
+      }
 
     // Construct domain names from _labels or bin intervals if _labels is null
     final double cutz[] = cuts;
@@ -77,7 +81,9 @@ public class AstCut extends AstPrimitive {
     if (labels == null) {
       domains[0][0] = (lowest ? "[" : left(rite)) + cuts[0] + "," + cuts[1] + rite(rite);
       for (int i = 1; i < (cuts.length - 1); ++i) domains[0][i] = left(rite) + cuts[i] + "," + cuts[i + 1] + rite(rite);
-    } else domains[0] = labels;
+    } else {
+    	domains[0] = labels;
+    }
 
     Frame fr2 = new MRTask() {
       @Override
@@ -88,8 +94,9 @@ public class AstCut extends AstPrimitive {
           if (Double.isNaN(x) || (lowest && x < cutz[0])
               || (!lowest && (x < cutz[0] || MathUtils.equalsWithinOneSmallUlp(x, cutz[0])))
               || (rite && x > cutz[cutz.length - 1])
-              || (!rite && (x > cutz[cutz.length - 1] || MathUtils.equalsWithinOneSmallUlp(x, cutz[cutz.length - 1]))))
+              || (!rite && (x > cutz[cutz.length - 1] || MathUtils.equalsWithinOneSmallUlp(x, cutz[cutz.length - 1])))) {
             nc.addNum(Double.NaN);
+            }
           else {
             for (int i = 1; i < cutz.length; ++i) {
               if (rite) {
@@ -119,17 +126,23 @@ public class AstCut extends AstPrimitive {
 
   private double[] check(AstRoot ast) {
     double[] n;
-    if (ast instanceof AstNumList) n = ((AstNumList) ast).expand();
-    else if (ast instanceof AstNum)
-      n = new double[]{((AstNum) ast).getNum()};  // this is the number of breaks wanted...
-    else throw new IllegalArgumentException("Requires a number-list, but found a " + ast.getClass());
+    if (ast instanceof AstNumList) {
+    	n = ((AstNumList) ast).expand();
+    }
+    else if (ast instanceof AstNum) {
+      n = new double[]{((AstNum) ast).getNum()};
+      }  // this is the number of breaks wanted...
+    else {throw new IllegalArgumentException("Requires a number-list, but found a " + ast.getClass());}
     return n;
   }
 
   private String[] check2(AstRoot ast) {
     String[] s = null;
-    if (ast instanceof AstStrList) s = ((AstStrList) ast)._strs;
-    else if (ast instanceof AstStr) s = new String[]{ast.str()};
+    if (ast instanceof AstStrList) {
+    	s = ((AstStrList) ast)._strs;}
+    else if (ast instanceof AstStr) {
+    	s = new String[]{ast.str()};
+    }
     return s;
   }
 }

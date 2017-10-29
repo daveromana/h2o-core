@@ -127,13 +127,16 @@ public class RString {
   // multiple replaces can be called in which case they are appended one after
   // another in order.
   public void replace(String what, Object with) {
-    if (what.charAt(0)=='$')
+    if (what.charAt(0)=='$') {
       throw new RuntimeException("$ is now control char that denotes URL encoding!");
+      }
     for (Placeholder p : _placeholders.get(what))
       p.end.insertAndAdvance(with.toString());
 
     ArrayList<Placeholder> ar = _placeholders.get("$"+what);
-    if( ar == null ) return;
+    if( ar == null ) {
+    	return;
+    }
     for (Placeholder p : ar)
       try {
         p.end.insertAndAdvance(URLEncoder.encode(with.toString(),"UTF-8"));
@@ -169,7 +172,9 @@ public class RString {
   private static class MMHashMap<K,V> extends HashMap<K,ArrayList<V>> {
     void put2( K key, V val ) {
       ArrayList<V> ar = get(key);
-      if( ar==null ) put(key,ar = new ArrayList<>());
+      if( ar==null ) {
+    	  put(key,ar = new ArrayList<>());
+      }
       ar.add(val);
     }
   }

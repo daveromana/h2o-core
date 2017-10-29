@@ -173,20 +173,27 @@ public class FrameCreator extends H2O.H2OCountedCompleter {
 
     @Override public void map (Chunk[]cs){
       Job<Frame> job = _createFrame._job;
-      if (job.stop_requested()) return;
-      if (!_createFrame.randomize) return;
+      if (job.stop_requested()) {
+    	  return;
+      }
+      if (!_createFrame.randomize) {
+    	  return;
+      }
       final Random rng = RandomUtils.getRNG(new Random().nextLong());
 
       // response
       if(_createFrame.has_response) {
         for (int r = 0; r < cs[0]._len; r++) {
           setSeed(rng, 0, cs[0]._start + r);
-          if (_createFrame.response_factors > 1)
+          if (_createFrame.response_factors > 1) {
             cs[0].set(r, (int) (rng.nextDouble() * _createFrame.response_factors)); //classification
-          else if (_createFrame.positive_response)
-            cs[0].set(r, _createFrame.real_range * rng.nextDouble()); //regression with positive response
-          else
+            }
+          else if (_createFrame.positive_response) {
+            cs[0].set(r, _createFrame.real_range * rng.nextDouble()); 
+            }//regression with positive response
+          else {
             cs[0].set(r, _createFrame.real_range * (1 - 2 * rng.nextDouble())); //regression
+            }
         }
       }
       job.update(1);

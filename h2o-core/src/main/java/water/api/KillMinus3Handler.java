@@ -31,6 +31,7 @@ public class KillMinus3Handler extends Handler {
             String cmd = "/bin/kill -3 " + getProcessId();
             java.lang.Runtime.getRuntime().exec(cmd);
           } catch( java.io.IOException ioe ) {
+        	  System.out.println("The error is: " + ioe);
             // Silently ignore if, e.g. /bin/kill does not exist on windows
           } catch (Exception xe) {
             xe.printStackTrace();

@@ -217,7 +217,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
           } catch( AutoBuffer.AutoBufferException e ) {
             Log.info("IOException during RPC call: " + e._ioe.getMessage() + ",  AB=" + ab + ", for task#" + _tasknum + ", waiting and retrying...");
             ab.drainClose();
-            try { Thread.sleep(500); } catch (InterruptedException ignore) {}
+            try { Thread.sleep(500); } catch (InterruptedException ignore) {System.out.println("The error is: " + ignore);}
           }
         } // end of while(true)
       } else {
@@ -265,7 +265,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
     }
     // Use FJP ManagedBlock for this blocking-wait - so the FJP can spawn
     // another thread if needed.
-    try { ForkJoinPool.managedBlock(this); } catch( InterruptedException ignore ) { }
+    try { ForkJoinPool.managedBlock(this); } catch( InterruptedException ignore ) {System.out.println("The error is: " + ignore); }
     if( _done ) {
     	return result(); // Fast-path shortcut or throw if exception
     }
@@ -412,7 +412,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
           ab.drainClose();
           if( _client._heartbeat._client ) {// Dead client will not accept a TCP ACK response?
             this.CAS_DT(dt,null);          // cancel the ACK
-          try { Thread.sleep(100); } catch (InterruptedException ignore) {}
+          try { Thread.sleep(100); } catch (InterruptedException ignore) {System.out.println("The error is: " + ignore);}
         } catch( Throwable e ) { // Custom serializer just barfed?
           Log.err(e);            // Log custom serializer exception
           ab.drainClose();

@@ -36,8 +36,10 @@ public class AstFilterNaCols extends AstPrimitive {
     Vec vecs[] = fr.vecs();
     ArrayList<Double> idxs = new ArrayList<>();
     for (double i = 0; i < fr.numCols(); i++)
-      if (vecs[(int) i].naCnt() < nrow)
-        idxs.add(i);
+      if (vecs[(int) i].naCnt() < nrow) {
+    	   idxs.add(i);
+      }
+       
     double[] include_cols = new double[idxs.size()];
     int i = 0;
     for (double d : idxs)

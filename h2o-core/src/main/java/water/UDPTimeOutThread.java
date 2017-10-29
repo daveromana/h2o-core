@@ -30,14 +30,17 @@ public class UDPTimeOutThread extends Thread {
     while( true ) {
       long currentTime = System.currentTimeMillis();
       for(H2ONode n: H2O.CLOUD._memary) {
-        if (n == H2O.SELF) continue;
+        if (n == H2O.SELF) {
+        	continue;
+        }
         for (RPC t : n.tasks()) {
           if (H2O.CLOUD.contains(t._target) ||
             // Also retry clients who do not appear to be shutdown
             (t._target._heartbeat._client && t._retry < HeartBeatThread.CLIENT_TIMEOUT)) {
             if (currentTime > (t._started + t._retry) && !t.isDone() && !t._nack) {
-              if (++t._resendsCnt % 10 == 0)
+              if (++t._resendsCnt % 10 == 0) {
                 Log.warn("Got " + t._resendsCnt + " resends on task #" + t._tasknum + ", class = " + t._dt.getClass().getSimpleName());
+                }
               t.call();
             }
           } else {                // Target is dead, nobody to retry to
@@ -46,8 +49,10 @@ public class UDPTimeOutThread extends Thread {
         }
       }
       long timeElapsed = System.currentTimeMillis() - currentTime;
-      if(timeElapsed < 1000)
-        try {Thread.sleep(1000-timeElapsed);} catch (InterruptedException e) {}
+      if(timeElapsed < 1000) {
+        try {Thread.sleep(1000-timeElapsed);} catch (InterruptedException e) {System.out.println("The error is: " + e);
+        }
+        }
     }
   }
 }

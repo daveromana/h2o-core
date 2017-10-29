@@ -63,8 +63,9 @@ public class TransformWrappedVec extends WrappedVec {
 
   @Override public Chunk chunkForChunkIdx(int cidx) {
     Chunk[] cs = new Chunk[_masterVecKeys.length];
-    if( _masterVecs==null )
+    if( _masterVecs==null ) {
       _masterVecs = new Vec[_masterVecKeys.length];
+      }
     for(int i=0; i<cs.length;++i)
       cs[i] = (_masterVecs[i]!=null?_masterVecs[i]:(_masterVecs[i] = _masterVecKeys[i].get())).chunkForChunkIdx(cidx);
     return new TransformWrappedChunk(_fun, this, cs);
@@ -108,7 +109,9 @@ public class TransformWrappedVec extends WrappedVec {
 
     // applies the function to a row of doubles
     @Override public double atd_impl(int idx) {
-      if( null==_fun ) return _c[0].atd(idx);  // simple wrapping of 1 vec
+      if( null==_fun ) {
+    	  return _c[0].atd(idx);  // simple wrapping of 1 vec
+      }
       for(int i=1;i<_asts.length;++i)
         ((AstNum)_asts[i]).setNum(_c[i-1].atd(idx)); // = new AstNum(_c[i-1].atd(idx));
       return _fun.apply(_env,_env.stk(),_asts).getNum();   // Make the call per-row

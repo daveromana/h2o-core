@@ -16,8 +16,10 @@ public class UtilUnsafe {
   /** Fetch the Unsafe.  Use With Caution. */
   public static Unsafe getUnsafe() {
     // Not on bootclasspath
-    if( UtilUnsafe.class.getClassLoader() == null )
-      return Unsafe.getUnsafe();
+    if( UtilUnsafe.class.getClassLoader() == null ) {
+    	return Unsafe.getUnsafe();
+    }
+      
     try {
       final Field fld = Unsafe.class.getDeclaredField("theUnsafe");
       fld.setAccessible(true);

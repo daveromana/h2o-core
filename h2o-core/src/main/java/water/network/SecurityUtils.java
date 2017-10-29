@@ -52,6 +52,7 @@ public class SecurityUtils {
             try {
                 return Class.forName(keyToolCandidate);
             } catch (Exception e) {
+            	System.out.println("The error is: " + e);
                 // Ignore, try other candidates
             }
         }

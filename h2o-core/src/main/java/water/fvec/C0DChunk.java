@@ -21,7 +21,9 @@ public class C0DChunk extends Chunk {
   }
   @Override public boolean hasFloat() { return true; }
   @Override protected final long at8_impl( int i ) {
-    if( Double.isNaN(_con) ) throw new IllegalArgumentException("at8_abs but value is missing");
+    if( Double.isNaN(_con) ) {
+    	throw new IllegalArgumentException("at8_abs but value is missing");
+    }
     return (long)_con;          // Possible silent truncation
   }
   long at16h_impl(int idx) { throw wrongType(UUID.class, Object.class); }
@@ -35,7 +37,9 @@ public class C0DChunk extends Chunk {
   @Override double max() { return _con; }
 
   BufferedString atStr_impl(BufferedString bStr, int idx) {
-    if(Double.isNaN(_con)) return null; // speciall all missing case
+    if(Double.isNaN(_con)) {
+    	return null; // speciall all missing case
+    }
     return super.atStr_impl(bStr,idx);
   }
   // 3.3333333e33
@@ -54,8 +58,12 @@ public class C0DChunk extends Chunk {
   @Override public int sparseLenZero() {return  _con ==0?0:_len;}
   @Override public int nextNZ(int rid) {return _con==0?_len:rid+1;}
   @Override public int nonzeros(int [] arr) {
-    if (_con == 0) return 0;
-    for (int i = 0; i < _len; ++i) arr[i] = i;
+    if (_con == 0) {
+    	return 0;
+    }
+    for (int i = 0; i < _len; ++i) {
+    	arr[i] = i;
+    }
     return _len;
   }
   
@@ -63,12 +71,16 @@ public class C0DChunk extends Chunk {
   @Override public int sparseLenNA() {return  Double.isNaN(_con)?0:_len;}
   @Override public int nextNNA(int rid) {return Double.isNaN(_con)?_len:rid+1;}
   @Override public int nonnas(int [] arr) {
-    if (Double.isNaN(_con)) return 0;
+    if (Double.isNaN(_con)) {
+    	return 0;
+    }
     for (int i = 0; i < _len; ++i) arr[i] = i;
     return _len;
   }
   @Override public int getSparseDoubles(double [] vals, int [] ids, double NA){
-    if(_con == 0) return 0;
+    if(_con == 0) {
+    	return 0;
+    }
     double con = Double.isNaN(_con)?NA:_con;
     for(int i = 0; i < _len; ++i) {
       vals[i] = con;
@@ -80,23 +92,29 @@ public class C0DChunk extends Chunk {
 
   @Override
   public <T extends ChunkVisitor> T processRows(T v, int from, int to){
-    if(_con == 0)
+    if(_con == 0) {
       v.addZeros(to-from);
-    else if(Double.isNaN(_con))
+      }
+    else if(Double.isNaN(_con)) {
       v.addNAs(to-from);
-    else for(int i = from; i < to; i++)
+      }
+    else for(int i = from; i < to; i++) {
         v.addValue(_con);
+    }
     return v;
   }
 
   @Override
   public <T extends ChunkVisitor> T processRows(T v, int [] ids){
-    if(_con == 0)
+    if(_con == 0) {
       v.addZeros(ids.length);
-    else if(Double.isNaN(_con))
+      }
+    else if(Double.isNaN(_con)) {
       v.addNAs(ids.length);
-    else for(int i = 0; i < ids.length; i++)
+      }
+    else for(int i = 0; i < ids.length; i++) {
         v.addValue(_con);
+        }
     return v;
   }
 

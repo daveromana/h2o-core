@@ -52,13 +52,15 @@ public class AstExec extends AstRoot {
   @Override
   public Val exec(Env env) {
     Val fun = _asts[0].exec(env);
-    if (!fun.isFun())
+    if (!fun.isFun()) {
       throw new IllegalArgumentException("Expected a function but found " + fun.getClass());
+      }
     AstPrimitive ast = fun.getFun();
     int nargs = ast.nargs();
-    if (nargs != -1 && nargs != _asts.length)
+    if (nargs != -1 && nargs != _asts.length) {
       throw new IllegalArgumentException(
           "Incorrect number of arguments; '" + ast + "' expects " + (nargs - 1) + " but was passed " + (_asts.length - 1));
+      }
     try (Env.StackHelp stk = env.stk()) {
       return env.returning(ast.apply(env, stk, _asts));
     }

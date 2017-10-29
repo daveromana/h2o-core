@@ -29,14 +29,19 @@ public class Futures {
     try {
       f.get();
     } catch(CancellationException ex){
+    	System.out.println("The error is: " + ex);
       // ignore cancelled tasks
     } catch(Throwable t) {
-      if(_ex == null) _ex = t instanceof ExecutionException?t.getCause():t;
+      if(_ex == null) {
+    	  _ex = t instanceof ExecutionException?t.getCause():t;
+      }
     }
   }
   /** Some Future task which needs to complete before this Futures completes */
   synchronized public Futures add( Future f ) {
-    if( f == null ) return this;
+    if( f == null ) {
+    	return this;
+    }
     if(f.isDone()) {
       waitAndCheckForException(f);
       return this;
@@ -45,8 +50,9 @@ public class Futures {
     // list, and should be added to again.
     if( _pending_cnt == _pending.length ) {
       cleanCompleted();
-      if( _pending_cnt == _pending.length )
+      if( _pending_cnt == _pending.length ) {
         _pending = Arrays.copyOf(_pending,_pending_cnt<<1);
+        }
     }
     _pending[_pending_cnt++] = f;
     return this;
@@ -67,7 +73,9 @@ public class Futures {
 
   /** Merge pending-task lists (often as part of doing a 'reduce' step) */
   public void add( Futures fs ) {
-    if( fs == null ) return;
+    if( fs == null ) {
+    	return;
+    }
     assert fs != this;          // No recursive death, please
     for( int i=0; i<fs._pending_cnt; i++ )
       add(fs._pending[i]); // NPE here if using a dead Future
@@ -80,11 +88,15 @@ public class Futures {
     while (true) {
       Future f;
       synchronized (this) {
-        if (_pending_cnt == 0) break;
+        if (_pending_cnt == 0) {
+        	break;
+        }
         f = _pending[--_pending_cnt];
       }
       waitAndCheckForException(f);
     }
-    if (_ex != null) throw new RuntimeException(_ex);
+    if (_ex != null) {
+    	throw new RuntimeException(_ex);
+    }
   }
 }

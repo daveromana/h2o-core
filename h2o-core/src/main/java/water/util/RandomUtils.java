@@ -110,8 +110,9 @@ public class RandomUtils {
       // range is eliminated.
       for (;;) {
         long r = ((long)nextInt()) & 0xFFFFFFFFL;
-        if (r >= threshold)
+        if (r >= threshold) {
           return (int)(r % bound);
+          }
       }
     }
   }
@@ -122,8 +123,12 @@ public class RandomUtils {
   public static class H2ORandomRNG extends Random {
     public H2ORandomRNG(long seed) {
       super();
-      if ((seed >>> 32) < 0x0000ffffL)         seed |= 0x5b93000000000000L;
-      if (((seed << 32) >>> 32) < 0x0000ffffL) seed |= 0xdb910000L;
+      if ((seed >>> 32) < 0x0000ffffL) {
+    	  seed |= 0x5b93000000000000L;
+      }
+      if (((seed << 32) >>> 32) < 0x0000ffffL) {
+    	  seed |= 0xdb910000L;
+      }
       setSeed(seed);
     }
   }

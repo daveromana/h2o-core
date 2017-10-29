@@ -27,7 +27,9 @@ class ParseHandler extends Handler {
                                       null,
                                       new ParseWriter.ParseErr[0], parse.chunk_size);
 
-    if (parse.source_frames == null) throw new H2OIllegalArgumentException("Data for Frame '" + parse.destination_frame.name + "' is not available. Please check that the path is valid (for all H2O nodes).'");
+    if (parse.source_frames == null) { 
+    	throw new H2OIllegalArgumentException("Data for Frame '" + parse.destination_frame.name + "' is not available. Please check that the path is valid (for all H2O nodes).'");
+    }
     Key[] srcs = new Key[parse.source_frames.length];
     for (int i = 0; i < parse.source_frames.length; i++)
       srcs[i] = parse.source_frames[i].key();
@@ -43,9 +45,13 @@ class ParseHandler extends Handler {
   }
 
   private static String[] delNulls(String[] names) {
-    if (names == null) return null;
+    if (names == null) {
+    	return null;
+    }
     for(int i=0; i < names.length; i++)
-      if (names[i].equals("null")) names[i] = null;
+      if (names[i].equals("null")) {
+    	  names[i] = null;
+      }
     return names;
   }
 
@@ -55,8 +61,9 @@ class ParseHandler extends Handler {
     for(int i = 0; i < fkeys.length; ++i)
       fkeys[i] = parse.source_frames[i].key();
     Key<Frame> destKey = parse.destination_frame == null? null : parse.destination_frame.key();
-    if(destKey == null)
+    if(destKey == null) {
       destKey = Key.make(ParseSetup.createHexName(parse.source_frames[0].toString()));
+      }
     ParseSetup setup = ParseSetup.guessSetup(fkeys,ParseSetup.makeSVMLightSetup());
     return new JobV3().fillFromImpl(ParseDataset.forkParseSVMLight(destKey,fkeys,setup));
   }

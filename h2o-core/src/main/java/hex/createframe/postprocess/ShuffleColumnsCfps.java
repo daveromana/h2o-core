@@ -36,14 +36,18 @@ public class ShuffleColumnsCfps extends CreateFramePostprocessStep {
   public void exec(Frame fr, Random rng) {
     // Initial shuffle
     int numCols = fr.numCols();
-    if (numCols == 0) return;
+    if (numCols == 0) {
+    	return;
+    }
     int[] idx = ArrayUtils.seq(0, numCols);
     ArrayUtils.shuffleArray(idx, rng);
 
     // Move the response column to the beginning of the frame
     if (responseFirst) {
       int responseIndex = ArrayUtils.find(fr.names(), "response");
-      if (responseIndex == -1) responseIndex = ArrayUtils.find(fr.names(), "Response");
+      if (responseIndex == -1) {
+    	  responseIndex = ArrayUtils.find(fr.names(), "Response");
+      }
       if (responseIndex >= 0) {
         int shuffledIndex = ArrayUtils.find(idx, responseIndex);
         idx[shuffledIndex] = idx[0];
@@ -66,8 +70,9 @@ public class ShuffleColumnsCfps extends CreateFramePostprocessStep {
         String prefix = removeNumericSuffix(newNames[i]);
         int count = prefixCounts.containsKey(prefix)? prefixCounts.get(prefix) + 1 : 1;
         prefixCounts.put(prefix, count);
-        if (!newNames[i].equals("response"))
+        if (!newNames[i].equals("response")) {
           newNames[i] = prefix + count;
+          }
       }
     }
 
@@ -85,7 +90,9 @@ public class ShuffleColumnsCfps extends CreateFramePostprocessStep {
     int i = name.length();
     while (--i >= 0) {
       char ch = name.charAt(i);
-      if (ch < '0' || ch > '9') break;
+      if (ch < '0' || ch > '9') {
+    	  break;
+      }
     }
     return name.substring(0, i + 1);
   }

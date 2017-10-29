@@ -30,7 +30,9 @@ public class UDPRebooted extends UDP {
   }
 
   static void checkForSuicide(int first_byte, AutoBuffer ab) {
-    if( first_byte != UDP.udp.rebooted.ordinal() ) return;
+    if( first_byte != UDP.udp.rebooted.ordinal() ) {
+    	return;
+    }
     int type = ab.get1();
     suicide( T.values()[type], ab._h2o);
   }
@@ -65,7 +67,7 @@ public class UDPRebooted extends UDP {
       // start a separate thread which will force termination after timeout expires (in case we don't get ack ack in time)
       new Thread(){
         @Override public void run(){
-          try {Thread.sleep(_timeout);} catch (InterruptedException e) {}
+          try {Thread.sleep(_timeout);} catch (InterruptedException e) {System.out.println("The error is: " + e);}
           doShutdown(_exitCode,"Orderly shutdown may not have been acknowledged to " + _killer + " (no ackack), exiting with exit code " + _exitCode + ".");
         }
       }.start();
@@ -101,8 +103,9 @@ public class UDPRebooted extends UDP {
 
   @Override AutoBuffer call(AutoBuffer ab) {
     checkForSuicide(udp.rebooted.ordinal(),ab);
-    if( ab._h2o != null )
+    if( ab._h2o != null ) {
       ab._h2o.rebooted();
+      }
     return ab;
   }
 

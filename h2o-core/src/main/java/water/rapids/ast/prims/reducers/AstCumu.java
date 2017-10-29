@@ -46,7 +46,9 @@ public abstract class AstCumu extends AstPrimitive {
               "Cumulative functions not applicable to enum, string, or UUID values");
     }
     double axis = axisAR.exec(env).getNum();
-    if (axis != 1.0 && axis != 0.0) throw new IllegalArgumentException("Axis must be 0 or 1");
+    if (axis != 1.0 && axis != 0.0) {
+    	throw new IllegalArgumentException("Axis must be 0 or 1");
+    }
     if (f.numCols() == 1) {
       if (axis == 0.0) {
         AstCumu.CumuTask t = new AstCumu.CumuTask(f.anyVec().nChunks(), init());
@@ -144,7 +146,9 @@ public abstract class AstCumu extends AstPrimitive {
 
     @Override
     public void reduce(AstCumu.CumuTaskWholeFrame t) {
-      if (_chkCumu != t._chkCumu) ArrayUtils.add(_chkCumu, t._chkCumu);
+      if (_chkCumu != t._chkCumu) {
+    	  ArrayUtils.add(_chkCumu, t._chkCumu);
+      }
     }
 
     @Override
@@ -183,7 +187,9 @@ public abstract class AstCumu extends AstPrimitive {
 
     @Override
     public void reduce(AstCumu.CumuTask t) {
-      if (_chkCumu != t._chkCumu) ArrayUtils.add(_chkCumu, t._chkCumu);
+      if (_chkCumu != t._chkCumu) {
+    	  ArrayUtils.add(_chkCumu, t._chkCumu);
+      }
     }
 
     @Override

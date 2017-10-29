@@ -35,26 +35,31 @@ public class C0LChunk extends Chunk {
   @Override public int sparseLenZero(){return _con == 0?0: _len;}
   @Override public int nextNZ(int rid){return _con == 0?_len:rid+1;}
   @Override public int nonzeros(int [] arr) {
-    if (_con == 0) return 0;
+    if (_con == 0) {
+    	return 0;
+    }
     for (int i = 0; i < _len; ++i) arr[i] = i;
     return _len;
   }
 
   @Override
   public <T extends ChunkVisitor> T processRows(T v, int from, int to){
-    if(_con == 0)
+    if(_con == 0) {
       v.addZeros(to-from);
-    else for(int i = from; i < to; i++)
+      }
+    else for(int i = from; i < to; i++) {
         v.addValue(_con);
+        }
     return v;
   }
 
   @Override
   public <T extends ChunkVisitor> T processRows(T v, int [] ids){
-    if(_con == 0)
-      v.addZeros(ids.length);
-    else for(int i = 0; i < ids.length; i++)
+    if(_con == 0) {
+      v.addZeros(ids.length);}
+    else for(int i = 0; i < ids.length; i++) {
         v.addValue(_con);
+        }
     return v;
   }
 }

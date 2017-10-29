@@ -62,7 +62,8 @@ public class AUC2 extends Iced {
     specificity(false) { @Override double exec( double tp, double fp, double fn, double tn ) { return tn/(tn+fp); } },
     absolute_mcc(false) { @Override double exec( double tp, double fp, double fn, double tn ) {
         double mcc = (tp*tn - fp*fn);
-        if (mcc == 0) return 0;
+        if (mcc == 0){
+        	 return 0;
         mcc /= Math.sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn));
         assert(Math.abs(mcc)<=1.) : tp + " " + fp + " " + fn + " " + tn;
         return Math.abs(mcc);
@@ -175,7 +176,7 @@ public class AUC2 extends Iced {
     double x0 = recall.exec(this, 0);
     for (int i = 1; i < _nBins; i++) {
       double x1 = recall.exec(this, i);
-      if (x0 >= x1) 
+      if (x0 >= x1) {
         throw new H2OIllegalArgumentException(""+i, "recall", ""+x1 + "<" + x0);
     }
   }
@@ -183,8 +184,10 @@ public class AUC2 extends Iced {
   // Compute the Area Under the Curve, where the curve is defined by (TPR,FPR)
   // points.  TPR and FPR are monotonically increasing from 0 to 1.
   private double compute_auc() {
-    if (_fps[_nBins-1] == 0) return 1.0; //special case
-    if (_tps[_nBins-1] == 0) return 0.0; //special case
+    if (_fps[_nBins-1] == 0) {
+    	return 1.0; //special case
+    if (_tps[_nBins-1] == 0) {
+    	return 0.0; //special case
 
     // All math is computed scaled by TP and FP.  We'll descale once at the
     // end.  Trapezoids from (tps[i-1],fps[i-1]) to (tps[i],fps[i])
@@ -224,7 +227,7 @@ public class AUC2 extends Iced {
     @Override public void map( Chunk ps, Chunk as ) {
       AUCBuilder bldr = _bldr = new AUCBuilder(_nBins);
       for( int row = 0; row < ps._len; row++ )
-        if( !ps.isNA(row) && !as.isNA(row) )
+        if( !ps.isNA(row) && !as.isNA(row) ) {
           bldr.perRow(ps.atd(row),(int)as.at8(row),1);
     }
     @Override public void reduce( AUC_Impl auc ) { _bldr.reduce(auc._bldr); }
@@ -256,7 +259,9 @@ public class AUC2 extends Iced {
       assert act==0 || act==1;  // Actual better be 0 or 1
       int idx = Arrays.binarySearch(_ths,0,_n,pred);
       if( idx >= 0 ) {          // Found already in histogram; merge results
-        if( act==0 ) _fps[idx]+=w; else _tps[idx]+=w; // One more count; no change in squared error
+        if( act==0 ){
+        	 _fps[idx]+=w; }
+        else {_tps[idx]+=w; // One more count; no change in squared error
         _ssx = -1;              // Blows the known best merge
         return;
       }
@@ -272,10 +277,14 @@ public class AUC2 extends Iced {
         double d0 = compute_delta_error(pred,w,_ths[idx  ],k(idx  ));
         double d1 = compute_delta_error(_ths[idx+1],k(idx+1),pred,w);
         if( d0 < dssx || d1 < dssx ) {
-          if( d1 < d0 ) idx++; else d0 = d1; // Pick correct bin
+          if( d1 < d0 ) {
+          	idx++; else d0 = d1; // Pick correct bin
           double oldk = k(idx);
-          if( act==0 ) _fps[idx]+=w;
-          else         _tps[idx]+=w;
+          if( act==0 ){
+          	 _fps[idx]+=w;
+          }
+          else 
+          {     _tps[idx]+=w;
           _ths[idx] = _ths[idx] + (pred-_ths[idx])/oldk;
           _sqe[idx] = _sqe[idx] + d0;
           assert ssx == find_smallest();
@@ -286,8 +295,10 @@ public class AUC2 extends Iced {
       // Must insert this point as it's own threshold (which is not insertion
       // point), either because we have too few bins or because we cannot
       // instantly merge the new point into an existing bin.
-      if( idx == _ssx ) _ssx = -1;  // Smallest error becomes one of the splits
-      else if( idx < _ssx ) _ssx++; // Smallest error will slide right 1
+      if( idx == _ssx ){
+      	 _ssx = -1;  // Smallest error becomes one of the splits
+      else if( idx < _ssx ){
+      	 _ssx++; // Smallest error will slide right 1
 
       // Slide over to do the insert.  Horrible slowness.
       System.arraycopy(_ths,idx,_ths,idx+1,_n-idx);
@@ -300,7 +311,7 @@ public class AUC2 extends Iced {
       if( act==0 ) { _tps[idx]=0; _fps[idx]=w; }
       else         { _tps[idx]=w; _fps[idx]=0; }
       _n++;
-      if( _n > _nBins )         // Merge as needed back down to nBins
+      if( _n > _nBins )    {     // Merge as needed back down to nBins
         mergeOneBin();          // Merge best pair of bins
     }
 
@@ -320,7 +331,8 @@ public class AUC2 extends Iced {
         _sqe[x+y+1] = b._sqe[idx];
         _tps[x+y+1] = b._tps[idx];
         _fps[x+y+1] = b._fps[idx];
-        if( self_is_larger ) x--; else y--;
+        if( self_is_larger ){
+        	 x--; else y--;
       }
       _n += bldr._n;
       //assert sorted();
@@ -361,7 +373,8 @@ public class AUC2 extends Iced {
     // tried the original: merge bins with the least distance between bin
     // centers.  Same problem for sorted data.
     private int find_smallest() {
-      if( _ssx == -1 ) return (_ssx = find_smallest_impl());
+      if( _ssx == -1 ){
+      	 return (_ssx = find_smallest_impl());
       assert _ssx == find_smallest_impl();
       return _ssx;
     }
@@ -371,7 +384,8 @@ public class AUC2 extends Iced {
       int n = _n;
       for( int i=0; i<n-1; i++ ) {
         double derr = compute_delta_error(_ths[i+1],k(i+1),_ths[i],k(i));
-        if( derr == 0 ) return i; // Dup; no increase in SQE so return immediately
+        if( derr == 0 ) {
+        	return i; // Dup; no increase in SQE so return immediately
         double sqe = _sqe[i]+_sqe[i+1]+derr;
         if( sqe < minSQE ) {
           minI = i;  minSQE = sqe;
@@ -420,9 +434,9 @@ public class AUC2 extends Iced {
   // AUC found by sorting the entire dataset.  Expensive, and only works for
   // small data (probably caps out at about 10M rows).
   public static double perfectAUC( Vec vprob, Vec vacts ) {
-    if( vacts.min() < 0 || vacts.max() > 1 || !vacts.isInt() )
+    if( vacts.min() < 0 || vacts.max() > 1 || !vacts.isInt() ) {
       throw new IllegalArgumentException("Actuals are either 0 or 1");
-    if( vprob.min() < 0 || vprob.max() > 1 )
+    if( vprob.min() < 0 || vprob.max() > 1 ) {
       throw new IllegalArgumentException("Probabilities are between 0 and 1");
     // Horrible data replication into array of structs, to sort.  
     Pair[] ps = new Pair[(int)vprob.length()];
@@ -461,7 +475,8 @@ public class AUC2 extends Iced {
         tp0 = tp1; fp0 = fp1;
         prob = p._prob;
       }
-      if( p._act==1 ) tp1++; else fp1++;
+      if( p._act==1 ) {
+      	tp1++; }else {fp1++;
     }
     area += (double)tp0*(fp1-fp0); // Trapezoid: Rectangle + 
     area += (double)(tp1-tp0)*(fp1-fp0)/2.0; // Right Triangle

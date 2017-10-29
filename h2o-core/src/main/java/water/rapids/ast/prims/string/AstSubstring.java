@@ -35,23 +35,28 @@ public class AstSubstring extends AstPrimitive {
   public ValFrame apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
     int startIndex = (int) asts[2].exec(env).getNum();
-    if (startIndex < 0) startIndex = 0;
+    if (startIndex < 0) {
+    	startIndex = 0;
+    }
     int endIndex = asts[3] instanceof AstNumList ? Integer.MAX_VALUE : (int) asts[3].exec(env).getNum();
     // Type check
     for (Vec v : fr.vecs())
-      if (!(v.isCategorical() || v.isString()))
+      if (!(v.isCategorical() || v.isString())) {
         throw new IllegalArgumentException("substring() requires a string or categorical column. "
             + "Received " + fr.anyVec().get_type_str()
             + ". Please convert column to a string or categorical first.");
+        }
 
     // Transform each vec
     Vec nvs[] = new Vec[fr.numCols()];
     int i = 0;
     for (Vec v : fr.vecs()) {
-      if (v.isCategorical())
+      if (v.isCategorical()) {
         nvs[i] = substringCategoricalCol(v, startIndex, endIndex);
-      else
+        }
+      else {
         nvs[i] = substringStringCol(v, startIndex, endIndex);
+        }
       i++;
     }
 
@@ -82,8 +87,9 @@ public class AstSubstring extends AstPrimitive {
       }
     }
     //Check for duplicated domains
-    if (substringToOldDomainIndices.size() < dom.length)
+    if (substringToOldDomainIndices.size() < dom.length) {
       return VecUtils.DomainDedupe.domainDeduper(vec, substringToOldDomainIndices);
+      }
 
     return vec.makeCopy(dom);
   }
@@ -92,9 +98,10 @@ public class AstSubstring extends AstPrimitive {
     return new MRTask() {
       @Override
       public void map(Chunk chk, NewChunk newChk) {
-        if (chk instanceof C0DChunk) // all NAs
+        if (chk instanceof C0DChunk) {// all NAs
           for (int i = 0; i < chk.len(); i++)
             newChk.addNA();
+          }
         else if (startIndex >= endIndex) {
           for (int i = 0; i < chk.len(); i++)
             newChk.addStr("");
@@ -103,8 +110,9 @@ public class AstSubstring extends AstPrimitive {
         } else { //UTF requires Java string methods
           BufferedString tmpStr = new BufferedString();
           for (int i = 0; i < chk._len; i++) {
-            if (chk.isNA(i))
+            if (chk.isNA(i)) {
               newChk.addNA();
+              }
             else {
               String str = chk.atStr(tmpStr, i).toString();
               newChk.addStr(str.substring(startIndex < str.length() ? startIndex : str.length(),

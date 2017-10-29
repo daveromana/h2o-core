@@ -58,11 +58,14 @@ public class ParserInfo extends Iced<ParserInfo> {
    */
   public ParseMethod parseMethod(int nfiles, int nchunks){
     if(isStreamParseSupported()) {
-      if (!isParallelParseSupported() || (nfiles > TOO_MANY_KEYS_COUNT && (nchunks <= SMALL_FILE_NCHUNKS)))
-        return ParseMethod.StreamParse;
+      if (!isParallelParseSupported() || (nfiles > TOO_MANY_KEYS_COUNT && (nchunks <= SMALL_FILE_NCHUNKS))) {
+    	  return ParseMethod.StreamParse;
+      }
+        
     }
-    if(isParallelParseSupported())
+    if(isParallelParseSupported()) {
       return ParseMethod.DistributedParse;
+      }
     throw H2O.unimpl();
   }
 

@@ -91,10 +91,18 @@ public class NetworkUtils {
     if (value != null && ArrayUtils.equalsAny(value,
                                               SCOPE_IFACE_LOCAL, SCOPE_LINK_LOCAL,
                                               SCOPE_SITE_LOCAL, SCOPE_ORG_LOCAL,
-                                              SCOPE_GLOBAL_LOCAL)) return value;
-    if (ip.isLoopbackAddress()) return SCOPE_IFACE_LOCAL;
-    if (ip.isLinkLocalAddress()) return SCOPE_LINK_LOCAL;
-    if (ip.isSiteLocalAddress()) return SCOPE_SITE_LOCAL;
+                                              SCOPE_GLOBAL_LOCAL)) {
+    	return value;
+    }
+    if (ip.isLoopbackAddress()) {
+    	return SCOPE_IFACE_LOCAL;
+    }
+    if (ip.isLinkLocalAddress()) {
+    	return SCOPE_LINK_LOCAL;
+    }
+    if (ip.isSiteLocalAddress()) {
+    	return SCOPE_SITE_LOCAL;
+    }
     return SCOPE_ORG_LOCAL;
   }
 

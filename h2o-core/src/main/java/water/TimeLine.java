@@ -62,8 +62,9 @@ public class TimeLine extends UDP {
     while( true ) {
       int oldidx = (int)tl[0];
       int newidx = (oldidx+1)&(MAX_EVENTS-1);
-      if( CAS( tl, 0, oldidx, newidx ) )
+      if( CAS( tl, 0, oldidx, newidx ) ) {
         return oldidx;
+        }
     }
   }
 
@@ -87,7 +88,9 @@ public class TimeLine extends UDP {
     // not record who he sent to!  With this hack the Timeline record always
     // contains the info about "the other guy": inet+port for the receiver in
     // the sender's Timeline, and vice-versa for the receiver's Timeline.
-    if( sr==0 ) b0 = (b0 & ~0xFFFF00) | (h2o._key.udp_port()<<8);
+    if( sr==0 ) {
+    	b0 = (b0 & ~0xFFFF00) | (h2o._key.udp_port()<<8);
+    }
     tl[idx*WORDS_PER_EVENT+2+1] = b0;
     tl[idx*WORDS_PER_EVENT+3+1] = b8;
   }
@@ -164,7 +167,7 @@ public class TimeLine extends UDP {
     ip4[2] = (byte)(adr>>16);
     ip4[3] = (byte)(adr>>24);
     try { return InetAddress.getByAddress(ip4); }
-    catch( UnknownHostException e ) { }
+    catch( UnknownHostException e ) {System.out.println("The error is: " + e); }
     return null;
   }
   // That 2nd long is nanosec, plus the low bit is send/recv & 2nd low is drop
@@ -192,8 +195,9 @@ public class TimeLine extends UDP {
     synchronized( TimeLine.class ) {
       // First see if we have a recent snapshot already.
       long now = System.currentTimeMillis();
-      if( now - TIME_LAST_SNAPSHOT < 3*1000 )
-        return SNAPSHOT;        // Use the recent snapshot
+      if( now - TIME_LAST_SNAPSHOT < 3*1000 ) {
+        return SNAPSHOT;       
+        } // Use the recent snapshot
 
       // A new snapshot is being built?
       if( TIME_LAST_SNAPSHOT != 0 ) {
@@ -209,10 +213,13 @@ public class TimeLine extends UDP {
       while( true ) {
         boolean done = true;
         for( int i=0; i<CLOUD._memary.length; i++ )
-          if( SNAPSHOT[i] == null )
+          if( SNAPSHOT[i] == null ) {
             done = false;
-        if( done ) break;
-        try { TimeLine.class.wait(); } catch( InterruptedException e ) {}
+            }
+        if( done ) {
+        	break;
+        }
+        try { TimeLine.class.wait(); } catch( InterruptedException e ) {System.out.println("The error is: " + e);}
       }
       TIME_LAST_SNAPSHOT = System.currentTimeMillis();
       return SNAPSHOT;
@@ -225,12 +232,16 @@ public class TimeLine extends UDP {
     if( ab._h2o == H2O.SELF ) {
       synchronized(TimeLine.class) {
         for( int i=0; i<CLOUD._memary.length; i++ )
-          if( CLOUD._memary[i]==H2O.SELF )
+          if( CLOUD._memary[i]==H2O.SELF ) {
             SNAPSHOT[i] = a;
+            }
         TimeLine.class.notify();
       }
-    } else // Send timeline to remote
+    } else {
+    	// Send timeline to remote
+    
       new AutoBuffer(ab._h2o,udp.timeline._prior).putUdp(UDP.udp.timeline).putA8(a).close();
+      }
     return null;
   }
 
@@ -239,8 +250,9 @@ public class TimeLine extends UDP {
     ab.getPort();
     long[] snap = ab.getA8();
     int idx = CLOUD.nidx(ab._h2o);
-    if (idx >= 0 && idx < SNAPSHOT.length)
-      SNAPSHOT[idx] = snap;     // Ignore out-of-cloud timelines
+    if (idx >= 0 && idx < SNAPSHOT.length) {
+      SNAPSHOT[idx] = snap;  
+      }   // Ignore out-of-cloud timelines
     ab.close();
     synchronized (TimeLine.class) {
       TimeLine.class.notify();
@@ -262,8 +274,9 @@ public class TimeLine extends UDP {
       long lo = TimeLine.l0(s, i),hi = TimeLine.l8(s, i);
       int port = (int)((lo >> 8) & 0xFFFF);
       String op = TimeLine.send_recv(s,i) == 0?"SEND":"RECV";
-      if(!TimeLine.isEmpty(s, i) && (lo & 0xFF) == UDP.udp.exec.ordinal())
+      if(!TimeLine.isEmpty(s, i) && (lo & 0xFF) == UDP.udp.exec.ordinal()) {
         System.err.println(TimeLine.ms(s, i) + ": " + op + " " + (((TimeLine.ns(s, i) & 4) != 0)?"TCP":"UDP")  +  TimeLine.inet(s, i) + ":" + port + " | " + UDP.printx16(lo, hi));
+        }
     }
     System.err.println("===========================================================================================");
   }

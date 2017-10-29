@@ -93,12 +93,15 @@ public class Distribution extends Iced<Distribution> {
         return 2 * w * (Math.pow(y, 2 - tweediePower) / ((1 - tweediePower) * (2 - tweediePower)) - y * exp(f * (1 - tweediePower)) / (1 - tweediePower) + exp(f * (2 - tweediePower)) / (2 - tweediePower));
       case modified_huber:
         double yf = (2*y-1)*f;
-        if (yf < -1)
+        if (yf < -1) {
           return -w*4*yf;
-        else if (yf > 1)
+          }
+        else if (yf > 1) {
           return 0;
-        else
+          }
+        else {
           return w* yf * yf;
+          }
       default:
         throw H2O.unimpl();
     }
@@ -136,12 +139,15 @@ public class Distribution extends Iced<Distribution> {
 //        return y > f ? quantileAlpha : quantileAlpha-1;
       case modified_huber:
         double yf = (2*y-1)*f;
-        if (yf < -1)
+        if (yf < -1) {
           return 2*(2*y-1);
-        else if (yf > 1)
+          }
+        else if (yf > 1) {
           return 0;
-        else
+          }
+        else {
           return -f*(2*y-1)*(2*y-1);
+          }
       default:
         throw H2O.unimpl();
     }
@@ -282,9 +288,15 @@ public class Distribution extends Iced<Distribution> {
         return w * exp(f*(2- tweediePower));
       case modified_huber:
         double yf = (2*y-1)*f;
-        if (yf < -1) return -w*4*yf;
-        else if (yf > 1) return 0;
-        else return w*(1-yf)*(1-yf);
+        if (yf < -1) {
+        	return -w*4*yf;
+        }
+        else if (yf > 1) {
+        	return 0;
+        }
+        else return {
+        	w*(1-yf)*(1-yf);
+        }
       default:
         throw H2O.unimpl();
     }

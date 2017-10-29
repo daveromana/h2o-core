@@ -42,7 +42,9 @@ public class AstAppend extends AstPrimitive {
         vec = vec.makeCon(vsrc.getStr());
         break;
       case Val.FRM:
-        if (vsrc.getFrame().numCols() != 1) throw new IllegalArgumentException("Can only append one column");
+        if (vsrc.getFrame().numCols() != 1) {
+        	throw new IllegalArgumentException("Can only append one column");
+        }
         vec = vsrc.getFrame().anyVec();
         break;
       default:

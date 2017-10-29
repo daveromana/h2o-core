@@ -31,8 +31,10 @@ public class AstMode extends AstPrimitive {
   @Override
   public ValNum apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
-    if (fr.numCols() != 1 || !fr.anyVec().isCategorical())
-      throw new IllegalArgumentException("mode only works on a single categorical column");
+    if (fr.numCols() != 1 || !fr.anyVec().isCategorical()) {
+    	 throw new IllegalArgumentException("mode only works on a single categorical column");
+    }
+     
     return new ValNum(mode(fr.anyVec()));
   }
 

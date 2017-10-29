@@ -68,10 +68,13 @@ public class AstFunction extends AstPrimitive {
 
   // Print environment
   private void penv(SB sb) {
-    if (_parent != null) _parent.penv(sb);
-    if (_args != null)
+    if (_parent != null) {
+    	_parent.penv(sb);
+    }
+    if (_args != null) {
       for (int i = 1; i < _ids.length; i++)
-        sb.p(_ids[i]).p('=').p(_args[i].toString()).p(' ');
+        sb.p(_ids[i]).p('=').p(_args[i].toString()).p(' ');}
+    
   }
 
   // Function execution.  Just throw self on stack like a constant.  However,
@@ -93,8 +96,9 @@ public class AstFunction extends AstPrimitive {
   // Do a ID lookup, returning the matching argument if found
   public Val lookup(String id) {
     for (int i = 1; i < _ids.length; i++)
-      if (id.equals(_ids[i]))
-        return _args[i];        // Hit, return found argument
+      if (id.equals(_ids[i])) {
+        return _args[i]; 
+        }       // Hit, return found argument
     return _parent == null ? null : _parent.lookup(id);
   }
 

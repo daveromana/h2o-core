@@ -28,7 +28,7 @@ class Cleaner extends Thread {
     synchronized(THE_CLEANER) { THE_CLEANER.notifyAll(); }
   }
   private static void block_store_cleaner() {
-    synchronized(THE_CLEANER) { try { THE_CLEANER.wait(5000); } catch (InterruptedException ignore) { } }
+    synchronized(THE_CLEANER) { try { THE_CLEANER.wait(5000); } catch (InterruptedException ignore) {System.out.println("The error is: " + ignore); } }
   }
   volatile boolean _did_sweep;
   static void block_for_test() throws InterruptedException {

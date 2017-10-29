@@ -63,8 +63,12 @@ public class AppendableVec extends Vec {
   // Class 'reduce' call on new vectors; to combine the roll-up info.
   // Called single-threaded from the M/R framework.
   public void reduce( AppendableVec nv ) {
-    if( this == nv ) return;    // Trivially done
-    if( _tmp_espc == nv._tmp_espc ) return;
+    if( this == nv ) {
+    	return;    // Trivially done
+    }
+    if( _tmp_espc == nv._tmp_espc ) {
+    	return;
+    }
     // Combine arrays of elements-per-chunk
     long e1[] = nv._tmp_espc;           // Shorter array of longs?
     if (e1.length > _tmp_espc.length) { // Keep longer array
@@ -72,8 +76,9 @@ public class AppendableVec extends Vec {
       _tmp_espc = nv._tmp_espc;         // Keep longer in the object
     }
     for( int i=0; i<e1.length; i++ )      // Copy non-zero elements over
-      if( _tmp_espc[i]==0 && e1[i] != 0 ) // Read-filter (old code unconditionally did a R-M-W cycle)
-        _tmp_espc[i] = e1[i];             // Only write if needed
+      if( _tmp_espc[i]==0 && e1[i] != 0 ) { // Read-filter (old code unconditionally did a R-M-W cycle)
+        _tmp_espc[i] = e1[i];             
+        }//Only write if needed
   }
 
 

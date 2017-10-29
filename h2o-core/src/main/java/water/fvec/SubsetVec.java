@@ -13,7 +13,9 @@ public class SubsetVec extends WrappedVec {
     _subsetRowsKey = subsetRowsKey;
   }
   public Vec rows() {
-    if( _rows==null ) _rows = DKV.get(_subsetRowsKey).get();
+    if( _rows==null ) {
+    	_rows = DKV.get(_subsetRowsKey).get();
+    }
     return _rows;
   }
 

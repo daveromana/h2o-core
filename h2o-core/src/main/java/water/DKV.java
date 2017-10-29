@@ -82,8 +82,12 @@ public abstract class DKV {
     while( true ) {
       Value old = Value.STORE_get(key); // Raw-get: do not lazy-manifest if overwriting
       Value res = DputIfMatch(key,val,old,fs,dontCache);
-      if( res == old ) return old; // PUT is globally visible now?
-      if( val != null && val._key != key ) key = val._key;
+      if( res == old ) {
+    	  return old; // PUT is globally visible now?
+      }
+      if( val != null && val._key != key ) {
+    	  key = val._key;
+      }
     }
   }
 
@@ -116,13 +120,18 @@ public abstract class DKV {
     // First: I must block repeated remote PUTs to the same Key until all prior
     // ones complete - the home node needs to see these PUTs in order.
     // Repeated PUTs on the home node are already ordered.
-    if( old != null && !key.home() ) old.startRemotePut();
+    if( old != null && !key.home() ) {
+    	old.startRemotePut();
+    }
 
     // local update first, since this is a weak update
-    if( val == null && key.home() ) val = Value.makeNull(key);
+    if( val == null && key.home() ) {
+    	val = Value.makeNull(key);
+    }
     Value res = H2O.putIfMatch(key,val,old);
-    if( res != old )            // Failed?
-      return res;               // Return fail value
+    if( res != old )    {        // Failed?
+      return res;        
+      }       // Return fail value
 
     // Check for trivial success: no need to invalidate remotes if the new
     // value equals the old.
@@ -144,9 +153,13 @@ public abstract class DKV {
     // If PUT is on     HOME, invalidate remote caches
     // If PUT is on non-HOME, replicate/push to HOME
     if( key.home() ) {          // On     HOME?
-      if( old != null ) old.lockAndInvalidate(H2O.SELF,val,fs);
-      else val.lowerActiveGetCount(null);  // Remove initial read-lock, accounting for pending inv counts
-    } else {                    // On non-HOME?
+      if( old != null ) {
+    	  old.lockAndInvalidate(H2O.SELF,val,fs);
+      }
+      else {
+    	  val.lowerActiveGetCount(null);
+      }  // Remove initial read-lock, accounting for pending inv counts
+     else {                    // On non-HOME?
       // Start a write, but do not block for it
       TaskPutKey.put(key.home_node(),key,val,fs, dontCache);
     }
@@ -158,15 +171,20 @@ public abstract class DKV {
   static void write_barrier() {
     for( H2ONode h2o : H2O.CLOUD._memary )
       for( RPC rpc : h2o.tasks() )
-        if( rpc._dt instanceof TaskPutKey || rpc._dt instanceof Atomic )
+        if( rpc._dt instanceof TaskPutKey || rpc._dt instanceof Atomic ) {
           rpc.get();
+          }
   }
 
   static public <T extends Iced> T getGet(String key) { return key == null ? null : (T)getGet(Key.make(key)); }
   static public <T extends Iced> T getGet(Key key) {
-    if (null == key) return null;
+    if (null == key) {
+    	return null;
+    }
     Value v = get(key);
-    if (null == v) return null;
+    if (null == v) {
+    	return null;
+    }
     return v.get();
   }
 
@@ -192,8 +210,9 @@ public abstract class DKV {
     Value val = Value.STORE_get(key);
     // Hit in local cache?
     if( val != null ) {
-      if( val.rawMem() != null || val.rawPOJO() != null || val.isPersisted() )
+      if( val.rawMem() != null || val.rawPOJO() != null || val.isPersisted() ) {
         return val;
+        }
       assert !key.home(); // Master must have *something*; we got nothing & need to fetch
     }
 
@@ -205,7 +224,9 @@ public abstract class DKV {
 
     // If we missed in the cache AND we are the home node, then there is
     // no V for this K (or we have a disk failure).
-    if( home == H2O.SELF ) return null;
+    if( home == H2O.SELF ) {
+    	return null;
+    }
 
     // Pending write to same key from this node?  Take that write instead.
     // Moral equivalent of "peeking into the cpu store buffer".  Can happen,
@@ -213,7 +234,9 @@ public abstract class DKV {
     // send to the remote, so the local get has missed above, but a remote
     // get still might 'win' because the remote 'remove' is still in-progress.
     TaskPutKey tpk = home.pendingPutKey(key);
-    if( tpk != null ) return tpk._xval == null || tpk._xval.isNull() ? null : tpk._xval;
+    if( tpk != null ) {
+    	return tpk._xval == null || tpk._xval.isNull() ? null : tpk._xval;
+    }
 
     // Get data "the hard way"
     RPC<TaskGetKey> tgk = TaskGetKey.start(home,key);

@@ -8,8 +8,10 @@ public class ModelCacheManager {
     Model[] models = Model.fetchAll();
     long checksum = parms.checksum();
     for (Model model : models) {
-      if (model._parms != null && model._parms.checksum() == checksum)
-        return (M) model;
+      if (model._parms != null && model._parms.checksum() == checksum) {
+    	   return (M) model;
+      }
+       
     }
     return null;
   }

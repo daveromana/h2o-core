@@ -65,8 +65,9 @@ public class AstSumAxis extends AstPrimitive {
       int n = 0;
       for (double r: row) {
         if (Double.isNaN(r)) {
-          if (!na_rm)
+          if (!na_rm) {
             return new ValRow(new double[]{Double.NaN}, null);
+            }
         } else {
           d += r;
           n++;
@@ -88,8 +89,12 @@ public class AstSumAxis extends AstPrimitive {
     // Determine how many columns of different types we have
     int n_numeric = 0, n_time = 0;
     for (Vec vec : fr.vecs()) {
-      if (vec.isNumeric()) n_numeric++;
-      if (vec.isTime()) n_time++;
+      if (vec.isNumeric()) {
+    	  n_numeric++;
+      }
+      if (vec.isTime()) {
+    	  n_time++;
+      }
     }
     // Compute the type of the resulting column: if all columns are TIME then the result is also time; otherwise
     // if at least one column is numeric then the result is also numeric.
@@ -99,8 +104,9 @@ public class AstSumAxis extends AstPrimitive {
     Frame compFrame = new Frame();
     for (int i = 0; i < fr.numCols(); i++) {
       Vec vec = fr.vec(i);
-      if (n_numeric > 0? vec.isNumeric() : vec.isTime())
+      if (n_numeric > 0? vec.isNumeric() : vec.isTime()) {
         compFrame.add(fr.name(i), vec);
+        }
     }
     Vec anyvec = compFrame.anyVec();
 
@@ -130,15 +136,21 @@ public class AstSumAxis extends AstPrimitive {
           int numNaColumns = 0;
           for (int j = 0; j < numCols; j++) {
             double val = cs[j].atd(i);
-            if (Double.isNaN(val))
+            if (Double.isNaN(val)) {
               numNaColumns++;
-            else
-              d += val;
+              }
+            else {
+            	 d += val;
+            }
+             
           }
-          if (na_rm? numNaColumns < numCols : numNaColumns == 0)
+          if (na_rm? numNaColumns < numCols : numNaColumns == 0) {
             nc.addNum(d);
-          else
-            nc.addNum(Double.NaN);
+            }
+          else {
+        	   nc.addNum(Double.NaN);
+          }
+           
         }
       }
     }.doAll(1, resType, compFrame)

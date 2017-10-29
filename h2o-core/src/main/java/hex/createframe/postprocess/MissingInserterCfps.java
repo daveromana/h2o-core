@@ -30,8 +30,10 @@ public class MissingInserterCfps extends CreateFramePostprocessStep {
   @Override
   public void exec(Frame fr, Random rng) {
     // No need to do anything if p == 0
-    if (p > 0)
-      new InsertNAs(p, rng).doAll(fr);
+    if (p > 0) {
+    	   new InsertNAs(p, rng).doAll(fr);
+    }
+   
   }
 
   /**
@@ -63,10 +65,14 @@ public class MissingInserterCfps extends CreateFramePostprocessStep {
         int l = 0;
         while (true) {
           l += (int) Math.floor(Math.log(rng.nextDouble()) / denom);
-          if (l < numRows)
-            cs[i].set(l++, Double.NaN);
-          else
-            break;
+          if (l < numRows) {
+        	    cs[i].set(l++, Double.NaN);
+          }
+          
+          else {
+        	   break;
+          }
+           
         }
       }
     }

@@ -59,7 +59,9 @@ class RadixCount extends MRTask<RadixCount> {
         // There are some NA in the column so have to branch.  TODO: warn user
         // NA are present in join column
         for (int r=0; r<chk._len; r++) {
-          if (chk.isNA(r)) tmp[0]++;
+          if (chk.isNA(r)) {
+        	  tmp[0]++;
+          }
           else {
             long ctrVal = isIntVal ?
                     BigInteger.valueOf(chk.at8(r)).subtract(_base).add(BigInteger.ONE).shiftRight(_shift).longValue():
@@ -85,7 +87,9 @@ class RadixCount extends MRTask<RadixCount> {
         }
       } else {
         for (int r=0; r<chk._len; r++) {
-          if (chk.isNA(r)) tmp[0]++;
+          if (chk.isNA(r)) {
+        	  tmp[0]++;
+          }
           else tmp[BigInteger.valueOf(_id_maps[0][(int)chk.at8(r)]+1).shiftRight(_shift).intValue()]++;
        //   else tmp[(_id_maps[0][(int)chk.at8(r)]+1) >> _shift]++;
         }

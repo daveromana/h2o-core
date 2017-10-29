@@ -91,8 +91,12 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
     }
     // Canonical ordering based on inet & port
     @Override public int compareTo(Object x) {
-      if( x == null ) return -1;   // Always before null
-      if( x == this ) return 0;
+      if( x == null ) {
+    	  return -1;   // Always before null
+      }
+      if( x == this ) {
+    	  return 0;
+      }
       H2Okey key = (H2Okey)x;
       // Must be unsigned long-arithmetic, or overflow will make a broken sort
       int res = MathUtils.compareUnsigned(_ipHigh, _ipLow, key._ipHigh, key._ipLow);
@@ -145,12 +149,16 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
   // *interned*: there is only one per InetAddress.
   static private H2ONode intern( H2Okey key ) {
     H2ONode h2o = INTERN.get(key);
-    if( h2o != null ) return h2o;
+    if( h2o != null ) {
+    	return h2o;
+    }
     final int idx = UNIQUE.getAndIncrement();
     assert idx < Short.MAX_VALUE;
     h2o = new H2ONode(key,(short)idx);
     H2ONode old = INTERN.putIfAbsent(key,h2o);
-    if( old != null ) return old;
+    if( old != null ) {
+    	return old;
+    }
     synchronized(H2O.class) {
       while( idx >= IDX.length ){
         IDX = Arrays.copyOf(IDX,IDX.length<<1);
@@ -265,7 +273,9 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
       // Claim an open socket
       ByteChannel sock = _socks[--_socksAvail];
       if( sock != null ) {
-        if( sock.isOpen() ) return sock; // Return existing socket!
+        if( sock.isOpen() ) {
+        	return sock; // Return existing socket!
+        }
         // Else it's an already-closed socket, lower open TCP count
         assert TCPS.get() > 0;
         TCPS.decrementAndGet();
@@ -292,9 +302,13 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
   synchronized void freeTCPSocket( ByteChannel sock ) {
     assert 0 <= _socksAvail && _socksAvail < _socks.length;
     assert TCPS.get() > 0;
-    if( sock != null && !sock.isOpen() ) sock = null;
+    if( sock != null && !sock.isOpen() ) {
+    	sock = null;
+    }
     _socks[_socksAvail++] = sock;
-    if( sock == null ) TCPS.decrementAndGet();
+    if( sock == null ) {
+    	TCPS.decrementAndGet();
+    }
     notify();
   }
 
@@ -372,9 +386,13 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
       // above H2O.MIN_HI_PRIORITY and things just above 0; priorities in the
       // middl'n range from 10 to MIN_HI are really rare.  Need to compress
       // priorities a little for this hack to work.
-      if( msg_priority >= H2O.MIN_HI_PRIORITY ) msg_priority = (byte)((msg_priority-H2O.MIN_HI_PRIORITY)+10);
+      if( msg_priority >= H2O.MIN_HI_PRIORITY ) {
+    	  msg_priority = (byte)((msg_priority-H2O.MIN_HI_PRIORITY)+10);
+      }
       else if( msg_priority >= 10 ) msg_priority = 10;
-      if( msg_priority > bb.limit() ) msg_priority = (byte)bb.limit();
+      if( msg_priority > bb.limit() ) {
+    	  msg_priority = (byte)bb.limit();
+      }
       bb.position(msg_priority);
   
       _msgQ.put(bb); 
@@ -394,7 +412,7 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
             while( bb != null ) {         // while have an BB to process
               assert !bb.isDirect() : "Direct BBs already got recycled";
               assert bb.limit()+1+2 <= _bb.capacity() : "Small message larger than the output buffer";
-              if( _bb.remaining() < bb.limit()+1+2 )
+              if( _bb.remaining() < bb.limit()+1+2 ) {
                 sendBuffer();     // Send full batch; reset _bb so taken bb fits
               _bb.putChar((char)bb.limit());
               _bb.put(bb.array(),0,bb.limit()); // Jam this BB into the existing batch BB, all in one go (it all fits)
@@ -438,7 +456,7 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
             Log.err("Got IO error when sending batch UDP bytes: ",ioe);
             retries = 150;      // Throttle the pace of error msgs
           }
-          if( _chan != null )
+          if( _chan != null ) {
             try { _chan.close(); } catch (Throwable t) {
             	System.out.println("The error is: " + t);/*ignored*/
             	}
@@ -481,7 +499,7 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
   private final NonBlockingHashMapLong<TaskPutKey> _tasksPutKey = new NonBlockingHashMapLong<>();
   TaskPutKey pendingPutKey( Key k ) {
     for( TaskPutKey tpk : _tasksPutKey.values() )
-      if( k.equals(tpk._key) )
+      if( k.equals(tpk._key) ) {
         return tpk;
     return null;
   }
@@ -514,7 +532,9 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
   private final RPC.RPCCall _removed_task = new RPC.RPCCall(this);
 
   RPC.RPCCall has_task( int tnum ) {
-    if( tnum <= _removed_task_ids.get() ) return _removed_task;
+    if( tnum <= _removed_task_ids.get() ) {
+    	return _removed_task;
+    }
     return _work.get(tnum);
   }
 
@@ -533,12 +553,16 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
     // AFTER we insert in the HashMap (we can check before also, but that's a
     // simple optimization and not sufficient for correctness).
     final RPC.RPCCall x = _work.putIfAbsent(rpc._tsknum,rpc);
-    if( x != null ) return x;   // Return pre-existing work
+    if( x != null ) {
+    	return x;   // Return pre-existing work
+    }
     // If this RPC task# is very old, we just return a Golden Completed task.
     // The task is not just completed, but also we have already received
     // verification that the client got the answer.  So this is just a really
     // old attempt to restart a long-completed task.
-    if( rpc._tsknum > _removed_task_ids.get() ) return null; // Task is new
+    if( rpc._tsknum > _removed_task_ids.get() ) {
+    	return null; // Task is new
+    }
     _work.remove(rpc._tsknum); // Bogus insert, need to remove it
     return _removed_task;      // And return a generic Golden Completed object
   }
@@ -554,7 +578,9 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
   // Stop tracking a remote task, because we got an ACKACK.
   void remove_task_tracking( int task ) {
     RPC.RPCCall rpc = _work.get(task);
-    if( rpc == null ) return;   // Already stopped tracking
+    if( rpc == null ) {
+    	return;   // Already stopped tracking
+    }
 
     // Atomically attempt to remove the 'dt'.  If we win, we are the sole
     // thread running the dt.onAckAck.  Also helps GC: the 'dt' is done (sent
@@ -569,7 +595,7 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
     while( true ) {
       int t = _removed_task_ids.get();   // Last already-removed ID
       RPC.RPCCall rpc2 = _work.get(t+1); // RPC of 1st not-removed ID
-      if( rpc2 == null || rpc2._dt != null || !_removed_task_ids.compareAndSet(t,t+1) )
+      if( rpc2 == null || rpc2._dt != null || !_removed_task_ids.compareAndSet(t,t+1) ) {
         break;                  // Stop when we hit in-progress tasks
       _work.remove(t+1);        // Else we can remove the tracking now
     }
@@ -604,7 +630,7 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
                     if (rpc._computedAndReplied) {
                       DTask dt = rpc._dt;
                       if(dt != null) {
-                        if (++rpc._ackResendCnt % 5 == 0)
+                        if (++rpc._ackResendCnt % 5 == 0) {
                           Log.warn("Got " + rpc._ackResendCnt + " resends on ack for task # " + rpc._tsknum + ", class = " + dt.getClass().getSimpleName());
                         rpc.resend_ack();
                       }
@@ -619,7 +645,7 @@ public final class H2ONode extends Iced<H2ONode> implements Comparable {
           }
         }
         long timeElapsed = System.currentTimeMillis()-currenTime;
-        if(timeElapsed < 1000)
+        if(timeElapsed < 1000) {
           try {Thread.sleep(1000-timeElapsed);} catch (InterruptedException e) {
         	  System.out.println("The error is: " + e);/*comment to stop ideaj warning*/
         	  }

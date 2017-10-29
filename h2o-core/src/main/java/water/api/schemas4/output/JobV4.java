@@ -48,7 +48,9 @@ public class JobV4 extends OutputSchemaV4<Job<?>, JobV4> {
 
 
   @Override public JobV4 fillFromImpl(Job<?> job) {
-    if (job == null) return this;
+    if (job == null) {
+    	return this;
+    }
 
     job_id = job._key.toString();
     progress = job.progress();

@@ -28,7 +28,9 @@ public class CXIChunk extends Chunk {
   }
 
   protected final int getId(int x){
-    if(x == _mem.length) return _len;
+    if(x == _mem.length) {
+    	return _len;
+    }
     int id_sz = _elem_sz - _val_sz;
     return id_sz == 4?UnsafeUtils.get4(_mem,x):0xFFFF&UnsafeUtils.get2(_mem,x);
   }
@@ -74,7 +76,9 @@ public class CXIChunk extends Chunk {
   protected final int findOffset(int i) { // do binary search
     int off = _previousOffset;
     int id = getId(off);
-    if(id == i) return off;
+    if(id == i) {
+    	return off;
+    }
     if(id < i && (id = getId(off+=_elem_sz)) == i) {
       _previousOffset = off;
       return off;
@@ -89,8 +93,10 @@ public class CXIChunk extends Chunk {
         _previousOffset = off;
         return off;
       }
-      if (x < i) lb = mid + 1;
-      else ub = mid;
+      if (x < i) {
+    	  lb = mid + 1;
+      }
+      else {ub = mid;
     }
     return -getOff(ub)-1;
   }
@@ -98,19 +104,23 @@ public class CXIChunk extends Chunk {
   @Override public long at8_impl(int idx){
     int x = findOffset(idx);
     if(x < 0) {
-      if(_isNA) throw new RuntimeException("at8 but the value is missing!");
+      if(_isNA) { throw new RuntimeException("at8 but the value is missing!");
       return 0;
     }
     long val = getVal(x);
-    if(val == _NAS[_val_sz])
+    if(val == _NAS[_val_sz]) {
       throw new RuntimeException("at4 but the value is missing!");
     return val;
+    }
+    }
   }
+    
 
   @Override public double atd_impl(int idx) {
     int x = findOffset(idx);
-    if(x < 0)
+    if(x < 0) {
       return _isNA?Double.NaN:0;
+      }
     return getFVal(x);
   }
 
@@ -148,31 +158,41 @@ public class CXIChunk extends Chunk {
 
   @Override public int nextNZ(int i){
     int x = findOffset(i);
-    if(x < 0) x = -x-1-_elem_sz;
-    _previousOffset = x += _elem_sz;
-    return getId(x);
+    if(x < 0) { 
+    	x = -x-1-_elem_sz;
+    	_previousOffset = x += _elem_sz;
+    	return getId(x);
+    	}
   }
 
   @Override
   public <T extends ChunkVisitor> T processRows(T v, int from, int to){
     int prevId = from-1;
     int x = from == 0?_OFF: findOffset(from);
-    if(x < 0) x = -x-1;
+    if(x < 0) { x = -x-1;}
     while(x < _mem.length){
       int id = getId(x);
-      if(id >= to)break;
-      if(_isNA) v.addNAs(id-prevId-1);
-      else v.addZeros(id-prevId-1);
+      if(id >= to) {
+    	  break;
+      }
+      if(_isNA) {
+    	  v.addNAs(id-prevId-1);
+      }
+      else {
+    	  v.addZeros(id-prevId-1);
+      }
       long val = getVal(x);
-      if(val ==_NAS[_val_sz])
-        v.addNAs(1);
-      else
+      if(val ==_NAS[_val_sz]) {
+        v.addNAs(1);}
+      else {
         v.addValue(val);
       prevId = id;
       x+=_elem_sz;
     }
-    if(_isNA) v.addNAs(to-prevId-1);
-    else v.addZeros(to-prevId-1);
+    if(_isNA) {
+    	v.addNAs(to-prevId-1);
+    }
+    else { v.addZeros(to-prevId-1);
     return v;
   }
 
@@ -191,22 +211,30 @@ public class CXIChunk extends Chunk {
         break;
       }
       if(idx == idk){
-        if(_isNA) v.addNAs(zeros);
-        else v.addZeros(zeros);
+        if(_isNA) {
+        	v.addNAs(zeros);
+        }
+        else {
+        	v.addZeros(zeros);
+        }
         long val = getVal(x);
-        if(val == _NAS[_val_sz])
-          v.addNAs(1);
-        else
-          v.addValue(val);
+        if(val == _NAS[_val_sz]) {
+          v.addNAs(1);}
+        else {
+          v.addValue(val);}
         zeros = 0;
         x+=_elem_sz;
-      } else
+      } else {
         zeros++;
-      k++;
+      k++;}      
     }
     if(zeros > 0){
-      if(_isNA) v.addNAs(zeros);
-      else v.addZeros(zeros);
+      if(_isNA) {
+    	  v.addNAs(zeros);
+      }
+      else {
+    	  v.addZeros(zeros);
+      }
     }
     return v;
   }

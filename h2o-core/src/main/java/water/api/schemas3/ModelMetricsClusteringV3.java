@@ -21,8 +21,10 @@ public class ModelMetricsClusteringV3 extends ModelMetricsBaseV3<ModelMetricsClu
   public ModelMetricsClusteringV3 fillFromImpl(ModelMetricsClustering impl) {
     ModelMetricsClusteringV3 mm = super.fillFromImpl(impl);
     TwoDimTable tdt = impl.createCentroidStatsTable();
-    if (tdt != null)
-      mm.centroid_stats = new TwoDimTableV3().fillFromImpl(tdt);
+    if (tdt != null) {
+    	 mm.centroid_stats = new TwoDimTableV3().fillFromImpl(tdt);
+    }
+     
     return mm;
   }
 }

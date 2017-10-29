@@ -232,7 +232,9 @@ public class LinuxProcFileReader {
    * @param s String containing contents of proc file.
    */
   private void parseSystemProcFile(String s) {
-    if (s == null) return;
+    if (s == null) {
+    	return;
+    }
 
     try {
       BufferedReader reader = new BufferedReader(new StringReader(s));
@@ -301,7 +303,9 @@ public class LinuxProcFileReader {
   }
 
   private void parseProcessProcFile(String s) {
-    if (s == null) return;
+    if (s == null) {
+    	return;
+    }
 
     try {
       BufferedReader reader = new BufferedReader(new StringReader(s));
@@ -354,7 +358,9 @@ public class LinuxProcFileReader {
   }
 
   private void parseProcessStatusFile(String s) {
-    if(s == null) return;
+    if(s == null) {
+    	return;
+    }
     try {
       Pattern p = Pattern.compile("Cpus_allowed:\\s+([A-Fa-f0-9,]+)");
       Matcher m = p.matcher(s);

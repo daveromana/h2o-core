@@ -19,12 +19,18 @@ import java.util.*;
 public class RapidsHandler extends Handler {
 
   public RapidsSchemaV3 exec(int version, RapidsSchemaV3 rapids) {
-    if (rapids == null) return null;
-    if (!StringUtils.isNullOrEmpty(rapids.id))
+    if (rapids == null) {
+    	return null;
+    }
+    if (!StringUtils.isNullOrEmpty(rapids.id)) {
       throw new H2OIllegalArgumentException("Field RapidsSchemaV3.id is deprecated and should not be set " + rapids.id);
-    if (StringUtils.isNullOrEmpty(rapids.ast)) return rapids;
-    if (StringUtils.isNullOrEmpty(rapids.session_id))
+      }
+    if (StringUtils.isNullOrEmpty(rapids.ast)) {
+    	return rapids;
+    }
+    if (StringUtils.isNullOrEmpty(rapids.session_id)) {
       rapids.session_id = "_specialSess";
+      }
 
     Session ses = RapidsHandler.SESSIONS.get(rapids.session_id);
     if (ses == null) {

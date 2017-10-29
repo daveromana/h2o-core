@@ -39,11 +39,14 @@ public class AstAsDate extends AstPrimitive {
   public ValFrame apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
     Vec vec = fr.vecs()[0];
-    if (fr.vecs().length != 1 || !(vec.isCategorical() || vec.isString()))
+    if (fr.vecs().length != 1 || !(vec.isCategorical() || vec.isString())) {
       throw new IllegalArgumentException("as.Date requires a single column of factors or strings");
+      }
 
     final String format = asts[2].exec(env).getStr();
-    if (format.isEmpty()) throw new IllegalArgumentException("as.Date requires a non-empty format string");
+    if (format.isEmpty()) {
+    	throw new IllegalArgumentException("as.Date requires a non-empty format string");
+    }
     // check the format string more?
 
     final String[] dom = vec.domain();
@@ -65,10 +68,16 @@ public class AstAsDate extends AstPrimitive {
         BufferedString tmpStr = new BufferedString();
         for (int i = 0; i < c._len; ++i) {
           if (!c.isNA(i)) {
-            if (isStr) date = c.atStr(tmpStr, i).toString();
-            else date = dom[(int) c.at8(i)];
+            if (isStr) {
+            	date = c.atStr(tmpStr, i).toString();
+            }
+            else {date = dom[(int) c.at8(i)];
+            
+            }
             nc.addNum(DateTime.parse(date, _fmt).getMillis(), 0);
-          } else nc.addNA();
+          } else {
+        	  nc.addNA();
+          }
         }
       }
     }.doAll(1, Vec.T_NUM, fr).outputFrame(fr._names, null);

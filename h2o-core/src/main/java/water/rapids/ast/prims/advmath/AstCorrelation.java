@@ -40,8 +40,9 @@ public class AstCorrelation extends AstPrimitive {
   public Val apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame frx = stk.track(asts[1].exec(env)).getFrame();
     Frame fry = stk.track(asts[2].exec(env)).getFrame();
-    if (frx.numRows() != fry.numRows())
+    if (frx.numRows() != fry.numRows()) {
       throw new IllegalArgumentException("Frames must have the same number of rows, found " + frx.numRows() + " and " + fry.numRows());
+      }
 
     String use = stk.track(asts[3].exec(env)).getStr();
     Mode mode;
@@ -64,8 +65,9 @@ public class AstCorrelation extends AstPrimitive {
 
   // Pearson Correlation for one row, which will return a scalar value.
   private ValNum scalar(Frame frx, Frame fry, Mode mode) {
-    if (frx.numCols() != fry.numCols())
+    if (frx.numCols() != fry.numCols()) {
       throw new IllegalArgumentException("Single rows must have the same number of columns, found " + frx.numCols() + " and " + fry.numCols());
+      }
     Vec vecxs[] = frx.vecs();
     Vec vecys[] = fry.vecs();
     double xmean = 0;
@@ -82,8 +84,9 @@ public class AstCorrelation extends AstPrimitive {
     for (int r = 0; r < ncols; r++) {
       xval = vecxs[r].at(0);
       yval = vecys[r].at(0);
-      if (Double.isNaN(xval) || Double.isNaN(yval))
-        NACount++;
+      if (Double.isNaN(xval) || Double.isNaN(yval)) {
+        NACount++; 
+        }
       else {
         xmean += xval;
         ymean += yval;
@@ -108,8 +111,12 @@ public class AstCorrelation extends AstPrimitive {
     double denom = xsd * ysd; //sd(x) * sd(y)
 
     if (NACount != 0) {
-      if (mode.equals(Mode.AllObs)) throw new IllegalArgumentException("Mode is 'all.obs' but NAs are present");
-      if (mode.equals(Mode.Everything)) return new ValNum(Double.NaN);
+      if (mode.equals(Mode.AllObs)) {
+    	  throw new IllegalArgumentException("Mode is 'all.obs' but NAs are present");
+      }
+      if (mode.equals(Mode.Everything)) {
+    	  return new ValNum(Double.NaN);
+      }
     }
 
     return new ValNum((ss / (ncols - NACount - 1)) / denom); //Pearson's Correlation Coefficient
@@ -128,8 +135,9 @@ public class AstCorrelation extends AstPrimitive {
 
       if (mode.equals(Mode.AllObs)) {
         for (Vec v : vecxs)
-          if (v.naCnt() != 0)
+          if (v.naCnt() != 0) {
             throw new IllegalArgumentException("Mode is 'all.obs' but NAs are present");
+            }
       }
 
       //Set up CoVarTask
@@ -187,10 +195,18 @@ public class AstCorrelation extends AstPrimitive {
       Frame frxy_naomit = new MRTask() {
         private void copyRow(int row, Chunk[] cs, NewChunk[] ncs) {
           for (int i = 0; i < cs.length; ++i) {
-            if (cs[i] instanceof CStrChunk) ncs[i].addStr(cs[i], row);
-            else if (cs[i] instanceof C16Chunk) ncs[i].addUUID(cs[i], row);
-            else if (cs[i].hasFloat()) ncs[i].addNum(cs[i].atd(row));
-            else ncs[i].addNum(cs[i].at8(row), 0);
+            if (cs[i] instanceof CStrChunk) {
+            	ncs[i].addStr(cs[i], row);
+            }
+            else if (cs[i] instanceof C16Chunk) {
+            	ncs[i].addUUID(cs[i], row);
+            }
+            else if (cs[i].hasFloat()) {
+            	ncs[i].addNum(cs[i].atd(row));
+            }
+            else {
+            	ncs[i].addNum(cs[i].at8(row), 0);
+            }
           }
         }
 
@@ -199,8 +215,12 @@ public class AstCorrelation extends AstPrimitive {
           int col;
           for (int row = 0; row < cs[0]._len; ++row) {
             for (col = 0; col < cs.length; ++col)
-              if (cs[col].isNA(row)) break;
-            if (col == cs.length) copyRow(row, cs, ncs);
+              if (cs[col].isNA(row)) {
+            	  break;
+              }
+            if (col == cs.length) {
+            	copyRow(row, cs, ncs);
+            }
           }
         }
       }.doAll(new Frame(frx).add(fry).types(), new Frame(frx).add(fry)).outputFrame(new Frame(frx).add(fry).names(), new Frame(frx).add(fry).domains());

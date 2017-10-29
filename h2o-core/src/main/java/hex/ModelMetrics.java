@@ -116,7 +116,9 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
 
   static public double getMetricFromModel(Key<Model> key, String criterion) {
     Model model = DKV.getGet(key);
-    if (null == model) throw new H2OIllegalArgumentException("Cannot find model " + key);
+    if (null == model) {
+    	throw new H2OIllegalArgumentException("Cannot find model " + key);
+    }
     ModelMetrics mm =
             model._output._cross_validation_metrics != null ?
                     model._output._cross_validation_metrics :
@@ -127,7 +129,9 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
   }
 
   static public double getMetricFromModelMetric(ModelMetrics mm, String criterion) {
-    if (null == criterion || criterion.equals("")) throw new H2OIllegalArgumentException("Need a valid criterion, but got '" + criterion + "'.");
+    if (null == criterion || criterion.equals("")) {
+    	throw new H2OIllegalArgumentException("Need a valid criterion, but got '" + criterion + "'.");
+    }
     Method method = null;
     ConfusionMatrix cm = mm.cm();
     try {
@@ -146,8 +150,9 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
     	  System.out.println("The error is: " + e);// fall through
       }
     }
-    if (null == method)
+    if (null == method) {
       throw new H2OIllegalArgumentException("Failed to find ModelMetrics for criterion: " + criterion);
+      }
 
     double c;
     try {
@@ -235,7 +240,9 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
   public static Set<String> getAllowedMetrics(Key<Model> key) {
     Set<String> res = new HashSet<>();
     Model model = DKV.getGet(key);
-    if (null == model) throw new H2OIllegalArgumentException("Cannot find model " + key);
+    if (null == model) {
+    	throw new H2OIllegalArgumentException("Cannot find model " + key);
+    }
     ModelMetrics m =
             model._output._cross_validation_metrics != null ?
                     model._output._cross_validation_metrics :
@@ -252,7 +259,9 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
     excluded.add("nobs");
     if (m!=null) {
       for (Method meth : m.getClass().getMethods()) {
-        if (excluded.contains(meth.getName())) continue;
+        if (excluded.contains(meth.getName())) {
+        	continue;
+        }
         try {
           double c = (double) meth.invoke(m);
           res.add(meth.getName().toLowerCase());
@@ -264,7 +273,9 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
     }
     if (cm!=null) {
       for (Method meth : cm.getClass().getMethods()) {
-        if (excluded.contains(meth.getName())) continue;
+        if (excluded.contains(meth.getName())) {
+        	continue;
+        }
         try {
           double c = (double) meth.invoke(cm);
           res.add(meth.getName().toLowerCase());
@@ -317,7 +328,9 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
   }
 
   public static TwoDimTable calcVarImp(VarImp vi) {
-    if (vi == null) return null;
+    if (vi == null) {
+    	return null;
+    }
     double[] dbl_rel_imp = new double[vi._varimp.length];
     for (int i=0; i<dbl_rel_imp.length; ++i) {
       dbl_rel_imp[i] = vi._varimp[i];
@@ -335,7 +348,9 @@ public class ModelMetrics extends Keyed<ModelMetrics> {
     return calcVarImp(rel_imp, coef_names, "Variable Importances", new String[]{"Relative Importance", "Scaled Importance", "Percentage"});
   }
   public static TwoDimTable calcVarImp(final double[] rel_imp, String[] coef_names, String table_header, String[] col_headers) {
-    if(rel_imp == null) return null;
+    if(rel_imp == null) {
+    	return null;
+    }
     if(coef_names == null) {
       coef_names = new String[rel_imp.length];
       for(int i = 0; i < coef_names.length; i++)

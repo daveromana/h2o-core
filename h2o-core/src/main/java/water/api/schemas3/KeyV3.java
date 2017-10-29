@@ -51,15 +51,19 @@ public class KeyV3<I extends Iced, S extends KeyV3<I, S, K>, K extends Keyed> ex
 
       if (null != v) {
         // Type checking of value from DKV
-        if (Job.class.isAssignableFrom(clz) && !v.isJob())
+        if (Job.class.isAssignableFrom(clz) && !v.isJob()) {
           throw new H2OIllegalArgumentException("For Key: " + key + " expected a value of type Job; found a: " + v.theFreezableClass(), "For Key: " + key + " expected a value of type Job; found a: " + v.theFreezableClass() + " (" + clz + ")");
-        else if (Frame.class.isAssignableFrom(clz) && !v.isFrame() && !v.isVec())
+          }
+        else if (Frame.class.isAssignableFrom(clz) && !v.isFrame() && !v.isVec()) {
         // NOTE: we currently allow Vecs to be fetched via the /Frames endpoint, so this constraint is relaxed accordingly.  Note this means that if the user gets hold of a (hidden) Vec key and passes it to some other endpoint they will get an ugly error instead of an H2OIllegalArgumentException.
           throw new H2OIllegalArgumentException("For Key: " + key + " expected a value of type Frame; found a: " + v.theFreezableClass(), "For Key: " + key + " expected a value of type Frame; found a: " + v.theFreezableClass() + " (" + clz + ")");
-        else if (Model.class.isAssignableFrom(clz) && !v.isModel())
+          }
+        else if (Model.class.isAssignableFrom(clz) && !v.isModel()) {
           throw new H2OIllegalArgumentException("For Key: " + key + " expected a value of type Model; found a: " + v.theFreezableClass(), "For Key: " + key + " expected a value of type Model; found a: " + v.theFreezableClass() + " (" + clz + ")");
-        else if (Vec.class.isAssignableFrom(clz) && !v.isVec())
+          }
+        else if (Vec.class.isAssignableFrom(clz) && !v.isVec()) {
           throw new H2OIllegalArgumentException("For Key: " + key + " expected a value of type Vec; found a: " + v.theFreezableClass(), "For Key: " + key + " expected a value of type Vec; found a: " + v.theFreezableClass() + " (" + clz + ")");
+          }
       }
 
       this.fillFromImpl(key);
@@ -113,12 +117,15 @@ public class KeyV3<I extends Iced, S extends KeyV3<I, S, K>, K extends Keyed> ex
   }
 
   @Override public S fillFromImpl(Iced i) {
-    if (! (i instanceof Key))
+    if (! (i instanceof Key)) {
       throw new H2OIllegalArgumentException("fillFromImpl", "key", i);
+      }
 
     Key key = (Key)i;
 
-    if (null == key) return (S)this;
+    if (null == key) {
+    	return (S)this;
+    }
 
     this.name = key.toString();
 
@@ -135,26 +142,33 @@ public class KeyV3<I extends Iced, S extends KeyV3<I, S, K>, K extends Keyed> ex
 
     Class<? extends Keyed> keyed_class = this.getKeyedClass();
 
-    if (Job.class.isAssignableFrom(keyed_class))
+    if (Job.class.isAssignableFrom(keyed_class)) {
       this.URL = "/3/Jobs/" + key.toString();
-    else if (Frame.class.isAssignableFrom(keyed_class))
+      }
+    else if (Frame.class.isAssignableFrom(keyed_class)) {
       this.URL = "/3/Frames/" + key.toString();
-    else if (Model.class.isAssignableFrom(keyed_class))
+      }
+    else if (Model.class.isAssignableFrom(keyed_class)) {
       this.URL = "/3/Models/" + key.toString();
-    else if (PartialDependence.class.isAssignableFrom(keyed_class))
+      }
+    else if (PartialDependence.class.isAssignableFrom(keyed_class)) {
       this.URL = "/3/PartialDependence/" + key.toString();
-    else if (Vec.class.isAssignableFrom(keyed_class))
+      }
+    else if (Vec.class.isAssignableFrom(keyed_class)) {
       this.URL = null;
-    else
+      }
+    else {
       this.URL = null;
+      }
 
     return (S)this;
   }
 
   public static Class<? extends Keyed> getKeyedClass(Class<? extends KeyV3> clz) {
     // (Only) if we're a subclass of KeyV1 the Keyed class is type parameter 2.
-    if (clz == KeyV3.class)
+    if (clz == KeyV3.class) {
       return Keyed.class;
+      }
     return ReflectionUtils.findActualClassParameter(clz, 2);
   }
 
@@ -172,7 +186,9 @@ public class KeyV3<I extends Iced, S extends KeyV3<I, S, K>, K extends Keyed> ex
   }
 
   public Key<K> key() {
-    if (null == name) return null;
+    if (null == name) {
+    	return null;
+    }
 
     return Key.make(this.name);
   }

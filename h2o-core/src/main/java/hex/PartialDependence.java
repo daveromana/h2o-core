@@ -54,11 +54,16 @@ public class PartialDependence extends Lockable<PartialDependence> {
   private void checkSanityAndFillParams() {
     if (_cols==null) {
       Model m = _model_id.get();
-      if (m==null) throw new IllegalArgumentException("Model not found.");
-      if (!m._output.isSupervised() || m._output.nclasses() > 2)
+      if (m==null) {
+    	  throw new IllegalArgumentException("Model not found.");
+      }
+      if (!m._output.isSupervised() || m._output.nclasses() > 2) {
         throw new IllegalArgumentException("Partial dependence plots are only implemented for regression and binomial classification models");
+        }
       Frame f = _frame_id.get();
-      if (f==null) throw new IllegalArgumentException("Frame not found.");
+      if (f==null) {
+    	  throw new IllegalArgumentException("Frame not found.");
+      }
 
       if (Model.GetMostImportantFeatures.class.isAssignableFrom(m.getClass())) {
         _cols = ((Model.GetMostImportantFeatures)m).getMostImportantFeatures(10);
@@ -96,7 +101,9 @@ public class PartialDependence extends Lockable<PartialDependence> {
         }
         double[] colVals = new double[actualbins];
         double delta = (v.max() - v.min()) / (actualbins - 1);
-        if (actualbins == 1) delta = 0;
+        if (actualbins == 1) {
+        	delta = 0;
+        }
         for (int j = 0; j < colVals.length; ++j) {
           colVals[j] = v.min() + j * delta;
         }
@@ -120,7 +127,9 @@ public class PartialDependence extends Lockable<PartialDependence> {
               Frame test = new Frame(fr.names(), fr.vecs());
               Vec orig = test.remove(col);
               Vec cons = orig.makeCon(value);
-              if (cat) cons.setDomain(fr.vec(col).domain());
+              if (cat) {
+            	  cons.setDomain(fr.vec(col).domain());
+              }
               test.add(col, cons);
               Frame preds = null;
               try {
@@ -131,9 +140,13 @@ public class PartialDependence extends Lockable<PartialDependence> {
                 } else if (_model_id.get()._output.nclasses() == 1) {
                   meanResponse[which] = preds.vec(0).mean();
                   stddevResponse[which] = preds.vec(0).sigma();
-                } else throw H2O.unimpl();
+                } else {
+                	throw H2O.unimpl();
+                }
               } finally {
-                if (preds != null) preds.remove();
+                if (preds != null) {
+                	preds.remove();
+                }
               }
               cons.remove();
               tryComplete();
@@ -178,8 +191,9 @@ public class PartialDependence extends Lockable<PartialDependence> {
         }
         _job.update(1);
         update(_job);
-        if (_job.stop_requested())
+        if (_job.stop_requested()) {
           break;
+          }
       }
       tryComplete();
     }

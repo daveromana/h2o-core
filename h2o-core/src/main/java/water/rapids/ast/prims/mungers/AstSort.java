@@ -23,8 +23,10 @@ public class AstSort extends AstPrimitive {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
     int[] cols = ((AstParameter)asts[2]).columns(fr.names());
     String[] colTypes = fr.typesStr();
-    if (Arrays.asList(colTypes).contains("String"))
-      throw new IllegalArgumentException("Input frame contains String columns.  Remove String columns before " +
+    if (Arrays.asList(colTypes).contains("String")) {
+          throw new IllegalArgumentException("Input frame contains String columns.  Remove String columns before " +
+	
+    }
               "calling sort again.");
     return new ValFrame(Merge.sort(fr,cols));
   }

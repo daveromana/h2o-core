@@ -163,19 +163,31 @@ public class ConcurrentAutoTable implements Serializable {
       int idx = hash & (t.length-1);
       // Peel loop; try once fast
       long old = t[idx];
-      if( (old&mask) != 0 ) return old; // Failed for bit-set under mask
+      if( (old&mask) != 0 ) {
+    	  return old; // Failed for bit-set under mask
+      }
       boolean ok = CAS( t, idx, old&~mask, old+x );
-      if( ok ) return old;      // Got it
+      if( ok ) {
+    	  return old;      // Got it
+      }
       // Try harder
       int cnt=0;
       while( true ) {
         old = t[idx];
-        if( (old&mask) != 0 ) return old; // Failed for bit-set under mask
-        if( CAS( t, idx, old, old+x ) ) break; // Got it!
+        if( (old&mask) != 0 ) {
+        	return old; // Failed for bit-set under mask
+        }
+        if( CAS( t, idx, old, old+x ) ) {
+        	break; // Got it!
+        }
         cnt++;
       }
-      if( cnt < MAX_SPIN ) return old; // Allowable spin loop count
-      if( t.length >= 1024*1024 ) return old; // too big already
+      if( cnt < MAX_SPIN ) {
+    	  return old; // Allowable spin loop count
+      }
+      if( t.length >= 1024*1024 ) {
+    	  return old; // too big already
+      }
 
       // Too much contention; double array size in an effort to reduce contention
       long r = _resizers;
@@ -183,14 +195,18 @@ public class ConcurrentAutoTable implements Serializable {
       while( !_resizerUpdater.compareAndSet(this,r,r+newbytes) )
         r = _resizers;
       r += newbytes;
-      if( master._cat != this ) return old; // Already doubled, don't bother
+      if( master._cat != this ) {
+    	  return old; // Already doubled, don't bother
+      }
       if( (r>>17) != 0 ) {      // Already too much allocation attempts?
         // TODO - use a wait with timeout, so we'll wakeup as soon as the new
         // table is ready, or after the timeout in any case.  Annoyingly, this
         // breaks the non-blocking property - so for now we just briefly sleep.
         //synchronized( this ) { wait(8*megs); }         // Timeout - we always wakeup
-        try { Thread.sleep(r>>17); } catch( InterruptedException e ) { }
-        if( master._cat != this ) return old;
+        try { Thread.sleep(r>>17); } catch( InterruptedException e ) { System.out.println("The error is: " + e);}
+        if( master._cat != this ) {
+        	return old;
+        }
       }
 
       CAT newcat = new CAT(this,t.length*2,0);
@@ -237,7 +253,9 @@ public class ConcurrentAutoTable implements Serializable {
           done = CAS(t,i, old, old|mask );
         }
       }
-      if( _next != null ) _next.all_or(mask);
+      if( _next != null ) {
+    	  _next.all_or(mask);
+      }
     }
     
     public void all_and( long mask ) {
@@ -249,7 +267,9 @@ public class ConcurrentAutoTable implements Serializable {
           done = CAS(t,i, old, old&mask );
         }
       }
-      if( _next != null ) _next.all_and(mask);
+      if( _next != null ) {
+    	  _next.all_and(mask);
+      }
     }
     
     // Set/stomp all table slots.  No CAS.
@@ -257,7 +277,9 @@ public class ConcurrentAutoTable implements Serializable {
       long[] t = _t;
       for( int i=0; i<t.length; i++ ) 
         t[i] = val;
-      if( _next != null ) _next.all_set(val);
+      if( _next != null ) {
+    	  _next.all_set(val);
+      }
     }
 
     String toString( long mask ) { return Long.toString(sum(mask)); }
@@ -268,7 +290,9 @@ public class ConcurrentAutoTable implements Serializable {
       for( int i=1; i<t.length; i++ ) 
         System.out.print(","+t[i]);
       System.out.print("]");
-      if( _next != null ) _next.print();
+      if( _next != null ) {
+    	  _next.print();
+      }
     }
   }
 }

@@ -44,17 +44,21 @@ public class AstColPySlice extends AstPrimitive {
     int[] cols = colList.columns(fr.names());
 
     Frame fr2 = new Frame();
-    if (cols.length == 0)        // Empty inclusion list?
+    if (cols.length == 0) {       // Empty inclusion list?
       return new ValFrame(fr2);
-    if (cols[0] < 0)           // Negative cols have number of cols added
+    }
+    if (cols[0] < 0)   {        // Negative cols have number of cols added
       for (int i = 0; i < cols.length; i++)
         cols[i] += fr.numCols();
+      }
     if (asts[2] instanceof AstNum && // Singletons must be in-range
-        (cols[0] < 0 || cols[0] >= fr.numCols()))
+        (cols[0] < 0 || cols[0] >= fr.numCols())) {
       throw new IllegalArgumentException("Column must be an integer from 0 to " + (fr.numCols() - 1));
+      }
     for (int col : cols)       // For all included columns
-      if (col >= 0 && col < fr.numCols()) // Ignoring out-of-range ones
+      if (col >= 0 && col < fr.numCols()) { // Ignoring out-of-range ones
         fr2.add(fr.names()[col], fr.vecs()[col]);
+        }
     return new ValFrame(fr2);
   }
 }

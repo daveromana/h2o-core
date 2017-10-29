@@ -36,7 +36,9 @@ public class AstStr extends AstParameter {
   @Override
   public int[] columns(String[] names) {
     int i = water.util.ArrayUtils.find(names, _v.getStr());
-    if (i == -1) throw new IllegalArgumentException("Column " + _v.getStr() + " not found");
+    if (i == -1) {
+    	throw new IllegalArgumentException("Column " + _v.getStr() + " not found");
+    }
     return new int[]{i};
   }
 

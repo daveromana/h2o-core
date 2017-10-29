@@ -53,13 +53,15 @@ public class AstRBind extends AstPrimitive {
       if (vals[i].isFrame()) {
         fr = vals[i].getFrame();
         nchks += fr.anyVec().nChunks(); // Total chunks
-      } else nchks++;  // One chunk per scalar
+      } else {nchks++; } // One chunk per scalar
     }
     // No Frame, just a pile-o-scalars?
     Vec zz = null;              // The zero-length vec for the zero-frame frame
     if (fr == null) {            // Zero-length, 1-column, default name
       fr = new Frame(new String[]{Frame.defaultColName(0)}, new Vec[]{zz = Vec.makeZero(0)});
-      if (asts.length == 1) return new ValFrame(fr);
+      if (asts.length == 1) {
+    	  return new ValFrame(fr);
+      }
     }
 
     // Verify all Frames are the same columns, names, and types.  Domains can vary, and will be the union
@@ -76,12 +78,15 @@ public class AstRBind extends AstPrimitive {
           : (tmp_frs[i] = new Frame(fr._names, Vec.makeCons(val.getNum(), 1L, fr.numCols())));
 
       // Check that all frames are compatible
-      if (fr.numCols() != fr0.numCols())
+      if (fr.numCols() != fr0.numCols()) {
         throw new IllegalArgumentException("rbind frames must have all the same columns, found " + fr.numCols() + " and " + fr0.numCols() + " columns.");
-      if (!Arrays.deepEquals(fr._names, fr0._names))
+        }
+      if (!Arrays.deepEquals(fr._names, fr0._names)) {
         throw new IllegalArgumentException("rbind frames must have all the same column names, found " + Arrays.toString(fr._names) + " and " + Arrays.toString(fr0._names));
-      if (!Arrays.equals(types, fr0.types()))
+        }
+      if (!Arrays.equals(types, fr0.types())) {
         throw new IllegalArgumentException("rbind frames must have all the same column types, found " + Arrays.toString(types) + " and " + Arrays.toString(fr0.types()));
+        }
 
       frs[i] = fr0;     // Save frame
 
@@ -92,7 +97,9 @@ public class AstRBind extends AstPrimitive {
         espc[coffset + j] = (roffset + espc2[j]);
       coffset += espc2.length - 1; // Chunk offset
     }
-    if (zz != null) zz.remove();
+    if (zz != null) {
+    	zz.remove();
+    }
 
     // build up the new domains for each vec
     HashMap<String, Integer>[] dmap = new HashMap[types.length];
@@ -108,8 +115,12 @@ public class AstRBind extends AstPrimitive {
           maps[i] = new int[frs[i].vec(k).domain().length];
           for (int j = 0; j < maps[i].length; j++) {
             String s = frs[i].vec(k).domain()[j];
-            if (!dmap[k].containsKey(s)) dmap[k].put(s, maps[i][j] = c++);
-            else maps[i][j] = dmap[k].get(s);
+            if (!dmap[k].containsKey(s)) {
+            	dmap[k].put(s, maps[i][j] = c++);
+            }
+            else {
+            	maps[i][j] = dmap[k].get(s);
+            }
           }
         }
         cmaps[k] = maps;
@@ -133,7 +144,9 @@ public class AstRBind extends AstPrimitive {
     // Switch to F/J thread for continuations
     AstRBind.ParallelRbinds t;
     H2O.submitTask(t = new AstRBind.ParallelRbinds(frs, espc, vecs, cmaps)).join();
-    for (Frame tfr : tmp_frs) if (tfr != null) tfr.delete();
+    for (Frame tfr : tmp_frs) if (tfr != null) {
+    	tfr.delete();
+    }
     return new ValFrame(new Frame(fr.names(), t._vecs));
   }
 
@@ -181,8 +194,9 @@ public class AstRBind extends AstPrimitive {
       @Override
       public void callback(H2O.H2OCountedCompleter h2OCountedCompleter) {
         int i = _ctr.incrementAndGet();
-        if (i < _vecs.length)
+        if (i < _vecs.length) {
           forkVecTask(i);
+          }
       }
     }
   }
@@ -239,8 +253,12 @@ public class AstRBind extends AstPrimitive {
         NewChunk nc = new NewChunk(_v, idx);
         // loop over rows and update ints for new domain mapping according to vecs[c].domain()
         for (int r = 0; r < cs._len; ++r) {
-          if (cs.isNA(r)) nc.addNA();
-          else nc.addNum(_cmap[(int) cs.at8(r)], 0);
+          if (cs.isNA(r)) {
+        	  nc.addNA();
+          }
+          else {
+        	  nc.addNum(_cmap[(int) cs.at8(r)], 0);
+          }
         }
         nc.close(_fs);
       } else {

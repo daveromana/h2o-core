@@ -34,7 +34,9 @@ abstract class AbstractEntry<TypeK,TypeV> implements Map.Entry<TypeK,TypeV> {
 
   /** Equal if the underlying key & value are equal */
   public boolean equals(final Object o) {
-    if (!(o instanceof Map.Entry)) return false;
+    if (!(o instanceof Map.Entry)) {
+    	return false;
+    }
     final Map.Entry e = (Map.Entry)o;
     return eq(_key, e.getKey()) && eq(_val, e.getValue());
   }

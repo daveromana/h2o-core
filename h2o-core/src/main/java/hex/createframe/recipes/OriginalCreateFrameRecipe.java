@@ -51,8 +51,9 @@ public class OriginalCreateFrameRecipe extends CreateFrameRecipe<OriginalCreateF
     check(dest != null, "Destination frame must have a key");
     if (positive_response)
       check(response_factors == 1, "positive_response can only be requested for real-valued response column");
-    if (randomize)
+    if (randomize) {
       check(value == 0, "Cannot set data to a constant value if randomize is true");
+      }
     else {
       check(!has_response, "Cannot have response column if randomize is false");
       check(total_fraction == 0,
@@ -87,10 +88,12 @@ public class OriginalCreateFrameRecipe extends CreateFrameRecipe<OriginalCreateF
 
     // Create response column
     if (has_response) {
-      if (response_factors == 1)
+      if (response_factors == 1) {
         cfe.addColumnMaker(new RealColumnCfcm("response", positive_response? 0 : -real_range, real_range));
-      else
+        }
+      else {
         cfe.addColumnMaker(new CategoricalColumnCfcm("response", response_factors));
+        }
     }
 
     // Create "feature" columns

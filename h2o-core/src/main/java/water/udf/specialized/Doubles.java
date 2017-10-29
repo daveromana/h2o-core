@@ -24,7 +24,9 @@ public class Doubles extends DataColumns.BaseFactory<Double> {
 
   @Override
   public DataColumn<Double> newColumn(final Vec vec) {
-    if (vec.get_type() != Vec.T_NUM)
+    if (vec.get_type() {!= Vec.T_NUM) 
+    	
+    }
       throw new IllegalArgumentException("Expected type T_NUM, got " + vec.get_type_str());
     return new Column(vec, this);
   }
@@ -40,7 +42,11 @@ public class Doubles extends DataColumns.BaseFactory<Double> {
     @Override public Double get(int idx) { return c.isNA(idx) ? null : c.atd(idx); }
 
     @Override public void set(int idx, Double value) {
-      if (value == null) c.setNA(idx); else c.set(idx, value);
+      if (value == null) {
+    	  c.setNA(idx); }else {
+    		  c.set(idx, value);
+    	  }
+      
     }
     public void set(int idx, double value) { c.set(idx, value); }
   }
@@ -60,7 +66,11 @@ public class Doubles extends DataColumns.BaseFactory<Double> {
     @Override public Double apply(long idx) { return get(idx); }
 
     @Override public void set(long idx, Double value) {
-      if (value == null) vec().setNA(idx); else vec().set(idx, value);
+      if (value == null) {
+    	  vec().setNA(idx);} 
+      else {vec().set(idx, value);
+      }
+      
     }
 
     public void set(long idx, double value) { vec().set(idx, value); }

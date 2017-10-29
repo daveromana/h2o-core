@@ -42,19 +42,22 @@ public class AstLStrip extends AstPrimitive {
 
     // Type check
     for (Vec v : fr.vecs())
-      if (!(v.isCategorical() || v.isString()))
+      if (!(v.isCategorical() || v.isString())) {
         throw new IllegalArgumentException("trim() requires a string or categorical column. "
             + "Received " + fr.anyVec().get_type_str()
             + ". Please convert column to a string or categorical first.");
+        }
 
     // Transform each vec
     Vec nvs[] = new Vec[fr.numCols()];
     int i = 0;
     for (Vec v : fr.vecs()) {
-      if (v.isCategorical())
+      if (v.isCategorical()) {
         nvs[i] = lstripCategoricalCol(v, set);
-      else
+        }
+      else {
         nvs[i] = lstripStringCol(v, set);
+        }
       i++;
     }
     return new ValFrame(new Frame(nvs));
@@ -79,8 +82,9 @@ public class AstLStrip extends AstPrimitive {
       }
     }
     //Check for duplicated domains
-    if (strippedToOldDomainIndices.size() < doms.length)
+    if (strippedToOldDomainIndices.size() < doms.length) {
       return VecUtils.DomainDedupe.domainDeduper(vec, strippedToOldDomainIndices);
+      }
 
     return vec.makeCopy(doms);
   }
@@ -90,18 +94,21 @@ public class AstLStrip extends AstPrimitive {
     return new MRTask() {
       @Override
       public void map(Chunk chk, NewChunk newChk) {
-        if (chk instanceof C0DChunk) // all NAs
+        if (chk instanceof C0DChunk) {// all NAs
           for (int i = 0; i < chk.len(); i++)
             newChk.addNA();
+          }
         else if (((CStrChunk) chk)._isAllASCII && StringUtils.isAsciiPrintable(charSet)) { // fast-path operations
           ((CStrChunk) chk).asciiLStrip(newChk, charSet);
         } else {
           BufferedString tmpStr = new BufferedString();
           for (int i = 0; i < chk.len(); i++) {
-            if (chk.isNA(i))
+            if (chk.isNA(i)) {
               newChk.addNA();
-            else
+              }
+            else {
               newChk.addStr(StringUtils.stripStart(chk.atStr(tmpStr, i).toString(), charSet));
+              }
           }
         }
       }

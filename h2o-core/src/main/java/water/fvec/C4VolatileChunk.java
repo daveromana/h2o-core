@@ -20,7 +20,9 @@ public class C4VolatileChunk extends Chunk {
 
   @Override protected final long at8_impl( int i ) {
     long res = _is[i];
-    if( res == _NA ) throw new IllegalArgumentException("at8_abs but value is missing");
+    if( res == _NA ) {
+    	throw new IllegalArgumentException("at8_abs but value is missing");
+    }
     return res;
   }
   @Override protected final double atd_impl( int i ) {
@@ -29,7 +31,9 @@ public class C4VolatileChunk extends Chunk {
   }
   @Override protected final boolean isNA_impl( int i ) { return _is[i] == _NA; }
   @Override boolean set_impl(int idx, long l) {
-    if( !(Integer.MIN_VALUE < l && l <= Integer.MAX_VALUE) ) return false;
+    if( !(Integer.MIN_VALUE < l && l <= Integer.MAX_VALUE) ) {
+    	return false;
+    }
     _is[idx] = (int)l;
     return true;
   }
@@ -39,8 +43,12 @@ public class C4VolatileChunk extends Chunk {
 
   private final void processRow(int r, ChunkVisitor v){
     int i = UnsafeUtils.get4(_mem,(r<<2));
-    if(i == _NA) v.addNAs(1);
-    else v.addValue(i);
+    if(i == _NA) {
+    	v.addNAs(1);
+    }
+    else {
+    	v.addValue(i);
+    }
   }
 
   @Override
@@ -65,7 +73,9 @@ public class C4VolatileChunk extends Chunk {
 
   @Override
   public Futures close( int cidx, Futures fs ) {
-    if(chk2() != null) return chk2().close(cidx,fs);
+    if(chk2() != null) {
+    	return chk2().close(cidx,fs);
+    }
     Value v = new Value(_vec.chunkKey(cidx),this,_len*4,Value.ICE);
     DKV.put(v._key,v,fs);
     return fs;

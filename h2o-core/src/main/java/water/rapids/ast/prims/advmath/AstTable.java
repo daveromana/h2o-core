@@ -49,28 +49,36 @@ public class AstTable extends AstPrimitive {
     Vec vec1 = fr1.vec(0);
 
     ValFrame res = fast_table(vec1, ncols, fr1._names[0]);
-    if (res != null) return res;
+    if (res != null) {
+    	return res;
+    }
 
-    if (!(asts.length == 3 || asts.length == 4) || ncols > 2)
-      throw new IllegalArgumentException("table expects one or two columns");
+    if (!(asts.length == 3 || asts.length == 4) || ncols > 2) {
+      throw new IllegalArgumentException("table expects one or two columns");}
 
     Vec vec2 = fr1.numCols() == 2 ? fr1.vec(1) : fr2 != null ? fr2.vec(0) : null;
     int sz = fr1._names.length + (fr2 != null ? fr2._names.length : 0);
     String[] colnames = new String[sz];
     int i = 0;
     for (String name : fr1._names) colnames[i++] = name;
-    if (fr2 != null) for (String name : fr2._names) colnames[i++] = name;
-
+    if (fr2 != null) {
+    	for (String name : fr2._names) colnames[i++] = name;
+    
 
     return slow_table(vec1, vec2, colnames, dense);
+  }
   }
 
   // -------------------------------------------------------------------------
   // Fast-path for 1 integer column
   private ValFrame fast_table(Vec v1, int ncols, String colname) {
-    if (ncols != 1 || !v1.isInt()) return null;
+    if (ncols != 1 || !v1.isInt()) {
+    	return null;
+    }
     long spanl = (long) v1.max() - (long) v1.min() + 1;
-    if (spanl > 1000000) return null; // Cap at decent array size, for performance
+    if (spanl > 1000000) {
+    	return null; // Cap at decent array size, for performance
+    }
 
     // First fast-pass counting
     AstTable.FastCnt fastCnt = new AstTable.FastCnt((long) v1.min(), (int) spanl).doAll(v1);
@@ -111,11 +119,12 @@ public class AstTable extends AstPrimitive {
     @Override
     public void map(Chunk c) {
       _cnts = new long[_span];
-      for (int i = 0; i < c._len; i++)
-        if (!c.isNA(i))
+      for (int i = 0; i < c._len; i++) {
+        if (!c.isNA(i)) {
           _cnts[(int) (c.at8(i) - _min)]++;
+          }
     }
-
+    }
     @Override
     public void reduce(AstTable.FastCnt fc) {
       ArrayUtils.add(_cnts, fc._cnts);
@@ -234,10 +243,11 @@ public class AstTable extends AstPrimitive {
       if (v1.isCategorical()) vec.setDomain(v1.domain());
       res.add(colnames[0], vec);
       vec = Vec.makeVec(right_categ, Vec.VectorGroup.VG_LEN1.addVec());
-      if (v2.isCategorical()) vec.setDomain(v2.domain());
-      res.add(colnames[1], vec);
-      vec = Vec.makeVec(cnts, null, Vec.VectorGroup.VG_LEN1.addVec());
-      res.add("Counts", vec);
+      if (v2.isCategorical()) { vec.setDomain(v2.domain());
+	      res.add(colnames[1], vec);
+	      vec = Vec.makeVec(cnts, null, Vec.VectorGroup.VG_LEN1.addVec());
+	      res.add("Counts", vec);
+	      }  
     }
     return new ValFrame(res);
   }
@@ -274,11 +284,15 @@ public class AstTable extends AstPrimitive {
       for (int i = 0; i < c0._len; i++) {
 
         double d0 = c0.atd(i);
-        if (Double.isNaN(d0)) continue;
+        if (Double.isNaN(d0)) {
+        	continue;
+        }
         long l0 = Double.doubleToRawLongBits(d0);
 
         double d1 = c1.atd(i);
-        if (Double.isNaN(d1)) continue;
+        if (Double.isNaN(d1)) {
+        	continue;
+        }
         long l1 = Double.doubleToRawLongBits(d1);
 
         // Atomically fetch/create nested NBHM
@@ -286,7 +300,9 @@ public class AstTable extends AstPrimitive {
         if (col1s == null) {   // Speed filter pre-filled entries
           col1s = new NonBlockingHashMapLong<>();
           NonBlockingHashMapLong<AtomicLong> old = _col0s.putIfAbsent(l0, col1s);
-          if (old != null) col1s = old; // Lost race, use old value
+          if (old != null) {
+        	  col1s = old; // Lost race, use old value
+          }
         }
 
         // Atomically fetch/create nested AtomicLong
@@ -294,7 +310,9 @@ public class AstTable extends AstPrimitive {
         if (cnt == null) {   // Speed filter pre-filled entries
           cnt = new AtomicLong();
           AtomicLong old = col1s.putIfAbsent(l1, cnt);
-          if (old != null) cnt = old; // Lost race, use old value
+          if (old != null) {
+        	  cnt = old; // Lost race, use old value
+          }
         }
 
         // Atomically bump counter
@@ -304,12 +322,16 @@ public class AstTable extends AstPrimitive {
 
     @Override
     public void reduce(AstTable.SlowCnt sc) {
-      if (_col0s == sc._col0s) return;
+      if (_col0s == sc._col0s) {
+    	  return;
+      }
       throw water.H2O.unimpl();
     }
 
     public final AutoBuffer write_impl(AutoBuffer ab) {
-      if (_col0s == null) return ab.put8(0);
+      if (_col0s == null) {
+    	  return ab.put8(0);
+      }
       ab.put8(_col0s.size());
       for (long col0 : _col0s.keySetLong()) {
         ab.put8(col0);
@@ -325,7 +347,9 @@ public class AstTable extends AstPrimitive {
 
     public final AstTable.SlowCnt read_impl(AutoBuffer ab) {
       long len0 = ab.get8();
-      if (len0 == 0) return this;
+      if (len0 == 0) {
+    	  return this;
+      }
       _col0s = new NonBlockingHashMapLong<>();
       for (long i = 0; i < len0; i++) {
         NonBlockingHashMapLong<AtomicLong> col1s = new NonBlockingHashMapLong<>();

@@ -20,8 +20,12 @@ public class Pair<X, Y> {
   @SuppressWarnings("unchecked")
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof Pair)) return false;
+    if (this == o) {
+    	return true;
+    }
+    if (!(o instanceof Pair)) {
+    	return false;
+    }
     Pair<X, Y> q = (Pair<X,Y>) o;
     return Objects.equals(x, q._1()) && Objects.equals(y, q._2());
   }

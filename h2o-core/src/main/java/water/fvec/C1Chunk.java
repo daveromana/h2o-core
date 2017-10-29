@@ -14,7 +14,9 @@ public class C1Chunk extends Chunk {
 
   @Override protected final long at8_impl( int i ) {
     long res = 0xFF&_mem[i+_OFF];
-    if( res == _NA ) throw new IllegalArgumentException("at8_abs but value is missing");
+    if( res == _NA ) {
+    	throw new IllegalArgumentException("at8_abs but value is missing");
+    }
     return res;
   }
   @Override protected final double atd_impl( int i ) {
@@ -23,7 +25,9 @@ public class C1Chunk extends Chunk {
   }
   @Override protected final boolean isNA_impl( int i ) { return (0xFF&_mem[i+_OFF]) == _NA; }
   @Override boolean set_impl(int i, long l) {
-    if( !(0 <= l && l < 255) ) return false;
+    if( !(0 <= l && l < 255) ) {
+    	return false;
+    }
     _mem[i+_OFF] = (byte)l;
     return true;
   }
@@ -38,8 +42,12 @@ public class C1Chunk extends Chunk {
 
   private final void processRow(int r, ChunkVisitor v){
     int i = 0xFF&_mem[r+_OFF];
-    if(i == _NA) v.addNAs(1);
-    else v.addValue(i);
+    if(i == _NA) {
+    	v.addNAs(1);
+    }
+    else {
+    	v.addValue(i);
+    }
   }
 
   @Override

@@ -117,7 +117,9 @@ public class ModelBuilderSchema<B extends ModelBuilder, S extends ModelBuilderSc
       this.messages = new ValidationMessageV3[msgs.length];
       int i = 0;
       for (ModelBuilder.ValidationMessage vm : msgs) {
-        if( vm != null ) this.messages[i++] = new ValidationMessageV3().fillFromImpl(vm); // TODO: version // Note: does default field_name mapping
+        if( vm != null ) {
+        	this.messages[i++] = new ValidationMessageV3().fillFromImpl(vm); // TODO: version // Note: does default field_name mapping
+        }
       }
       // default fieldname hacks
       ValidationMessageV3.mapValidationMessageFieldNames(this.messages, new String[]{"_train", "_valid"}, new

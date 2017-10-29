@@ -52,8 +52,10 @@ abstract class ZipUtil {
    */
   static boolean isZipDirectory(Key key) {
     Iced ice = DKV.getGet(key);
-    if (ice == null) throw new H2OIllegalArgumentException("Missing data", "Did not find any data under " +
+    if (ice == null) {
+    	throw new H2OIllegalArgumentException("Missing data", "Did not find any data under " +
             "key " + key);
+    	}
     ByteVec bv = (ByteVec) (ice instanceof ByteVec ? ice : ((Frame) ice).vecs()[0]);
 
     return isZipDirectory(bv);
@@ -136,26 +138,31 @@ abstract class ZipUtil {
       }
     }
 
-    if (totalCompSize == 0) // something is wrong.  Return no compression.
+    if (totalCompSize == 0) { // something is wrong.  Return no compression.
       return 1;
-    else
+      }
+    else {
       return totalSize/totalCompSize;
+      }
   }
 
   static Compression guessCompressionMethod(byte [] bits) {
     // Look for ZIP magic
-    if( bits.length > ZipFile.LOCHDR && UnsafeUtils.get4(bits, 0) == ZipFile.LOCSIG )
+    if( bits.length > ZipFile.LOCHDR && UnsafeUtils.get4(bits, 0) == ZipFile.LOCSIG ) {
       return Compression.ZIP;
-    if( bits.length > 2 && (UnsafeUtils.get2(bits,0)&0xffff) == GZIPInputStream.GZIP_MAGIC )
+      }
+    if( bits.length > 2 && (UnsafeUtils.get2(bits,0)&0xffff) == GZIPInputStream.GZIP_MAGIC ) {
       return Compression.GZIP;
+      }
     return Compression.NONE;
   }
 
   static float decompressionRatio(ByteVec bv) {
     byte[] zips = bv.getFirstBytes();
     ZipUtil.Compression cpr = ZipUtil.guessCompressionMethod(zips);
-    if (cpr == Compression.NONE )
-      return 1; // no compression
+    if (cpr == Compression.NONE ) {
+      return 1;
+      } // no compression
     else if (cpr == Compression.ZIP) {
       ByteArrayInputStream bais = new ByteArrayInputStream(zips);
       ZipInputStream zis = new ZipInputStream(bais);
@@ -183,7 +190,9 @@ abstract class ZipUtil {
 
 
   static byte[] unzipBytes( byte[] bs, Compression cmp, int chkSize ) {
-    if( cmp == Compression.NONE ) return bs; // No compression
+    if( cmp == Compression.NONE ) {
+    	return bs; // No compression
+    }
     // Wrap the bytes in a stream
     ByteArrayInputStream bais = new ByteArrayInputStream(bs);
     InputStream is = null;
@@ -192,8 +201,9 @@ abstract class ZipUtil {
         ZipInputStream zis = new ZipInputStream(bais);
         ZipEntry ze = zis.getNextEntry(); // Get the *FIRST* entry
         // There is at least one entry in zip file and it is not a directory.
-        if( ze == null || ze.isDirectory() )
-          zis.getNextEntry(); // read the next entry which should be a file
+        if( ze == null || ze.isDirectory() ) {
+          zis.getNextEntry();
+          } // read the next entry which should be a file
         is = zis;
       } else {
         assert cmp == Compression.GZIP;
@@ -206,19 +216,21 @@ abstract class ZipUtil {
       int off = 0;
       while( off < bs.length ) {
         int len = is.read(bs, off, bs.length - off);
-        if( len < 0 )
+        if( len < 0 ) {
           break;
+          }
         off += len;
         if( off == bs.length ) { // Dataset is uncompressing alot! Need more space...
-          if( bs.length >= chkSize )
-            break; // Already got enough
+          if( bs.length >= chkSize ) {
+            break;
+            } // Already got enough
           bs = Arrays.copyOf(bs, bs.length * 2);
         }
       } 
     } catch( IOException ioe ) { 
       throw Log.throwErr(ioe); 
     } finally { 
-      try { if( is != null ) is.close(); } catch( IOException ignore ) { }
+      try { if( is != null ) is.close(); } catch( IOException ignore ) {System.out.println("The error is: " + ignore); }
     }
 
     return bs;
@@ -246,12 +258,14 @@ abstract class ZipUtil {
       while( off < bs.length ) {
         int len = 0;
         len = is.read(bs, off, bs.length - off);
-        if( len < 0 )
+        if( len < 0 ) {
           break;
+          }
         off += len;
         if( off == bs.length ) { // Dataset is uncompressing alot! Need more space...
-          if( bs.length >= chkSize )
-            break; // Already got enough
+          if( bs.length >= chkSize ) {
+            break;
+            } // Already got enough
           bs = Arrays.copyOf(bs, bs.length * 2);
         }
       }

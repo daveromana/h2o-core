@@ -67,7 +67,9 @@ public class ModelMetricsBinomialV3<I extends ModelMetricsBinomial, S extends Mo
       formats[0] = "%f";
       int i;
       for( i=0; i<crits.length; i++ ) {
-        if (colHeadersMax.length > i) colHeadersMax[i] = "max " + crits[i].toString();
+        if (colHeadersMax.length > i) {
+        	colHeadersMax[i] = "max " + crits[i].toString();
+        }
         colHeaders[i+1] = crits[i].toString();
         types     [i+1] = crits[i]._isInt ? "long" : "double";
         formats   [i+1] = crits[i]._isInt ? "%d"   : "%f"    ;
@@ -102,7 +104,9 @@ public class ModelMetricsBinomialV3<I extends ModelMetricsBinomial, S extends Mo
     }
     if (modelMetrics._gainsLift != null) {
       TwoDimTable t = modelMetrics._gainsLift.createTwoDimTable();
-      if (t!=null) this.gains_lift_table = new TwoDimTableV3().fillFromImpl(t);
+      if (t!=null) {
+    	  this.gains_lift_table = new TwoDimTableV3().fillFromImpl(t);
+      }
     }
     return (S) this;
   }

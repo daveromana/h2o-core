@@ -209,17 +209,22 @@ public class ModelParametersSchemaV3<P extends Model.Parameters, S extends Model
       List<String> me = new ArrayList<String>();
       me.add(name);
       // Note: this can happen if this field doesn't have an @API annotation, in which case we got an earlier WARN
-      if (param.is_mutually_exclusive_with != null) me.addAll(Arrays.asList(param.is_mutually_exclusive_with));
+      if (param.is_mutually_exclusive_with != null) {
+    	  me.addAll(Arrays.asList(param.is_mutually_exclusive_with));
+      }
 
       // Make a new Set which contains ourselves, fields we have already been connected to,
       // and fields *they* have already been connected to.
       Set<String> new_set = new HashSet<>();
       for (String s : me) {
         // Were we mentioned by a previous field?
-        if (field_exclusivity_groups.containsKey(s))
+        if (field_exclusivity_groups.containsKey(s)) {
           new_set.addAll(field_exclusivity_groups.get(s));
-        else
-          new_set.add(s);
+          }
+        else {
+        	 new_set.add(s);
+        }
+         
       }
 
       // Now point all the fields in our Set to the Set.

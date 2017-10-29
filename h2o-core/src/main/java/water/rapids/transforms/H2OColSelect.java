@@ -18,9 +18,15 @@ public class H2OColSelect extends Transform<H2OColSelect> {
   public H2OColSelect(String name, String ast, boolean inplace, String[] newNames) {
     super(name,ast,inplace,newNames);
     AstParameter cols = ((AstParameter)_ast._asts[2]);
-    if( cols instanceof AstStrList)  _cols = ((AstStrList)cols)._strs;
-    else if (cols instanceof AstStr) _cols = new String[]{((AstStr)cols).getStr()};
-    else _cols = null;
+    if( cols instanceof AstStrList)  {
+    	_cols = ((AstStrList)cols)._strs;
+    }
+    else if (cols instanceof AstStr) {
+    	_cols = new String[]{((AstStr)cols).getStr()};
+    }
+    else {
+    	_cols = null;
+    }
   }
 
   @Override public Transform<H2OColSelect> fit(Frame f) { return this; }
@@ -29,7 +35,9 @@ public class H2OColSelect extends Transform<H2OColSelect> {
 //    throw water.H2O.unimpl();
     Session ses = new Session();
     Frame fr = ses.exec(_ast,null).getFrame();
-    if( fr._key==null ) fr = new Frame(Key.<Frame>make("H2OColSelect_"+f._key.toString()),fr.names(),fr.vecs());
+    if( fr._key==null ) {fr = new Frame(Key.<Frame>make("H2OColSelect_"+f._key.toString()),fr.names(),fr.vecs());
+    
+    }
     DKV.put(fr);
     return fr;
   }

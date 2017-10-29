@@ -15,7 +15,9 @@ public abstract class Keyed<T extends Keyed> extends Iced<T> {
   public final void remove( ) { remove(new Futures()).blockForPending(); }
   /** Remove this Keyed object, and all subparts.  */
   public final Futures remove( Futures fs ) {
-    if( _key != null ) DKV.remove(_key,fs);
+    if( _key != null ) {
+    	DKV.remove(_key,fs);
+    }
     return remove_impl(fs);
   }
 
@@ -27,13 +29,17 @@ public abstract class Keyed<T extends Keyed> extends Iced<T> {
   /** Remove this Keyed object, and all subparts; blocking. */
   public static void remove( Key k ) {
     Value val = DKV.get(k);
-    if( val==null ) return;
+    if( val==null ) {
+    	return;
+    }
     ((Keyed)val.get()).remove();
   }
   /** Remove this Keyed object, and all subparts. */
   public static void remove( Key k, Futures fs ) {
     Value val = DKV.get(k);
-    if( val==null ) return;
+    if( val==null ) {
+    	return;
+    }
     ((Keyed)val.get()).remove(fs);
   }
 
@@ -65,9 +71,13 @@ public abstract class Keyed<T extends Keyed> extends Iced<T> {
   private long _checksum;
   // Efficiently fetch the checksum, setting on first access
   public final long checksum() {
-    if( _checksum!=0 ) return _checksum;
+    if( _checksum!=0 ) {
+    	return _checksum;
+    }
     long x = checksum_impl();
-    if( x==0 ) x=1;
+    if( x==0 ) {
+    	x=1;
+    }
     return (_checksum=x);
   }
 

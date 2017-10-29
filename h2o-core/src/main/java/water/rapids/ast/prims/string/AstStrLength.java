@@ -35,19 +35,22 @@ public class AstStrLength extends AstPrimitive {
 
     // Type check
     for (Vec v : fr.vecs())
-      if (!(v.isCategorical() || v.isString()))
+      if (!(v.isCategorical() || v.isString())) {
         throw new IllegalArgumentException("length() requires a string or categorical column. "
             + "Received " + fr.anyVec().get_type_str()
             + ". Please convert column to a string or categorical first.");
+        }
 
     // Transform each vec
     Vec nvs[] = new Vec[fr.numCols()];
     int i = 0;
     for (Vec v : fr.vecs()) {
-      if (v.isCategorical())
+      if (v.isCategorical()) {
         nvs[i] = lengthCategoricalCol(v);
-      else
+        }
+      else {
         nvs[i] = lengthStringCol(v);
+        }
       i++;
     }
 
@@ -73,10 +76,12 @@ public class AstStrLength extends AstPrimitive {
         // pre-allocate since the size is known
         newChk.alloc_nums(chk._len);
         for (int i = 0; i < chk._len; i++)
-          if (chk.isNA(i))
+          if (chk.isNA(i)) {
             newChk.addNA();
-          else
+            }
+          else {
             newChk.addNum(catLengths[(int) chk.atd(i)], 0);
+            }
       }
     }.doAll(1, Vec.T_NUM, new Frame(vec)).outputFrame().anyVec();
     return res;
@@ -94,8 +99,12 @@ public class AstStrLength extends AstPrimitive {
         } else { //UTF requires Java string methods for accuracy
           BufferedString tmpStr = new BufferedString();
           for (int i = 0; i < chk._len; i++) {
-            if (chk.isNA(i)) newChk.addNA();
-            else newChk.addNum(chk.atStr(tmpStr, i).toString().length(), 0);
+            if (chk.isNA(i)) {
+            	newChk.addNA();
+            }
+            else {
+            	newChk.addNum(chk.atStr(tmpStr, i).toString().length(), 0);
+            }
           }
         }
       }

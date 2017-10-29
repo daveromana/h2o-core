@@ -12,7 +12,9 @@ public final class C1SChunk extends CSChunk {
       double div = PrettyPrint.pow10(1, -scale);
       for (int i = 0; i < _len; ++i) {
         int x = 0xFF & _mem[_OFF + i];
-        if (x == C1Chunk._NA) continue;
+        if (x == C1Chunk._NA) {
+        	continue;
+        }
         if ((getD(x, C1Chunk._NA, Double.NaN)) != (x+bias)/div){
           setDecimal();
           break;
@@ -31,11 +33,14 @@ public final class C1SChunk extends CSChunk {
 
   @Override
   protected boolean set_impl(int i, double x) {
-    if(Double.isNaN(x)) return setNA_impl(i);
+    if(Double.isNaN(x)) {
+    	return setNA_impl(i);
+    }
     int y = getScaledValue(x, C1Chunk._NA);
     byte b = (byte)y;
-    if(getD(0xFF&b,C1Chunk._NA,Double.NaN) != x)
+    if(getD(0xFF&b,C1Chunk._NA,Double.NaN) != x) {
       return false;
+      }
     _mem[_OFF+i] = b;
     assert !isNA_impl(i);
     return true;
@@ -68,8 +73,12 @@ public final class C1SChunk extends CSChunk {
 
   private <T extends ChunkVisitor> void processRow(T v, int i, long bias, int exp){
     long x = 0xFF & _mem[_OFF + i];
-    if(x == C1Chunk._NA) v.addNAs(1);
-    else v.addValue(x + bias, exp);
+    if(x == C1Chunk._NA) {
+    	v.addNAs(1);
+    }
+    else {
+    	v.addValue(x + bias, exp);
+    }
   }
 
   @Override
