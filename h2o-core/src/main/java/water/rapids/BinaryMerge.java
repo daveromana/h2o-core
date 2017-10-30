@@ -160,7 +160,10 @@ class BinaryMerge extends DTask<BinaryMerge> {
 
     long retSize = leftTo - _leftFrom - 1;   // since leftTo and leftFrom are 1 outside the extremes
     assert retSize >= 0;
-    if (retSize==0) { tryComplete(); return; } // nothing can match, even when allLeft
+    if (retSize==0) { 
+    	
+    	tryComplete(); 
+        return; } // nothing can match, even when allLeft
     _retBatchSize = 268435456;    // 2^31 / 8 since Java arrays are limited to 2^31 bytes
     int retNBatch = (int)((retSize - 1) / _retBatchSize + 1);
     int retLastSize = (int)(retSize - (retNBatch - 1) * _retBatchSize);
@@ -237,14 +240,18 @@ class BinaryMerge extends DTask<BinaryMerge> {
 
     long[][] fillPerNodeRows( int i ) {
       final int batchSizeLong = 256*1024*1024 / 16;  // 256GB DKV limit / sizeof(UUID)
-      if( _perNodeNumRowsToFetch[i] <= 0 ) return null;
+      if( _perNodeNumRowsToFetch[i] <= 0 ) { 
+    	  return null;
+      }
       int nbatch  = (int) ((_perNodeNumRowsToFetch[i] - 1) / batchSizeLong + 1);  // TODO: wrap in class to avoid this boiler plate
       assert nbatch >= 1;
       int lastSize = (int) (_perNodeNumRowsToFetch[i] - (nbatch - 1) * batchSizeLong);
       assert lastSize > 0;
       long[][] res = new long[nbatch][];
-      for( int b = 0; b < nbatch; b++ )
-        res[b] = MemoryManager.malloc8(b==nbatch-1 ? lastSize : batchSizeLong);
+      for( int b = 0; b < nbatch; b++ ) {
+    	   res[b] = MemoryManager.malloc8(b==nbatch-1 ? lastSize : batchSizeLong);
+      }
+       
       return res;
     }
   }
