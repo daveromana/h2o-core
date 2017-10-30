@@ -1,14 +1,4 @@
-package water.fvec;
 
-import water.MemoryManager;
-import water.util.UnsafeUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-
-/**
- * The "few unique doubles"-compression function
- */
 public class CUDChunk extends Chunk {
   public static int MAX_UNIQUES=256;
   public static int computeByteSize(int uniques, int len) {
