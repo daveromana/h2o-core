@@ -117,7 +117,7 @@ public class GainsLift extends Iced {
 	        int i = 0;
 		        while (it.hasNext()) {
 		        	_quantiles[i++] = it.next();
-		      } finally {
+		       } finally {    //   Delete adaptation vectors
 		        if (qm!=null) {
 		        	qm.remove();
 		        if (fr!=null) {
@@ -143,7 +143,7 @@ public class GainsLift extends Iced {
       avg_response_rate = gt.avg_response_rate();
       events = gt.events();
       observations = gt.observations();
-    } finally {       // Delete adaptation vectors
+     } finally {    //   Delete adaptation vectors
       Scope.exit();
     }
   }

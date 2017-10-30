@@ -348,10 +348,11 @@ public class ConcurrentLinkedDeque<E>
                         return;
                     }
                     // Lost CAS race to another thread; re-read prev
+                    }
+                }
                 }
             }
-    }
-
+        }
     /**
      * Links e as last element.
      */
@@ -377,14 +378,15 @@ public class ConcurrentLinkedDeque<E>
                         // for e to become an element of this deque,
                         // and for newNode to become "live".
                         if (p != t) {// hop two nodes at a time
-                            casTail(t, newNode);  // Failure is OK.
+                            casTail(t, newNode); 
+                            } // Failure is OK.
                         return;
                     }
                     // Lost CAS race to another thread; re-read next
                 }
+                }
             }
     }
-
     private static final int HOPS = 2;
 
     /**
@@ -436,10 +438,11 @@ public class ConcurrentLinkedDeque<E>
                 Node<E> q = p.prev;
                 if (q == null) {
                     if (p.next == p) {
-                        return;
+                        return;}
                     activePred = p;
                     isFirst = true;
                     break;
+                    }
                 }
                 else if (p == q)
                     return;
@@ -495,9 +498,9 @@ public class ConcurrentLinkedDeque<E>
                 x.lazySetPrev(isFirst ? prevTerminator() : x);
                 x.lazySetNext(isLast  ? nextTerminator() : x);
             }
-        }
-    }
-
+            }
+            }
+    }	
     /**
      * Unlinks non-null first node.
      */
@@ -585,6 +588,7 @@ public class ConcurrentLinkedDeque<E>
                     // but if so, the CAS is guaranteed to fail.
                     if (casHead(h, p)) {
                         return;
+                        }
                     else
                         continue restartFromHead;
                 }
@@ -622,10 +626,10 @@ public class ConcurrentLinkedDeque<E>
                     continue restartFromTail;
                 else
                     p = q;
+                	}
             }
         }
     }
-
     private void skipDeletedPredecessors(Node<E> x) {
         whileActive:
         do {
@@ -653,6 +657,7 @@ public class ConcurrentLinkedDeque<E>
             // found active CAS target
             if (prev == p || x.casPrev(prev, p)) {
                 return;
+                
 
         } while (x.item != null || x.next == null);
     }
@@ -669,21 +674,27 @@ public class ConcurrentLinkedDeque<E>
             for (;;) {
                 if (p.item != null) {
                     break findActive;
+                    }
                 Node<E> q = p.next;
                 if (q == null) {
-                    if (p.prev == p)
+                    if (p.prev == p) {
                         continue whileActive;
+                        }
                     break findActive;
                 }
                 else if (p == q) {
                     continue whileActive;
-                else
+                    }
+                
+                else {
                     p = q;
+                    }
             }
 
             // found active CAS target
             if (next == p || x.casNext(next, p)) {
                 return;
+                }
 
         } while (x.item != null || x.prev == null);
     }
@@ -732,6 +743,7 @@ public class ConcurrentLinkedDeque<E>
                 else
                     continue restartFromHead;
             }
+            }
     }
 
     /**
@@ -758,7 +770,7 @@ public class ConcurrentLinkedDeque<E>
                     continue restartFromTail;
             }
     }
-
+    }
     // Minor convenience utilities
 
     /**
@@ -769,6 +781,7 @@ public class ConcurrentLinkedDeque<E>
     private static void checkNotNull(Object v) {
         if (v == null) {
             throw new NullPointerException();
+            }
     }
 
     /**
@@ -781,6 +794,7 @@ public class ConcurrentLinkedDeque<E>
     private E screenNullResult(E v) {
         if (v == null) {
             throw new NoSuchElementException();
+            }
         return v;
     }
 
@@ -796,6 +810,7 @@ public class ConcurrentLinkedDeque<E>
             E item = p.item;
             if (item != null) {
                 list.add(item);
+                }
         }
         return list;
     }
@@ -824,6 +839,7 @@ public class ConcurrentLinkedDeque<E>
             Node<E> newNode = new Node<E>(e);
             if (h == null) {
                 h = t = newNode;
+                }
             else {
                 t.lazySetNext(newNode);
                 newNode.lazySetPrev(t);
@@ -840,6 +856,7 @@ public class ConcurrentLinkedDeque<E>
         if (h == t) {
             if (h == null) {
                 h = t = new Node<E>(null);
+                }
             else {
                 // Avoid edge case of a single Node with non-null item.
                 Node<E> newNode = new Node<E>(null);
@@ -907,6 +924,7 @@ public class ConcurrentLinkedDeque<E>
             E item = p.item;
             if (item != null) {
                 return item;
+                }
         }
         return null;
     }
@@ -916,6 +934,7 @@ public class ConcurrentLinkedDeque<E>
             E item = p.item;
             if (item != null) {
                 return item;
+                }
         }
         return null;
     }
@@ -1039,7 +1058,8 @@ public class ConcurrentLinkedDeque<E>
             if (item != null && o.equals(item) && p.casItem(item, null)) {
                 unlink(p);
                 return true;
-            }
+                }
+            
         }
         return false;
     }
@@ -1054,11 +1074,13 @@ public class ConcurrentLinkedDeque<E>
     public boolean contains(Object o) {
         if (o == null) {
         	return false;
-        }
+        	}
+      
         for (Node<E> p = first(); p != null; p = succ(p)) {
             E item = p.item;
             if (item != null && o.equals(item)) {
                 return true;
+                }
         }
         return false;
     }
@@ -1095,6 +1117,8 @@ public class ConcurrentLinkedDeque<E>
                 // Collection.size() spec says to max out
                 if (++count == Integer.MAX_VALUE) {
                     break;
+                    }
+                }
         return count;
     }
 
@@ -1127,6 +1151,7 @@ public class ConcurrentLinkedDeque<E>
         if (c == this) {
             // As historically specified in AbstractQueue#addAll
             throw new IllegalArgumentException();
+            }
 
         // Copy c into a private chain of Nodes
         Node<E> beginningOfTheEnd = null, last = null;
@@ -1135,6 +1160,7 @@ public class ConcurrentLinkedDeque<E>
             Node<E> newNode = new Node<E>(e);
             if (beginningOfTheEnd == null) {
                 beginningOfTheEnd = last = newNode;
+                }
             else {
                 last.lazySetNext(newNode);
                 newNode.lazySetPrev(last);
@@ -1143,18 +1169,20 @@ public class ConcurrentLinkedDeque<E>
         }
         if (beginningOfTheEnd == null) {
             return false;
+            }
 
         // Atomically append the chain at the tail of this collection
         restartFromTail:
-        for (;;)
+       
             for (Node<E> t = tail, p = t, q;;) {
                 if ((q = p.next) != null &&
                     (q = (p = q).next) != null) {
                     // Check for tail updates every other hop.
                     // If p == q, we are sure to follow tail instead.
                     p = (t != (t = tail)) ? t : q;
-                else if (p.prev == p) // NEXT_TERMINATOR
+                else if (p.prev == p) { // NEXT_TERMINATOR
                     continue restartFromTail;
+                    }
                 else {
                     // p is last node
                     beginningOfTheEnd.lazySetPrev(p); // CAS piggyback
@@ -1173,14 +1201,15 @@ public class ConcurrentLinkedDeque<E>
                     // Lost CAS race to another thread; re-read next
                 }
             }
+                }
+                }
     }
 
     /**
      * Removes all of the elements from this deque.
      */
     public void clear() {
-        while (pollFirst() != null)
-            ;
+        while (pollFirst() != null) ;
     }
 
     /**
@@ -1344,12 +1373,13 @@ public class ConcurrentLinkedDeque<E>
             Node<E> l = lastRet;
             if (l == null) {
             	throw new IllegalStateException();
-            }
+            	}
+            
             l.item = null;
             unlink(l);
             lastRet = null;
         }
-    }
+   
 
     /** Forward iterator */
     private class Itr extends AbstractItr {
@@ -1381,6 +1411,7 @@ public class ConcurrentLinkedDeque<E>
             E item = p.item;
             if (item != null) {
                 s.writeObject(item);
+                }
         }
 
         // Use trailing null as sentinel
@@ -1403,14 +1434,16 @@ public class ConcurrentLinkedDeque<E>
             Node<E> newNode = new Node<E>((E) item);
             if (h == null) {
                 h = t = newNode;
+                }
             else {
                 t.lazySetNext(newNode);
                 newNode.lazySetPrev(t);
                 t = newNode;
-            }
+                }
+            } initHeadTail(h, t);
         }
-        initHeadTail(h, t);
-    }
+       
+ 
 
 
     private boolean casHead(Node<E> cmp, Node<E> val) {

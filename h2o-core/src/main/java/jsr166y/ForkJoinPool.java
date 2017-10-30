@@ -750,9 +750,8 @@ public class ForkJoinPool extends AbstractExecutorService {
             ForkJoinTask<?> t; ForkJoinTask<?>[] a;
             if ((a = array) != null) {
                 int j = (((a.length - 1) & b) << ASHIFT) + ABASE;
-                if ((t = (ForkJoinTask<?>)U.getObjectVolatile(a, j)) {
-                	!= null &&
-                }
+                if ((t = (ForkJoinTask<?>)U.getObjectVolatile(a, j)) 
+                	!= null &&               
                     base == b &&
                     U.compareAndSwapObject(a, j, t, null)) {
                     base = b + 1;

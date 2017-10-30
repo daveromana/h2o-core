@@ -39,11 +39,14 @@ public class Quantile extends ModelBuilder<QuantileModel,QuantileModel.QuantileP
     for( double p : _parms._probs )
       if( p < 0.0 || p > 1.0 ) {
         error("_probs","Probabilities must be between 0 and 1");
+        }
     _ncols = train().numCols()-numSpecialCols(); //offset/weights/nfold - should only ever be weights
     if ( numSpecialCols() == 1 && _weights == null) {
       throw new IllegalArgumentException("The only special Vec that is supported for Quantiles is observation weights.");
+      }
     if ( numSpecialCols() >1 ) {
     	throw new IllegalArgumentException("Cannot handle more than 1 special vec (weights)");
+    	}
     }
   }
 
@@ -167,8 +170,9 @@ public class Quantile extends ModelBuilder<QuantileModel,QuantileModel.QuantileP
         if (sumRows>0) {
           Histo h = new Histo(_response.min(), _response.max(), 0, sumRows, _response.isInt());
           h.doAll(_response, newWeights);
-          while (Double.isNaN(_quantiles[i] = h.findQuantile(_prob, _combine_method)))
+          while (Double.isNaN(_quantiles[i] = h.findQuantile(_prob, _combine_method))) {
             h = h.refinePass(_prob).doAll(_response, newWeights);
+            }
           newWeights.remove();
           //sanity check quantiles
           assert (_quantiles[i] <= _response.max() + 1e-6);
@@ -208,7 +212,7 @@ public class Quantile extends ModelBuilder<QuantileModel,QuantileModel.QuantileP
     double _bins[/*nbins*/];     // Weighted count of rows in each bin
     double _mins[/*nbins*/];     // Smallest element in bin
     double _maxs[/*nbins*/];     // Largest  element in bin
-
+  }
     private Histo(double lb, double ub, double start_row, double nrows, boolean isInt) {
       boolean is_int = (isInt && (ub - lb < NBINS));
       _nbins = is_int ? (int) (ub - lb + 1) : NBINS;
@@ -297,7 +301,8 @@ public class Quantile extends ModelBuilder<QuantileModel,QuantileModel.QuantileP
       int hiidx = findBin(r3);  // Find bin holding high value
       double hi = (hiidx == _nbins) ? binEdge(_nbins) : _mins[hiidx];
       if( loidx==hiidx )   {     // Somewhere in the same bin?
-        return (lo==hi) ? lo : Double.NaN; // Only if bin is constant, otherwise must refine the bin
+        return (lo==hi) ? lo : Double.NaN;
+        } // Only if bin is constant, otherwise must refine the bin
       // Split across bins - the interpolate between the hi of the lo bin, and
       // the lo of the hi bin
       return computeQuantile(lo,hi,r2,_nrows,prob,method);
@@ -311,7 +316,7 @@ public class Quantile extends ModelBuilder<QuantileModel,QuantileModel.QuantileP
       long sum = (long)_start_row;
       for( int i=0; i<_nbins; i++ )
         if( (long)row < (sum += _bins[i]) ) {
-          return i;
+          return i;}
       return _nbins;
     }
 
@@ -334,8 +339,9 @@ public class Quantile extends ModelBuilder<QuantileModel,QuantileModel.QuantileP
       double hi = hiidx==_nbins ? binEdge(_nbins) : _maxs[hiidx];
 
       long sum = (long)_start_row;
-      for( int i=0; i<loidx; i++ )
+      for( int i=0; i<loidx; i++ ) {
         sum += _bins[i];
+        }
       return new Histo(lo,hi,sum,_nrows,_isInt);
     }
   }

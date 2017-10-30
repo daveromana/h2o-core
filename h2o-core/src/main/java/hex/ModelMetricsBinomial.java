@@ -31,6 +31,7 @@ public class ModelMetricsBinomial extends ModelMetricsSupervised {
     if( !(mm instanceof ModelMetricsBinomial) ) {
       throw new H2OIllegalArgumentException("Expected to find a Binomial ModelMetrics for model: " + model._key.toString() + " and frame: " + frame._key.toString(),
               "Expected to find a ModelMetricsBinomial for model: " + model._key.toString() + " and frame: " + frame._key.toString() + " but found a: " + (mm == null ? null : mm.getClass()));
+      }
     return (ModelMetricsBinomial) mm;
   }
 
@@ -45,9 +46,9 @@ public class ModelMetricsBinomial extends ModelMetricsSupervised {
     sb.append(" mean_per_class_error: " + (float)_mean_per_class_error + "\n");
     sb.append(" default threshold: " + (_auc == null ? 0.5 : (float)_auc.defaultThreshold()) + "\n");
     if (cm() != null){
-    	 sb.append(" CM: " + cm().toASCII());
+    	 sb.append(" CM: " + cm().toASCII());}
     if (_gainsLift != null) {
-    	sb.append(_gainsLift);
+    	sb.append(_gainsLift);}
     return sb.toString();
   }
 
@@ -56,7 +57,7 @@ public class ModelMetricsBinomial extends ModelMetricsSupervised {
   @Override public AUC2 auc_obj() { return _auc; }
   @Override public ConfusionMatrix cm() {
     if( _auc == null ){
-    	 return null;
+    	 return null;}
     double[][] cm = _auc.defaultCM();
     return cm == null ? null : new ConfusionMatrix(cm, _domain);
   }
@@ -87,18 +88,19 @@ public class ModelMetricsBinomial extends ModelMetricsSupervised {
     Scope.enter();
     Vec _labels = actualLabels.toCategoricalVec();
     if (domain==null) {
-    	domain = _labels.domain();
+    	domain = _labels.domain();}
     if (_labels == null || targetClassProbs == null) {
-      throw new IllegalArgumentException("Missing actualLabels or predictedProbs for binomial metrics!");
+      throw new IllegalArgumentException("Missing actualLabels or predictedProbs for binomial metrics!");}
     if (!targetClassProbs.isNumeric()) {
-      throw new IllegalArgumentException("Predicted probabilities must be numeric per-class probabilities for binomial metrics.");
+      throw new IllegalArgumentException("Predicted probabilities must be numeric per-class probabilities for binomial metrics.");}
     if (targetClassProbs.min() < 0 || targetClassProbs.max() > 1) {
-      throw new IllegalArgumentException("Predicted probabilities must be between 0 and 1 for binomial metrics.");
+      throw new IllegalArgumentException("Predicted probabilities must be between 0 and 1 for binomial metrics.");}
     if (domain.length!=2) {
-      throw new IllegalArgumentException("Domain must have 2 class labels, but is " + Arrays.toString(domain) + " for binomial metrics.");
+      throw new IllegalArgumentException("Domain must have 2 class labels, but is " + Arrays.toString(domain) + " for binomial metrics.");}
     _labels = _labels.adaptTo(domain);
     if (_labels.cardinality()!=2) {
       throw new IllegalArgumentException("Adapted domain must have 2 class labels, but is " + Arrays.toString(_labels.domain()) + " for binomial metrics.");
+      }
     Frame predsLabel = new Frame(targetClassProbs);
     predsLabel.add("labels", _labels);
     MetricBuilderBinomial mb = new BinomialMetrics(_labels.domain()).doAll(predsLabel)._mb;
@@ -142,14 +144,14 @@ public class ModelMetricsBinomial extends ModelMetricsSupervised {
     @Override public double[] perRow(double ds[], float[] yact, Model m) {return perRow(ds, yact, 1, 0, m);}
     @Override public double[] perRow(double ds[], float[] yact, double w, double o, Model m) {
       if( Float .isNaN(yact[0]) ) {
-      	return ds; // No errors if   actual   is missing
+      	return ds; }// No errors if   actual   is missing
       if(ArrayUtils.hasNaNs(ds)) {
-      	return ds;  // No errors if prediction has missing values (can happen for GLM)
+      	return ds;}  // No errors if prediction has missing values (can happen for GLM)
       if(w == 0 || Double.isNaN(w)) {
-      	return ds;
+      	return ds;}
       final int iact = (int)yact[0];
       if( iact != 0 && iact != 1 ) {
-      	return ds; // The actual is effectively a NaN
+      	return ds;} // The actual is effectively a NaN
       _count++;
       _wcount += w;
       _wY += w*iact;
@@ -182,6 +184,7 @@ public class ModelMetricsBinomial extends ModelMetricsSupervised {
     @Override public ModelMetrics makeModelMetrics(Model m, Frame f, Frame frameWithWeights, Frame preds) {
       if (frameWithWeights ==null) {
       	frameWithWeights = f;
+      	}
       double mse = Double.NaN;
       double logloss = Double.NaN;
       double sigma = Double.NaN;
@@ -212,8 +215,9 @@ public class ModelMetricsBinomial extends ModelMetricsSupervised {
     }
     public String toString(){
       if(_wcount == 0) {
-      	return "empty, no rows";
+      	return "empty, no rows";}
       return "auc = " + MathUtils.roundToNDigits(auc(),3) + ", logloss = " + _logloss / _wcount;
     }
   }
+}
 }
