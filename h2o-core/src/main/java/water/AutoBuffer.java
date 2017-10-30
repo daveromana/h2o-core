@@ -128,7 +128,9 @@ public final class AutoBuffer {
     }
     _size = _bb.position();
     _bb.flip();                 // Set limit=amount read, and position==0
-    if( addr == null ) throw new RuntimeException("Unhandled socket type: " + sad);
+    if( addr == null ) {
+    	throw new RuntimeException("Unhandled socket type: " + sad);
+    }
     // Read Inet from socket, port from the stream, figure out H2ONode
     _h2o = H2ONode.intern(addr, getPort());
     _firstPage = true;
@@ -197,7 +199,9 @@ public final class AutoBuffer {
     _chan = fc;                 // Write to read/write
     _h2o = null;                // File Channels never have an _h2o
     _read = read;               // Mostly assert reading vs writing
-    if( read ) _bb.flip();
+    if( read ) {
+    	_bb.flip();
+    }
     _time_start_ms = System.currentTimeMillis();
     _persist = persist;         // One of Value.ICE, NFS, S3, HDFS
   }
@@ -261,7 +265,9 @@ public final class AutoBuffer {
     _firstPage = true;
     _persist = 0;
 
-    if( persist ) put1(0x1C).put1(0xED).putStr(H2O.ABV.projectVersion()).putAStr(TypeMap.CLAZZES);
+    if( persist ) {
+    	put1(0x1C).put1(0xED).putStr(H2O.ABV.projectVersion()).putAStr(TypeMap.CLAZZES);
+    }
     else put1(0);
   }
 
@@ -278,16 +284,21 @@ public final class AutoBuffer {
     _bb.flip();
     _is = is;
     int b = get1U();
-    if( b==0 ) return;          // No persistence info
+    if( b==0 ) {
+    	return;          // No persistence info
+    }
     int magic = get1U();
     if( b!=0x1C || magic != 0xED ) throw new IllegalArgumentException("Missing magic number 0x1CED at stream start");
     String version = getStr();
-    if( !version.equals(H2O.ABV.projectVersion()) )
-      throw new IllegalArgumentException("Found version "+version+", but running version "+H2O.ABV.projectVersion());
+    if( !version.equals(H2O.ABV.projectVersion()) ) {
+    	      throw new IllegalArgumentException("Found version "+version+", but running version "+H2O.ABV.projectVersion());
+    }
+
     String[] typeMap = getAStr();
     _typeMap = new short[typeMap.length];
-    for( int i=0; i<typeMap.length; i++ )
+    for( int i=0; i<typeMap.length; i++ ) {
       _typeMap[i] = (short)(typeMap[i]==null ? 0 : TypeMap.onIce(typeMap[i]));
+      }
   }
 
 
@@ -296,8 +307,12 @@ public final class AutoBuffer {
     sb.append("[AB ").append(_read ? "read " : "write ");
     sb.append(_firstPage?"first ":"2nd ").append(_h2o);
     sb.append(" ").append(Value.nameOfPersist(_persist));
-    if( _bb != null ) sb.append(" 0 <= ").append(_bb.position()).append(" <= ").append(_bb.limit());
-    if( _bb != null ) sb.append(" <= ").append(_bb.capacity());
+    if( _bb != null ) {
+    	sb.append(" 0 <= ").append(_bb.position()).append(" <= ").append(_bb.limit());
+    }
+    if( _bb != null ) {
+    	sb.append(" <= ").append(_bb.capacity());
+    }
     return sb.append("]").toString();
   }
 
@@ -320,16 +335,24 @@ public final class AutoBuffer {
 
     BBPool( int sz) { _size=sz; }
     private ByteBuffer stats( ByteBuffer bb ) {
-      if( !DEBUG ) return bb;
-      if( ((_made+_cached)&255)!=255 ) return bb; // Filter printing to 1 in 256
+      if( !DEBUG ) {
+    	  return bb;
+      }
+      if( ((_made+_cached)&255)!=255 ) {
+    	  return bb; // Filter printing to 1 in 256
+      }
       long now = System.currentTimeMillis();
-      if( now < HWM ) return bb;
+      if( now < HWM ) {
+    	  return bb;
+      }
       HWM = now+1000;
       water.util.SB sb = new water.util.SB();
       sb.p("BB").p(this==BBP_BIG?1:0).p(" made=").p(_made).p(" -freed=").p(_freed).p(", cache hit=").p(_cached).p(" ratio=").p(_numer/_denom).p(", goal=").p(_goal).p(" cache size=").p(_bbs.size()).nl();
       for( int i=0; i<H2O.MAX_PRIORITY; i++ ) {
         int x = H2O.getWrkQueueSize(i);
-        if( x > 0 ) sb.p('Q').p(i).p('=').p(x).p(' ');
+        if( x > 0 ) {
+        	sb.p('Q').p(i).p('=').p(x).p(' ');
+        }
       }
       Log.warn(sb.nl().toString());
       return bb;
@@ -342,7 +365,9 @@ public final class AutoBuffer {
           int sz = _bbs.size();
           if( sz > 0 ) { bb = _bbs.remove(sz-1); _cached++; _numer++; }
         }
-        if( bb != null ) return stats(bb);
+        if( bb != null ) {
+        	return stats(bb);
+        }
         // Cache empty; go get one from C/Native memory
         try {
           bb = ByteBuffer.allocateDirect(_size).order(ByteOrder.nativeOrder());
@@ -350,7 +375,9 @@ public final class AutoBuffer {
           return stats(bb);
         } catch( OutOfMemoryError oome ) {
           // java.lang.OutOfMemoryError: Direct buffer memory
-          if( !"Direct buffer memory".equals(oome.getMessage()) ) throw oome;
+          if( !"Direct buffer memory".equals(oome.getMessage()) ) {
+        	  throw oome;
+          }
           System.out.println("OOM DBB - Sleeping & retrying");
           try { Thread.sleep(100); } catch( InterruptedException ignore ) {System.out.println("The error is: " + ignore); }
         }
@@ -369,8 +396,9 @@ public final class AutoBuffer {
         long now = System.nanoTime();
         if( now-_lastGoal > 1000000000L ) { // Once/sec, drop goal by 10%
           _lastGoal = now;
-          if( ratio > 110 )     // If ratio is really high, lower goal
+          if( ratio > 110 ) {    // If ratio is really high, lower goal
             _goal=Math.max(4*H2O.NUMCPUS,(long)(_goal*0.99));
+            }
           // Once/sec, lower numer/denom... means more recent activity outweighs really old stuff
           long denom = (long) (0.99 * _denom); // Proposed reduction
           if( denom > 10 ) {                   // Keep a little precision
@@ -381,8 +409,9 @@ public final class AutoBuffer {
       }
     }
     static int FREE( ByteBuffer bb ) {
-      if(bb.isDirect())
+      if(bb.isDirect()) {
         (bb.capacity()==BBP_BIG._size ? BBP_BIG : BBP_SML).free(bb);
+        }
       return 0;                 // Flow coding
     }
   }
@@ -391,8 +420,9 @@ public final class AutoBuffer {
   public static int TCP_BUF_SIZ = BBP_BIG._size;
 
   private int bbFree() {
-    if(_bb != null && _bb.isDirect())
+    if(_bb != null && _bb.isDirect()) {
       BBPool.FREE(_bb);
+      }
     _bb = null;
     return 0;                   // Flow-coding
   }
@@ -415,19 +445,25 @@ public final class AutoBuffer {
   // writer does a close().
   public final int close() {
     //if( _size > 2048 ) System.out.println("Z="+_zeros+" / "+_size+", A="+_arys);
-    if( isClosed() ) return 0;            // Already closed
+    if( isClosed() ) {
+    	return 0;            // Already closed
+    }
     assert _h2o != null || _chan != null || _is != null; // Byte-array backed should not be closed
 
     try {
       if( _chan == null ) {     // No channel?
         if( _read ) {
-          if( _is != null ) _is.close();
+          if( _is != null ) {
+        	  _is.close();
+          }
           return 0;
         } else {                // Write
           // For small-packet write, send via UDP.  Since nothing is sent until
           // now, this close() call trivially orders - since the reader will not
           // even start (much less close()) until this packet is sent.
-          if( _bb.position() < MTU) return udpSend();
+          if( _bb.position() < MTU) {
+        	  return udpSend();
+          }
           // oops - Big Write, switch to TCP and finish out there
         }
       }
@@ -450,7 +486,9 @@ public final class AutoBuffer {
             // Read the writer-handshake-byte.
             int x = SocketChannelUtils.underlyingSocketChannel(_chan).socket().getInputStream().read();
             // either TCP con was dropped or other side closed connection without reading/confirming (e.g. task was cancelled).
-            if( x == -1 ) throw new IOException("Other side closed connection before handshake byte read");
+            if( x == -1 ) {
+            	throw new IOException("Other side closed connection before handshake byte read");
+            }
             assert x == 0xcd : "Handshake; writer expected a 0xcd from reader but got "+x;
           }
         } catch( IOException ioe ) {
@@ -463,7 +501,9 @@ public final class AutoBuffer {
         }
 
       } else {                      // FileChannel
-        if( !_read ) sendPartial(); // Finish partial file-system writes
+        if( !_read ) {
+        	sendPartial(); // Finish partial file-system writes
+        }
         _chan.close();
         _chan = null;           // Closed file channel
       }
@@ -496,13 +536,17 @@ public final class AutoBuffer {
   // close the channel and let the other side to deal with it and figure out
   // the task has been cancelled (still sending ack ack back).
   void drainClose() {
-    if( isClosed() ) return;              // Already closed
+    if( isClosed() ) {
+    	return;              // Already closed
+    }
     final Channel chan = _chan;       // Read before closing
     assert _h2o != null || chan != null;  // Byte-array backed should not be closed
     if( chan != null ) {                  // Channel assumed sick from prior IOException
       try { chan.close(); } catch( IOException ignore ) {System.out.println("The error is: " + ignore);} // Silently close
       _chan = null;                       // No channel now!
-      if( !_read && SocketChannelUtils.isSocketChannel(chan)) _h2o.freeTCPSocket((ByteChannel) chan); // Recycle writable TCP channel
+      if( !_read && SocketChannelUtils.isSocketChannel(chan)) {
+    	  _h2o.freeTCPSocket((ByteChannel) chan); // Recycle writable TCP channel
+      }
     }
     restorePriority();          // And if we raised priority, lower it back
     bbFree();
@@ -550,7 +594,9 @@ public final class AutoBuffer {
   }
 
   private void restorePriority() {
-    if( _oldPrior == -1 ) return;
+    if( _oldPrior == -1 ) {
+    	return;
+    }
     Thread.currentThread().setPriority(_oldPrior);
     _oldPrior = -1;
   }
@@ -567,10 +613,12 @@ public final class AutoBuffer {
     if( _h2o==H2O.SELF ) {      // SELF-send is the multi-cast signal
       water.init.NetworkInit.multicast(_bb, _msg_priority);
     } else {                    // Else single-cast send
-      if(H2O.ARGS.useUDP)       // Send via UDP directly
+      if(H2O.ARGS.useUDP)  {     // Send via UDP directly
         water.init.NetworkInit.CLOUD_DGRAM.send(_bb, _h2o._key);
+        }
       else                      // Send via bulk TCP
-        _h2o.sendMessage(_bb, _msg_priority);
+        {_h2o.sendMessage(_bb, _msg_priority);
+        }
     }
     return 0;                   // Flow-coding
   }
@@ -601,7 +649,9 @@ public final class AutoBuffer {
    * - Also, set position just past this limit for future reading. */
   private ByteBuffer getSz(int sz) {
     assert _firstPage : "getSz() is only valid for early UDP bytes";
-    if( sz > _bb.limit() ) getImpl(sz);
+    if( sz > _bb.limit() ) {
+    	getImpl(sz);
+    }
     _bb.position(sz);
     return _bb;
   }
@@ -618,9 +668,12 @@ public final class AutoBuffer {
         // Readers are supposed to be strongly typed and read the exact expected bytes.
         // However, if a TCP connection fails mid-read we'll get a short-read.
         // This is indistinguishable from a mis-alignment between the writer and reader!
-        if( res <= 0 )
-          throw new AutoBufferException(new EOFException("Reading "+sz+" bytes, AB="+this));
-        if( _is != null ) _bb.position(_bb.position()+res); // Advance BB for Streams manually
+        if( res <= 0 ) {
+          throw new AutoBufferException(new EOFException("Reading "+sz+" bytes, AB="+this))
+          ;}
+        if( _is != null ) { _bb.position(_bb.position()+res); // Advance BB for Streams manually
+        }
+        }
         _size += res;            // What we read
       } catch( IOException e ) { // Dunno how to handle so crash-n-burn
         // Linux/Ubuntu message for a reset-channel
