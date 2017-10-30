@@ -47,7 +47,7 @@ Major style & code changes from "h2o":
 - Do not hook stdout & stderr
 - Complete Log class overhaul
 - Complete Excel file parsing overhaul; dropped poi.jar
-- Remove all the Embedded support; emeddable-by-default now
+- Remove all the Embedded support;   emeddable-by-default now
 - Weaver uses Delegation instead of a Class Loader.  Serialization bases need
   boilerplate, and there's several more v-calls to the start of any
   serialization.  Theory says: only static calls to recursively serialize any
