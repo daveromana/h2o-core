@@ -294,7 +294,8 @@ public class Distribution extends Iced<Distribution> {
         else if (yf > 1) {
         	return 0;
         }
-        else return {
+        else { 
+        	return 
         	w*(1-yf)*(1-yf);
         }
       default:
