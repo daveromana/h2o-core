@@ -175,6 +175,7 @@ public class JettyHTTPD extends AbstractHTTPD {
       if (isLoginTarget(target)) {
         if (isPageRequest(request)) {
           sendLoginForm(request, response);
+          }
         else {
           sendResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "Access denied. Please login.");
         baseRequest.setHandled(true);
@@ -190,6 +191,7 @@ public class JettyHTTPD extends AbstractHTTPD {
         try (InputStream resource = water.init.JarHash.getResource2("/login.html")) {
           if (resource == null) {
             throw new IllegalStateException("Login form not found");
+            }
           ByteArrayOutputStream baos = new ByteArrayOutputStream();
           water.util.FileUtils.copyStream(resource, baos, 2048);
           bytes = baos.toByteArray();
@@ -293,10 +295,13 @@ public class JettyHTTPD extends AbstractHTTPD {
       // some special cases for which we return 400 because it's likely a problem with the client request:
       if (e instanceof IllegalArgumentException) {
         error._http_status = HttpResponseStatus.BAD_REQUEST.getCode();
+        }
       else if (e instanceof FileNotFoundException) {
         error._http_status = HttpResponseStatus.BAD_REQUEST.getCode();
+        }
       else if (e instanceof MalformedURLException) {
         error._http_status = HttpResponseStatus.BAD_REQUEST.getCode();
+        }
       setResponseStatus(response, error._http_status);
 
       Log.warn("Caught exception: " + error.toString());
@@ -353,16 +358,21 @@ public class JettyHTTPD extends AbstractHTTPD {
       sb.append(new String(mem,0,sz));
       if (sz < mem.length) {
         break;
+        }
       if (mem[sz-1]=='\n') {
         break;
+        }
     }
     if (sb.length()==0) {
       return null;
+      }
     String line = sb.toString();
     if (line.endsWith("\r\n")) {
       line = line.substring(0,line.length()-2);
+      }
     else if (line.endsWith("\n")) {
       line = line.substring(0,line.length()-1);
+      }
     return line;
   }
 
@@ -375,6 +385,7 @@ public class JettyHTTPD extends AbstractHTTPD {
       byte b2;
       if (sz==mem.length) {
         break;
+        }
       try {
         in.read(bb,0,1);
         b = bb[0];
@@ -384,8 +395,10 @@ public class JettyHTTPD extends AbstractHTTPD {
       }
       if (b == '\n') {
         break;
+        }
       if (sz==mem.length) {
         break;
+        }
       if (b == '\r') {
         try {
           in.read(bb,0,1);
@@ -396,6 +409,7 @@ public class JettyHTTPD extends AbstractHTTPD {
         }
         if (b2 == '\n') {
           break;
+          }
       }
     }
     return sz;
@@ -429,11 +443,13 @@ public class JettyHTTPD extends AbstractHTTPD {
     @Override public int read(byte[] b, int off, int len) throws IOException {
       if(_lookAheadLen == -1) {
         return -1;
+        }
       int readLen = readInternal(b, off, len);
       if (readLen != -1) {
         int pos = findBoundary(b, off, readLen);
         if (pos != -1) {
           _lookAheadLen = -1;
+          }
           return pos - off;
         }
       }

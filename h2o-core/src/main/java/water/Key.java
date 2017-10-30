@@ -206,23 +206,19 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
 
   // Update the cache, but only to strictly newer Clouds
   private boolean set_cache( long cache ) {
-    while( true ) { // Spin till get it
-      long old = _cache; // Read once at the start
-      if( !H2O.larger(cloud(cache),cloud(old)) ) {// Rolling backwards?
-        // Attempt to set for an older Cloud. Blow out with a failure; caller
-        // should retry on a new Cloud.
-        return false;
-      assert cloud(cache) != cloud(old) || cache == old;
-      if( old == cache ) {
-    	  return true; // Fast-path cutout
-      }
-      if( _cacheUpdater.compareAndSet(this,old,cache) ) {
-    	  return true;
-      }
-      // Can fail if the cache is really old, and just got updated to a version
-      // which is still not the latest, and we are trying to update it again.
-    }
-  }
+	    while( true ) { // Spin till get it
+	      long old = _cache; // Read once at the start
+	      if( !H2O.larger(cloud(cache),cloud(old)) ) // Rolling backwards?
+	        // Attempt to set for an older Cloud. Blow out with a failure; caller
+	        // should retry on a new Cloud.
+	        return false;
+	      assert cloud(cache) != cloud(old) || cache == old;
+	      if( old == cache ) return true; // Fast-path cutout
+	      if( _cacheUpdater.compareAndSet(this,old,cache) ) return true;
+	      // Can fail if the cache is really old, and just got updated to a version
+	      // which is still not the latest, and we are trying to update it again.
+	    }
+	  }
   // Return the info word for this Cloud. Use the cache if possible
   long cloud_info( H2O cloud ) {
     long x = _cache;
@@ -281,7 +277,7 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
     Key key = new Key(kb);
     Key key2 = H2O.getk(key); // Get the interned version, if any
     if( key2 != null ) { // There is one! Return it instead
-      return key2;
+      return key2;}
 
     // Set the cache with desired replication factor, and a fake cloud index
     H2O cloud = H2O.CLOUD; // Read once
@@ -411,8 +407,10 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
     Value v = DKV.get(this);
     if (null == v) {
       return null;
+      }
     else {
       return v.className();
+      }
   }
 
   /** Return the base classname (not including the package) for the Value that this Key points to, if any (e.g., "Frame"). */
@@ -421,7 +419,8 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
 
     if (null == vc) {
     	return null;
-    }
+    	}
+    
 
     String[] elements = vc.split("\\.");
     return elements[elements.length - 1];
@@ -471,35 +470,29 @@ final public class Key<T extends Keyed> extends Iced<Key<T>> implements Comparab
   }
 
   private static byte[] decodeKeyName(String what) {
-    if( what==null ) {
-    	return null;
-    }
-    if( what.length()==0 ) {
-    	return null;
-    }
-    if (what.charAt(0) == MAGIC_CHAR) {
-      int len = what.indexOf(MAGIC_CHAR,1);
-      if( len < 0 ) {
-    	  throw new IllegalArgumentException("No matching magic '"+MAGIC_CHAR+"', key name is not legal");
-      }
-      String tail = what.substring(len+1);
-      byte[] res = new byte[(len-1)/2 + tail.length()];
-      int r = 0;
-      for( int i = 1; i < len; i+=2 ) {
-        char h = what.charAt(i);
-        char l = what.charAt(i+1);
-        h -= Character.isDigit(h) ? '0' : ('a' - 10);
-        l -= Character.isDigit(l) ? '0' : ('a' - 10);
-        res[r++] = (byte)(h << 4 | l);
-      }
-      System.arraycopy(StringUtils.bytesOf(tail), 0, res, r, tail.length());
-      return res;
-    } else {
-      byte[] res = new byte[what.length()];
-      for( int i=0; i<res.length; i++ ) res[i] = (byte)what.charAt(i);
-      return res;
-    }
-  }
+	    if( what==null ) return null;
+	    if( what.length()==0 ) return null;
+	    if (what.charAt(0) == MAGIC_CHAR) {
+	      int len = what.indexOf(MAGIC_CHAR,1);
+	      if( len < 0 ) throw new IllegalArgumentException("No matching magic '"+MAGIC_CHAR+"', key name is not legal");
+	      String tail = what.substring(len+1);
+	      byte[] res = new byte[(len-1)/2 + tail.length()];
+	      int r = 0;
+	      for( int i = 1; i < len; i+=2 ) {
+	        char h = what.charAt(i);
+	        char l = what.charAt(i+1);
+	        h -= Character.isDigit(h) ? '0' : ('a' - 10);
+	        l -= Character.isDigit(l) ? '0' : ('a' - 10);
+	        res[r++] = (byte)(h << 4 | l);
+	      }
+	      System.arraycopy(StringUtils.bytesOf(tail), 0, res, r, tail.length());
+	      return res;
+	    } else {
+	      byte[] res = new byte[what.length()];
+	      for( int i=0; i<res.length; i++ ) res[i] = (byte)what.charAt(i);
+	      return res;
+	    }
+	  }
 
   @Override public int hashCode() { return _hash; }
   @Override public boolean equals( Object o ) {

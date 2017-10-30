@@ -35,8 +35,9 @@ public class Scope {
   static public Key[] exit(Key... keep) {
     List<Key> keylist = new ArrayList<>();
     if( keep != null ) {
-      for( Key k : keep ) if (k != null) {
-    	  keylist.add(k);
+      for( Key k : keep )
+    	  if (k != null) {
+    	  keylist.add(k);}
       }
     Object[] arrkeep = keylist.toArray();
     Arrays.sort(arrkeep);

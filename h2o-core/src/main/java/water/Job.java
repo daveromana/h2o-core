@@ -122,12 +122,12 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
   private volatile boolean _stop_requested; // monotonic change from false to true
   public boolean stop_requested() { update_from_remote(); return _stop_requested; }
   public void stop() { 
-    if( !_stop_requested )  {    // fast path cutout
-      new JAtomic() {
-        @Override boolean abort(Job job) { return job._stop_requested; }
-        @Override void update(Job job) { job._stop_requested = true; }
-      }.apply(this);
-  }
+	    if( !_stop_requested )      // fast path cutout
+	      new JAtomic() {
+	        @Override boolean abort(Job job) { return job._stop_requested; }
+	        @Override void update(Job job) { job._stop_requested = true; }
+	      }.apply(this);
+	  }
 
   /** Any exception thrown by this Job, or null if none.  Note that while
    *  setting an exception generally triggers stopping a Job, stopping
@@ -193,6 +193,7 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
     final Value val = DKV.get(LIST);
     if( val==null ) {
     	return new Job[0];
+    	
     }
     JobList jl = val.get();
     Job[] jobs = new Job[jl._jobs.length];
@@ -201,9 +202,11 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
       final Value job = DKV.get(jl._jobs[i]);
       if( job != null ) {
     	    jobs[j++] = job.get();
+    	    }
     }
     if( j==jobs.length ){
-         return jobs; // All jobs still exist
+         return jobs;
+         } // All jobs still exist
     jobs = Arrays.copyOf(jobs,j);     // Shrink out removed
     Key keys[] = new Key[j];
     for( int i=0; i<j; i++ ) keys[i] = jobs[i]._key;
@@ -276,8 +279,7 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
     final Key jobkey = _key;
     new TAtomic<JobList>() {
       @Override public JobList atomic(JobList old) {
-        if( old == null ) {
-            old = new JobList();
+        if( old == null ) old = new JobList();
         Key[] jobs = old._jobs;
         old._jobs = Arrays.copyOf(jobs, jobs.length + 1);
         old._jobs[jobs.length] = jobkey;
@@ -365,6 +367,7 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
     assert isStopped();
     if (_ex!=null) {
       throw new RuntimeException((Throwable)AutoBuffer.javaSerializeReadPojo(_ex));
+      }
     // Maybe null return, if the started fjtask does not actually produce a result at this Key
     return _result==null ? null : _result.get(); 
   }
@@ -391,28 +394,32 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
   private void update_from_remote( ) {
     Job remote = DKV.getGet(_key); // Watch for changes in the DKV
     if( this==remote ){
-         return; // Trivial!
+         return; 
+         }// Trivial!
     if( null==remote ) {
-        return; // Stay with local version
+        return;
+        } // Stay with local version
     boolean differ = false;
     if( _stop_requested != remote._stop_requested ) {
         differ = true;
+        }
     if(_start_time!= remote._start_time) {
         differ = true;
+        }
     if(_end_time  != remote._end_time  ) {
-        differ = true;
+        differ = true;}
     if(_ex        != remote._ex        ) {
-        differ = true;
+        differ = true;}
     if(_work      != remote._work      ) {
-        differ = true;
+        differ = true;}
     if(_worked    != remote._worked    ) {
-        differ = true;
+        differ = true;}
     if(_msg       != remote._msg       ) {
-        differ = true;
+        differ = true;}
     if(_max_runtime_msecs != remote._max_runtime_msecs) {
-        differ = true;
+        differ = true;}
     if(! Arrays.equals(_warns, remote._warns)) {
-        differ = true;
+        differ = true;}
     if( differ ) {
       synchronized(this) { 
         _stop_requested = remote._stop_requested;

@@ -243,9 +243,11 @@ class Cleaner extends Thread {
     synchronized static Histo current( boolean force ) {
       final Histo h = H; // Grab current best histogram
       if( !force && System.currentTimeMillis() < h._when+2000 ) {
-        return h; // It is recent; use it
+        return h; 
+        }// It is recent; use it
       if( h != null && h._clean && _dirty==Long.MAX_VALUE ) {
-        return h; // No change to the K/V store, so no point
+        return h;
+        } // No change to the K/V store, so no point
       // Use last oldest value for computing the next histogram in-place
       return (H = new Histo(h==null ? 0 : h._oldest)); // Record current best histogram & return it
     }

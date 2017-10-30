@@ -181,21 +181,19 @@ public class KeySnapshot {
    * @return KeySnapshot containing user keys from all the nodes.
    */
   public static KeySnapshot globalSnapshot(long timeTolerance){
-    KeySnapshot res = _cache;
-    final long t = System.currentTimeMillis();
-    if(res == null || (t - res.timestamp) > timeTolerance) {
-      res = new KeySnapshot((new GlobalUKeySetTask().doAllNodes()._res));
-      }
-    else if(t - res.timestamp > _updateInterval) {
-      H2O.submitTask(new H2O.H2OCountedCompleter()) 
-    		  }
-        @Override
-        public void compute2() {
-          new GlobalUKeySetTask().doAllNodes();
-        }
-      });
-    return res;
-  }
+	    KeySnapshot res = _cache;
+	    final long t = System.currentTimeMillis();
+	    if(res == null || (t - res.timestamp) > timeTolerance)
+	      res = new KeySnapshot((new GlobalUKeySetTask().doAllNodes()._res));
+	    else if(t - res.timestamp > _updateInterval)
+	      H2O.submitTask(new H2O.H2OCountedCompleter() {
+	        @Override
+	        public void compute2() {
+	          new GlobalUKeySetTask().doAllNodes();
+	        }
+	      }
+	    return res;
+	  }
   // task to grab all user keys (+ info) form all around the cloud
   // updates the cache when done
   private static class GlobalUKeySetTask extends MRTask<GlobalUKeySetTask> {

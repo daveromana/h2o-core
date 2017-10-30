@@ -118,6 +118,7 @@ public final class Value extends Iced implements ForkJoinPool.ManagedBlocker {
     Freezable pojo = _pojo;     // Read once!
     if( pojo != null ) {         // Has the POJO, make raw bytes
       return _mem = pojo.asBytes();
+      }
     if( _max == 0 ) {
     	return (_mem = new byte[0]);
     }
@@ -222,7 +223,8 @@ public final class Value extends Iced implements ForkJoinPool.ManagedBlocker {
     assert !isPersisted();      // Only Cleaner writes
     setDsk(); // Not locked, not atomic, so can only called by one thread: Cleaner
     if( isDeleted() ) { // Check del bit AFTER setting persist bit; close race with deleting user thread
-      H2O.getPM().delete(backend(), this); // Possibly nothing to delete (race with writer)
+      H2O.getPM().delete(backend(), this);
+      } // Possibly nothing to delete (race with writer)
   }
 
   /** Remove dead Values from disk */
@@ -519,7 +521,9 @@ public final class Value extends Iced implements ForkJoinPool.ManagedBlocker {
       assert (h2o==null) || (_replicas!=null && _replicas[h2o._unique_idx]==1); // Self-bit is set
       if( RW_CAS(old,old-1,"rlock-") ) {
         if( old-1 == 0 )  { // GET count fell to zero?
-          synchronized( this ) { notifyAll(); } // Notify any pending blocked PUTs
+          synchronized( this ) { notifyAll(); 
+          } // Notify any pending blocked PUTs
+          }
         return;            // Repeat until count is lowered
       }
     }
@@ -555,6 +559,7 @@ public final class Value extends Iced implements ForkJoinPool.ManagedBlocker {
       for( int i=0; i<max; i++ )
         if( r[i]==1 && H2ONode.IDX[i] != sender ) {
           TaskInvalidateKey.invalidate(H2ONode.IDX[i],_key,newval,fs);
+          }
     }
     newval.lowerActiveGetCount(null);  // Remove initial read-lock, accounting for pending inv counts
     return fs;
@@ -593,7 +598,9 @@ public final class Value extends Iced implements ForkJoinPool.ManagedBlocker {
     // assert I am waiting on threads with higher priority?
     while( (x=_rwlock.get()) != -1 ){ // Spin until rwlock==-1
       if( x == 2 || RW_CAS(1,2,"remote_need_notify") ) {
-        try { ForkJoinPool.managedBlock(this); } catch( InterruptedException ignore ) { System.out.println("The error is: " + ignore);}
+        try { ForkJoinPool.managedBlock(this); } catch( InterruptedException ignore ) { System.out.println("The error is: " + ignore);
+        	}
+        }
     }
   }
 

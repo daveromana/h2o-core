@@ -130,6 +130,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
     assert cc instanceof H2OCountedCompleter;
     if( _fjtasks == null || !_fjtasks.contains(cc) ) {
       addCompleter((H2OCountedCompleter)cc);
+      }
     _dt.setCompleter(null);
   }
 
@@ -249,6 +250,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
     Throwable t = _dt.getDException();
     if( t != null ) {
       throw (t instanceof DistributedException)?new DistributedException(t.getMessage(),t.getCause()):new DistributedException(t);
+      }
     return _dt;
   }
   // Similar to FutureTask.get() but does not throw any checked exceptions.
@@ -347,7 +349,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
       _retry = RETRY_MS >> 1; // half retry for sending nack
     }
     RPCCall(H2ONode client) { _client = client; _tsknum = 0; }
-
+  }
     @Override
     public void compute2() {
       // First set self to be completed when this subtask completer
@@ -386,46 +388,46 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
     }
 
     private void sendAck() {
-      // Send results back
-      DTask dt, origDt = _dt; // _dt can go null the instant it is send over wire
-      assert origDt!=null;    // Freed after completion
-      while((dt = _dt) != null) { // Retry loop for broken TCP sends
-        AutoBuffer ab = null;
-        try {
-          // Start the ACK with results back to client.  If the client is
-          // asking for a class/id mapping (or any job running at FETCH_ACK
-          // priority) then return a udp.fetchack byte instead of a udp.ack.
-          // The receiver thread then knows to handle the mapping at the higher
-          // priority.
+        // Send results back
+        DTask dt, origDt = _dt; // _dt can go null the instant it is send over wire
+        assert origDt!=null;    // Freed after completion
+        while((dt = _dt) != null) { // Retry loop for broken TCP sends
+          AutoBuffer ab = null;
+          try {
+            // Start the ACK with results back to client.  If the client is
+            // asking for a class/id mapping (or any job running at FETCH_ACK
+            // priority) then return a udp.fetchack byte instead of a udp.ack.
+            // The receiver thread then knows to handle the mapping at the higher
+            // priority.
 
-          UDP.udp udp = dt.priority()==H2O.FETCH_ACK_PRIORITY ? UDP.udp.fetchack : UDP.udp.ack;
-          ab = new AutoBuffer(_client,udp._prior).putTask(udp,_tsknum).put1(SERVER_UDP_SEND);
-          assert ab.position() == 1+2+4+1;
-          dt.write(ab);         // Write the DTask - could be very large write
-          dt._repliedTcp = ab.hasTCP(); // Resends do not need to repeat TCP result
-          ab.close();                   // Then close; send final byte
-          _computedAndReplied = true;   // After the final handshake, set computed+replied bit
-          break;                        // Break out of retry loop
-        } catch( AutoBuffer.AutoBufferException e ) {
-          if( !_client._heartbeat._client ) { // Report on servers only; clients allowed to be flaky
-            Log.info("IOException during ACK, "+e._ioe.getMessage()+", t#"+_tsknum+" AB="+ab+", waiting and retrying...");
-          ab.drainClose();
-          if( _client._heartbeat._client ) {// Dead client will not accept a TCP ACK response?
-            this.CAS_DT(dt,null);          // cancel the ACK
-          try { Thread.sleep(100); } catch (InterruptedException ignore) {System.out.println("The error is: " + ignore);}
-        } catch( Throwable e ) { // Custom serializer just barfed?
-          Log.err(e);            // Log custom serializer exception
-          ab.drainClose();
+            UDP.udp udp = dt.priority()==H2O.FETCH_ACK_PRIORITY ? UDP.udp.fetchack : UDP.udp.ack;
+            ab = new AutoBuffer(_client,udp._prior).putTask(udp,_tsknum).put1(SERVER_UDP_SEND);
+            assert ab.position() == 1+2+4+1;
+            dt.write(ab);         // Write the DTask - could be very large write
+            dt._repliedTcp = ab.hasTCP(); // Resends do not need to repeat TCP result
+            ab.close();                   // Then close; send final byte
+            _computedAndReplied = true;   // After the final handshake, set computed+replied bit
+            break;                        // Break out of retry loop
+          } catch( AutoBuffer.AutoBufferException e ) {
+            if( !_client._heartbeat._client ) // Report on servers only; clients allowed to be flaky
+              Log.info("IOException during ACK, "+e._ioe.getMessage()+", t#"+_tsknum+" AB="+ab+", waiting and retrying...");
+            ab.drainClose();
+            if( _client._heartbeat._client ) // Dead client will not accept a TCP ACK response?
+              this.CAS_DT(dt,null);          // cancel the ACK
+            try { Thread.sleep(100); } catch (InterruptedException ignore) {}
+          } catch( Throwable e ) { // Custom serializer just barfed?
+            Log.err(e);            // Log custom serializer exception
+            ab.drainClose();
+          }
+        }  // end of while(true)
+        if( dt == null )
+          Log.info("Cancelled remote task#"+_tsknum+" "+origDt.getClass()+" to "+_client + " has been cancelled by remote");
+        else {
+          if( dt instanceof MRTask && dt.logVerbose() )
+            Log.debug("Done remote task#"+_tsknum+" "+dt.getClass()+" to "+_client);
+          _client.record_task_answer(this); // Setup for retrying Ack & AckAck, if not canceled
         }
-      }  // end of while(true)
-      if( dt == null ) {
-        Log.info("Cancelled remote task#"+_tsknum+" "+origDt.getClass()+" to "+_client + " has been cancelled by remote");
-      else {
-        if( dt instanceof MRTask && dt.logVerbose() ) {
-          Log.debug("Done remote task#"+_tsknum+" "+dt.getClass()+" to "+_client);
-        _client.record_task_answer(this); // Setup for retrying Ack & AckAck, if not canceled
       }
-    }
 
     final void send_nack() {
       new AutoBuffer(_client,udp.nack._prior).putTask(udp.nack,_tsknum).close();
@@ -487,7 +489,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
   // Handle traffic, from a client to this server asking for work to be done.
   // Called from either a F/J thread (generally with a UDP packet) or from the
   // TCPReceiver thread.
-  static void remote_exec( AutoBuffer ab ) {
+static void remote_exec( AutoBuffer ab ) {
     long lo = ab.get8(0), hi = ab._size >= 16 ? ab.get8(8) : 0;
     final int task = ab.getTask();
     final int flag = ab.getFlag();
@@ -520,13 +522,11 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
       }
       RPCCall rpc2 = ab._h2o.record_task(rpc);
       if( rpc2==null ) {        // Atomically insert (to avoid double-work)
-        if( rpc._dt instanceof MRTask && rpc._dt.logVerbose() ) {
+        if( rpc._dt instanceof MRTask && rpc._dt.logVerbose() )
           Log.debug("Start remote task#"+task+" "+rpc._dt.getClass()+" from "+ab._h2o);
         H2O.submitTask(rpc);    // And execute!
       } else {                  // Else lost the task-insertion race
-        if(ab.hasTCP())  {
-        	ab.drainClose();
-        }
+        if(ab.hasTCP())  ab.drainClose();
         // DROP PACKET
       }
 
@@ -549,7 +549,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
       }
       if(old._dt != null) { // already ackacked
         ++old._ackResendCnt;
-        if (old._ackResendCnt % 10 == 0) {
+        if (old._ackResendCnt % 10 == 0)
           Log.err("Possibly broken network, can not send ack through, got " + old._ackResendCnt + " for task # " + old._tsknum + ", dt == null?" + (old._dt == null));
         old.resend_ack();
       }
@@ -601,63 +601,61 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
   // Install it as The Answer packet and wake up anybody waiting on an answer.
   // On all paths, send an ACKACK back
   static AutoBuffer ackack( AutoBuffer ab, int tnum ) {
-    return ab.clearForWriting(H2O.ACK_ACK_PRIORITY).putTask(UDP.udp.ackack.ordinal(),tnum);
-  }
-  protected AutoBuffer response( AutoBuffer ab ) {
+	    return ab.clearForWriting(H2O.ACK_ACK_PRIORITY).putTask(UDP.udp.ackack.ordinal(),tnum);
+	  }
+	  protected AutoBuffer response( AutoBuffer ab ) {
 
-    assert _tasknum==ab.getTask();
-    if( _done ) {
-      if(!ab.hasTCP())
-        return ackack(ab, _tasknum); // Ignore duplicate response packet
-      ab.drainClose();
-    } else {
-      int flag = ab.getFlag();       // Must read flag also, to advance ab
-      if (flag == SERVER_TCP_SEND) {
-    	  return ackack(ab, _tasknum); // Ignore UDP packet for a TCP reply
-      }
-      assert flag == SERVER_UDP_SEND:"flag = " + flag;
-      synchronized (this) {             // Install the answer under lock
-        if (_done) {
-          if(!ab.hasTCP()) {
-            return ackack(ab, _tasknum); // Ignore duplicate response packet
-          ab.drainClose();
-        } else {
-//          UDPTimeOutThread.PENDING.remove(_tasknum);
-          _dt.read(ab);             // Read the answer (under lock?)
-          _size_rez = ab.size();    // Record received size
-          ab.close();               // Also finish the read (under lock?  even if canceled, since need to drain TCP)
-          if (!isCancelled())  {     // Can be canceled already (locally by MRTask while recieving remote answer)
-            _dt.onAck();            // One time only execute (before sending ACKACK)
-          _done = true;             // Only read one (of many) response packets
-          ab._h2o.taskRemove(_tasknum); // Flag as task-completed, even if the result is null
-          notifyAll();              // And notify in any case
-        }
-        if (!isCancelled()) { // Can be canceled already
-          doAllCompletions(); // Send all tasks needing completion to the work queues
-      }
-    }
-    // AckAck back on a fresh AutoBuffer, since actually closed() the incoming one
-    return new AutoBuffer(ab._h2o, H2O.ACK_ACK_PRIORITY).putTask(UDP.udp.ackack.ordinal(),_tasknum);
-  }
+	    assert _tasknum==ab.getTask();
+	    if( _done ) {
+	      if(!ab.hasTCP())
+	        return ackack(ab, _tasknum); // Ignore duplicate response packet
+	      ab.drainClose();
+	    } else {
+	      int flag = ab.getFlag();       // Must read flag also, to advance ab
+	      if (flag == SERVER_TCP_SEND) return ackack(ab, _tasknum); // Ignore UDP packet for a TCP reply
+	      assert flag == SERVER_UDP_SEND:"flag = " + flag;
+	      synchronized (this) {             // Install the answer under lock
+	        if (_done) {
+	          if(!ab.hasTCP())
+	            return ackack(ab, _tasknum); // Ignore duplicate response packet
+	          ab.drainClose();
+	        } else {
+//	          UDPTimeOutThread.PENDING.remove(_tasknum);
+	          _dt.read(ab);             // Read the answer (under lock?)
+	          _size_rez = ab.size();    // Record received size
+	          ab.close();               // Also finish the read (under lock?  even if canceled, since need to drain TCP)
+	          if (!isCancelled())       // Can be canceled already (locally by MRTask while recieving remote answer)
+	            _dt.onAck();            // One time only execute (before sending ACKACK)
+	          _done = true;             // Only read one (of many) response packets
+	          ab._h2o.taskRemove(_tasknum); // Flag as task-completed, even if the result is null
+	          notifyAll();              // And notify in any case
+	        }
+	        if (!isCancelled())  // Can be canceled already
+	          doAllCompletions(); // Send all tasks needing completion to the work queues
+	      }
+	    }
+	    // AckAck back on a fresh AutoBuffer, since actually closed() the incoming one
+	    return new AutoBuffer(ab._h2o, H2O.ACK_ACK_PRIORITY).putTask(UDP.udp.ackack.ordinal(),_tasknum);
+	  }
 
-  private void doAllCompletions() {
-    final Throwable e = _dt.getDException();
-    // Also notify any and all pending completion-style tasks
-    if( _fjtasks != null ) {
-      for( final H2OCountedCompleter task : _fjtasks ) {
-        H2O.submitTask(new H2OCountedCompleter(task.priority()) {
-          @Override public void compute2() {
-            if (e != null) {// re-throw exception on this side as if it happened locally
-              task.completeExceptionally(e);
-            else try {
-              task.__tryComplete(_dt);
-            } catch (Throwable e) {
-              task.completeExceptionally(e);
-            }
-          }
-        });
-      }
-  }
+	  private void doAllCompletions() {
+		    final Throwable e = _dt.getDException();
+		    // Also notify any and all pending completion-style tasks
+		    if( _fjtasks != null )
+		      for( final H2OCountedCompleter task : _fjtasks ) {
+		        H2O.submitTask(new H2OCountedCompleter(task.priority()) {
+		          @Override public void compute2() {
+		            if (e != null) // re-throw exception on this side as if it happened locally
+		              task.completeExceptionally(e);
+		            else try {
+		              task.__tryComplete(_dt);
+		            } catch (Throwable e) {
+		              task.completeExceptionally(e);
+		            }
+		          }
+		        }
+		      }
+		  }
 
   // ---
   public synchronized RPC<V> addCompleter( H2OCountedCompleter task ) {
