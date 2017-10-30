@@ -67,16 +67,19 @@ public class AUC2 extends Iced {
         mcc /= Math.sqrt((tp+fp)*(tp+fn)*(tn+fp)*(tn+fn));
         assert(Math.abs(mcc)<=1.) : tp + " " + fp + " " + fn + " " + tn;
         return Math.abs(mcc);
-      } },
+        } 
+    }
     // minimize max-per-class-error by maximizing min-per-class-accuracy.
     // Report from max_criterion is the smallest correct rate for both classes.
     // The max min-error-rate is 1.0 minus that.
     min_per_class_accuracy(false) { @Override double exec( double tp, double fp, double fn, double tn ) {
         return Math.min(tp/(tp+fn),tn/(tn+fp));
-      } },
+    }
+    	}
     mean_per_class_accuracy(false) { @Override double exec( double tp, double fp, double fn, double tn ) {
       return 0.5*(tp/(tp+fn) + tn/(tn+fp));
-    } },
+    }
+    	}
     tns(true ) { @Override double exec( double tp, double fp, double fn, double tn ) { return tn; } },
     fns(true ) { @Override double exec( double tp, double fp, double fn, double tn ) { return fn; } },
     fps(true ) { @Override double exec( double tp, double fp, double fn, double tn ) { return fp; } },
@@ -86,6 +89,7 @@ public class AUC2 extends Iced {
     fpr(false) { @Override double exec( double tp, double fp, double fn, double tn ) { return fp/(fp+tn); } },
     tpr(false) { @Override double exec( double tp, double fp, double fn, double tn ) { return tp/(tp+fn); } },
     ;
+    
     public final boolean _isInt; // Integral-Valued data vs Real-Valued
     ThresholdCriterion(boolean isInt) { _isInt = isInt; }
 
@@ -127,7 +131,7 @@ public class AUC2 extends Iced {
       public Double apply(Integer i) {
         return tc.exec(AUC2.this, i);
       }
-    };
+    }
   }
 
   /** Default bins, good answers on a highly unbalanced sorted (and reverse
