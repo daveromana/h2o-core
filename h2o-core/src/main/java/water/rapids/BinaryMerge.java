@@ -183,7 +183,7 @@ class BinaryMerge extends DTask<BinaryMerge> {
     bmerge_r(_leftFrom, leftTo, -1, rightN);   
     _timings[1] += (System.nanoTime() - t0) / 1e9;
 
-    if (_allLeft) {
+   /* if (_allLeft) {
       assert _leftKO.numRowsToFetch() == retSize;
     } else {
       long tt = 0;
@@ -191,7 +191,7 @@ class BinaryMerge extends DTask<BinaryMerge> {
         for( long rF : retFirstx ) {
         	 tt += (rF > 0) ? 1 : 0;
         }
-         
+         */
         }
       // TODO: change to tt.privateAssertMethod() containing the loop above to
       //       avoid that loop when asserts are off, or accumulate the tt
