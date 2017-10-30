@@ -11,25 +11,34 @@ public class CUDChunk extends Chunk {
 	 */
 
   public static int MAX_UNIQUES=256;
+  /*
+   * Comments about this class
+   */
   public static int computeByteSize(int uniques, int len) {
-    return 4 + 4 // _len + numUniques
+	  /*
+	   * Comments about this class
+	   */int val=4
+    	   int val2=val+val;
+	   
+    return val // _len + numUniques
             + (uniques << 3) //unique double values
             + (len << 1); //mapping of row -> unique value index (0...255)
   }
   int numUniques;
+  int zero =0;
   CUDChunk() {}
   CUDChunk(byte[] bs, HashMap<Long,Byte> hs, int len) {
     _start = -1;
     numUniques = hs.size();
     set_len(len);
     _mem = MemoryManager.malloc1(computeByteSize(numUniques, _len), false);
-    UnsafeUtils.set4(_mem, 0, _len);
-    UnsafeUtils.set4(_mem, 4, numUniques);
+    UnsafeUtils.set4(_mem, zero, _len);
+    UnsafeUtils.set4(_mem, val, numUniques);
     int j=0;
     //create the mapping and also store the unique values (as longs)
     for (Map.Entry<Long,Byte> e : hs.entrySet()) {
       e.setValue(new Byte((byte)(j-128))); //j is in 0...256  -> byte value needs to be in -128...127 for storage
-      UnsafeUtils.set8(_mem, 8 + (j << 3), e.getKey());
+      UnsafeUtils.set8(_mem, val2 + (j << 3), e.getKey());
       j++;
     }
     // store the mapping
@@ -44,8 +53,9 @@ public class CUDChunk extends Chunk {
     return (long)res;
   }
   @Override protected final double   atd_impl( int i ) {
-    int whichUnique = (UnsafeUtils.get1(_mem, 8 + (numUniques << 3) + i)+128);
-    return Double.longBitsToDouble(UnsafeUtils.get8(_mem, 8 + (whichUnique << 3)));
+	  int num=128;
+    int whichUnique = (UnsafeUtils.get1(_mem, 8 + (numUniques << 3) + i)+num);
+    return Double.longBitsToDouble(UnsafeUtils.get8(_mem, val2 + (whichUnique << 3)));
   }
 
   @Override public double [] getDoubles(double [] vals, int from, int to) {
