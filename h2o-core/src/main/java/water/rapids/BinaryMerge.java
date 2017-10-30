@@ -184,9 +184,12 @@ class BinaryMerge extends DTask<BinaryMerge> {
       assert _leftKO.numRowsToFetch() == retSize;
     } else {
       long tt = 0;
-      for( long[] retFirstx : _ret1st )    // i.e. sum(_ret1st>0) in R
-        for( long rF : retFirstx )
-          tt += (rF > 0) ? 1 : 0;
+      for( long[] retFirstx : _ret1st )  {  // i.e. sum(_ret1st>0) in R
+        for( long rF : retFirstx ) {
+        	 tt += (rF > 0) ? 1 : 0;
+        }
+         
+        }
       // TODO: change to tt.privateAssertMethod() containing the loop above to
       //       avoid that loop when asserts are off, or accumulate the tt
       //       inside the merge_r, somehow
@@ -194,7 +197,9 @@ class BinaryMerge extends DTask<BinaryMerge> {
       assert _leftKO.numRowsToFetch() == tt;
     }
 
-    if (_numRowsInResult > 0) createChunksInDKV();
+    if (_numRowsInResult > 0) {
+    	createChunksInDKV();
+    }
 
     // TODO: set 2 Frame and 2 int[] to NULL at the end of compute2 to save
     // some traffic back, but should be small and insignificant
