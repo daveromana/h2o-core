@@ -17,6 +17,7 @@ abstract public class ClusteringModelBuilder<M extends ClusteringModel<M,P,O>, P
    *  and each subclass will start with "super.init();".  This call is made
    *  by the front-end whenever the GUI is clicked, and needs to be fast;
    *  heavy-weight prep needs to wait for the trainModel() call. */
+  
   @Override public void init(boolean expensive) {
     super.init(expensive);
     if( _parms._k < 1 || _parms._k > 1e7 ) {
