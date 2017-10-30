@@ -4,6 +4,12 @@
  */
 
 public class CUDChunk extends Chunk {
+	
+	/*
+	 commento 
+	 * 
+	 */
+
   public static int MAX_UNIQUES=256;
   public static int computeByteSize(int uniques, int len) {
     return 4 + 4 // _len + numUniques
