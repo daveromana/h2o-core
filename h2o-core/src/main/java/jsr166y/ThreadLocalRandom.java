@@ -141,8 +141,9 @@ public class ThreadLocalRandom extends Random {
             int bits = next(2);
             long half = n >>> 1;
             long nextn = ((bits & 2) == 0) ? half : n - half;
-            if ((bits & 1) == 0)
+            if ((bits & 1) == 0) {
                 offset += n - nextn;
+                }
             n = nextn;
         }
         return offset + nextInt((int) n);

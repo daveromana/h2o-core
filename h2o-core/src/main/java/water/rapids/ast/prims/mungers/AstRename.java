@@ -33,8 +33,9 @@ public class AstRename extends AstPrimitive {
     Key oldKey = Key.make(env.expand(asts[1].exec(env).getStr()));
     Key newKey = Key.make(env.expand(asts[2].exec(env).getStr()));
     Iced o = DKV.remove(oldKey).get();
-    if (o instanceof Frame)
+    if (o instanceof Frame) {
       DKV.put(newKey, new Frame(newKey, ((Frame) o)._names, ((Frame) o).vecs()));
+      }
     else if (o instanceof Model) {
       ((Model) o)._key = newKey;
       DKV.put(newKey, o);

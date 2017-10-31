@@ -51,7 +51,9 @@ public abstract class AstTime extends AstPrimitive {
         return new ValNum(Double.isNaN(d) ? d : op(new MutableDateTime(0), d));
       case Val.FRM:
         Frame fr = stk.track(val).getFrame();
-        if (fr.numCols() > 1) throw water.H2O.unimpl();
+        if (fr.numCols() > 1) {
+        	throw water.H2O.unimpl();
+        }
         return new ValFrame(new MRTask() {
           @Override
           public void map(Chunk chk, NewChunk cres) {

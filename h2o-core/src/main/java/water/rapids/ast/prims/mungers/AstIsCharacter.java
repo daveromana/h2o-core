@@ -28,7 +28,9 @@ public class AstIsCharacter extends AstPrimitive {
   @Override
   public ValNums apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
-    if (fr.numCols() == 1) return new ValNums(new double[]{fr.anyVec().isString() ? 1 : 0});
+    if (fr.numCols() == 1) {
+    	return new ValNums(new double[]{fr.anyVec().isString() ? 1 : 0});
+    }
     double ds[] = new double[fr.numCols()];
     for (int i = 0; i < fr.numCols(); i++)
       ds[i] = fr.vec(i).isString() ? 1 : 0;

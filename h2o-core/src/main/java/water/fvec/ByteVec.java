@@ -38,8 +38,9 @@ public class ByteVec extends Vec {
    *  @return array of initial bytes
    */
   public byte[] getPreviewChunkBytes(int chkIdx) {
-    if (chkIdx >= nChunks())
+    if (chkIdx >= nChunks()) {
       throw new H2OIllegalArgumentException("Asked for chunk index beyond the number of chunks.");
+      }
     if (chkIdx == 0) {
       return chunkForChunkIdx(chkIdx)._mem;
       }

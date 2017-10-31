@@ -64,8 +64,9 @@ public class Tabulate extends Keyed<Tabulate> {
 
   private int res(final int v) {
     final int missing = _stats[v]._missing;
-    if (_stats[v]._isCategorical)
+    if (_stats[v]._isCategorical) {
       return _stats[v]._cardinality + missing;
+      }
     return bins(v) + missing;
   }
 

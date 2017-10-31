@@ -13,7 +13,9 @@ enum RequestType {
     String requestName(String url) {
       String s = "." + toString();
       int i = url.indexOf(s);
-      if( i== -1 ) return url;    // No, or default, type
+      if( i== -1 ) {
+    	  return url;    // No, or default, type
+      }
       return url.substring(0,i)+url.substring(i+s.length());
     }
   }, // json type request, a result is a JSON structure

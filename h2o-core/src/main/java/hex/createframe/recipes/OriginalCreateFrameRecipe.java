@@ -49,8 +49,9 @@ public class OriginalCreateFrameRecipe extends CreateFrameRecipe<OriginalCreateF
     check(real_range >= 0, "Real range must be a nonnegative number");
     check(integer_range >= 0, "Integer range must be a nonnegative number");
     check(dest != null, "Destination frame must have a key");
-    if (positive_response)
+    if (positive_response) {
       check(response_factors == 1, "positive_response can only be requested for real-valued response column");
+      }
     if (randomize) {
       check(value == 0, "Cannot set data to a constant value if randomize is true");
       }

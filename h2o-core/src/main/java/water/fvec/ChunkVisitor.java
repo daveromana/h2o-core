@@ -165,8 +165,9 @@ public abstract class ChunkVisitor {
     public void addValue(int val) {vals[_k++] = val;}
     @Override
     public void addValue(long val) {
-      if(Integer.MAX_VALUE < val || val < Integer.MIN_VALUE)
+      if(Integer.MAX_VALUE < val || val < Integer.MIN_VALUE) {
         throw new RuntimeException(val + " does not fit into int");
+        }
       vals[_k++] = (int)val;
     }
     @Override

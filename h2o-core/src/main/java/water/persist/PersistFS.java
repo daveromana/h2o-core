@@ -22,8 +22,9 @@ final class PersistFS extends Persist {
     //deleteRecursive(_dir);
     // Make the directory as-needed
     root.mkdirs();
-    if( !(root.isDirectory() && root.canRead() && root.canWrite()) )
+    if( !(root.isDirectory() && root.canRead() && root.canWrite()) ) {
       H2O.die("ice_root not a read/writable directory");
+      }
   }
 
   public void cleanUp() { deleteRecursive(_dir); }

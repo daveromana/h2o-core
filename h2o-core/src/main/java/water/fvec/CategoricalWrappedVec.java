@@ -194,7 +194,9 @@ public class CategoricalWrappedVec extends WrappedVec {
     }
     @Override public ChunkVisitor processRows(ChunkVisitor nc, int... rows){
       for( int i:rows)
-        if(isNA(i))nc.addNAs(1);
+        if(isNA(i)) {
+        	nc.addNAs(1);
+        }
         else {
         	nc.addValue(at8(i));
         }

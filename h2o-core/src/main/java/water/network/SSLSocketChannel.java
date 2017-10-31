@@ -229,7 +229,9 @@ class SSLSocketChannel implements ByteChannel {
             switch (unwrapResult.getStatus()) {
                 case OK: {
                     unwrapResult.bytesProduced();
-                    if (unwrapResult.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_TASK) tasks();
+                    if (unwrapResult.getHandshakeStatus() == SSLEngineResult.HandshakeStatus.NEED_TASK) {
+                    	tasks();
+                    }
                     break;
                 }
                 case BUFFER_OVERFLOW: {

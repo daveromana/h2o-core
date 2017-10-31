@@ -42,8 +42,11 @@ public abstract class AstCumu extends AstPrimitive {
     Frame f = stk.track(asts[1].exec(env)).getFrame();
     AstRoot axisAR = asts[2];
     for (Vec v:f.vecs()) {
-      if(v.isCategorical() || v.isString() || v.isUUID()) throw new IllegalArgumentException(
+      if(v.isCategorical() || v.isString() || v.isUUID()) {
+    	  throw new IllegalArgumentException(
+     
               "Cumulative functions not applicable to enum, string, or UUID values");
+    	  }
     }
     double axis = axisAR.exec(env).getNum();
     if (axis != 1.0 && axis != 0.0) {

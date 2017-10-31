@@ -89,7 +89,9 @@ public class FoldingColumn<X, Y> extends FunColumnBase<Y> {
     @Override public Chunk rawChunk() { return myChunk; }
 
     @Override public boolean isNA(int i) {
-      for (TypedChunk<X> c : chunks) if (c.isNA(i)) return true;
+      for (TypedChunk<X> c : chunks) if (c.isNA(i)) {
+    	  return true;
+      }
       return false;
     }
 

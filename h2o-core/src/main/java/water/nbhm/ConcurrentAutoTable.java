@@ -233,7 +233,9 @@ public class ConcurrentAutoTable implements Serializable {
     // the cache.
     public long estimate_sum( long mask ) {
       // For short tables, just do the work
-      if( _t.length <= 64 ) return sum(mask);
+      if( _t.length <= 64 ) {
+    	  return sum(mask);
+      }
       // For bigger tables, periodically freshen a cached value
       long millis = System.currentTimeMillis();
       if( _fuzzy_time != millis ) { // Time marches on?

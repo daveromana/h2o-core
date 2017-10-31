@@ -46,7 +46,9 @@ public class AstNumList extends AstParameter {
       _bases[i] = bases.get(i);
       _cnts[i] = counts.get(i);
       _strides[i] = strides.get(i);
-      if (_cnts[i] != 1) isList = false;
+      if (_cnts[i] != 1) {
+    	  isList = false;
+      }
     }
     _isList = isList;
 

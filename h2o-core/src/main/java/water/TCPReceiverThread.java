@@ -150,7 +150,9 @@ public class TCPReceiverThread extends Thread {
           // Hand off the TCP connection to the proper handler
           int ctrl = _ab.getCtrl();
           int x = ctrl;
-          if( ctrl < 0 || ctrl >= UDP.udp.UDPS.length ) x = 0;
+          if( ctrl < 0 || ctrl >= UDP.udp.UDPS.length ) {
+        	  x = 0;
+          }
           switch( UDP.udp.UDPS[x] ) {
           case exec:     RPC.remote_exec  (_ab); break;
           case ack:      RPC.tcp_ack      (_ab); break;

@@ -383,7 +383,9 @@ public class Env extends Iced {
   public Val lookup(String id) {
     // Lexically scoped functions first
     Val val = _scope == null ? null : _scope.lookup(id);
-    if (val != null) return val;
+    if (val != null) {
+    	return val;
+    }
 
     // disallow TRUE/FALSE/NA to be overwritten by keys in the DKV... just way way saner this way
     if (CONSTS.containsKey(id)) {

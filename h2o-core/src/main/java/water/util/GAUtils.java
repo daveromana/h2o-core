@@ -89,7 +89,9 @@ public class GAUtils {
       label = label + " >= " + range[0];
     } else {
       int i = 0;
-      for(; i < range.length-2; i++) if (value >= range[i] && value < range[i+1]) break;
+      for(; i < range.length-2; i++) if (value >= range[i] && value < range[i+1]) {
+    	  break;
+      }
       label = label + " [" + range[i] + " " + range[i+1] + ")";
     }
     H2O.GA.postAsync(new EventHit(category, action, label, value));

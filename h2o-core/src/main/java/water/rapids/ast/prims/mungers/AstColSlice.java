@@ -70,7 +70,9 @@ public class AstColSlice extends AstPrimitive {
         pos[-col - 1] = -1;
         }
     int j = 0;
-    for (int i = 0; i < names.length; i++) if (pos[i] == 0) pos[j++] = i;
+    for (int i = 0; i < names.length; i++) if (pos[i] == 0) {
+    	pos[j++] = i;
+    }
     return Arrays.copyOfRange(pos, 0, j);
   }
 

@@ -100,8 +100,9 @@ public  class IcedHashMapGeneric<K, V> extends Iced implements Map<K, V>, Clonea
             throw new IllegalArgumentException("unsupported value class " + val.getClass().getName());
           }
         } else {
-          if(!(key instanceof Iced))
+          if(!(key instanceof Iced)) {
             throw new IllegalArgumentException("key must be String or Freezable, got " + key.getClass().getName());
+            }
           if (val instanceof String) {
             mode = 2;
           } else if(val instanceof Freezable) {

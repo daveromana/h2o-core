@@ -23,7 +23,9 @@ public class CBSChunk extends Chunk {
     _mem[1] = _bpv;
 
     for(int i = 0; i < vals.length; ++i)
-      if(vals[i])write(i,(byte)1);
+      if(vals[i]) {
+    	  write(i,(byte)1);
+      }
   }
   public CBSChunk(byte[] bs) { _mem = bs; initFromBytes(); }
   public CBSChunk(int len, int bpv) {

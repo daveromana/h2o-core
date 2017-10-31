@@ -303,8 +303,9 @@ abstract public class AstBinOp extends AstPrimitive {
     if (lf.numRows() != rt.numRows()) {
       // special case for broadcasting a single row of data across a frame
       if (lf.numRows() == 1 || rt.numRows() == 1) {
-        if (lf.numCols() != rt.numCols())
+        if (lf.numCols() != rt.numCols()) {
           throw new IllegalArgumentException("Frames must have same columns, found " + lf.numCols() + " columns and " + rt.numCols() + " columns.");
+        }
         return frame_op_row(lf, rt);
       } else {
         throw new IllegalArgumentException("Frames must have same rows, found " + lf.numRows() + " rows and " + rt.numRows() + " rows.");

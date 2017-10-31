@@ -54,8 +54,9 @@ public abstract class AstWhichFunc extends AstBuiltin<AstWhichFunc> {
             if(searchVal() == "max") { //Looking for the max?
                 for (int i = 0; i < row.length; i++) {
                     if (Double.isNaN(row[i])) {
-                        if (!na_rm)
+                        if (!na_rm) {
                             return new ValRow(new double[]{Double.NaN}, null);
+                            }
                     } else {
                         if (row[i] > val) {
                             val = row[i];

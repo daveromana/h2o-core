@@ -159,7 +159,12 @@ public class ChunkSummary extends MRTask<ChunkSummary> {
   public TwoDimTable toTwoDimTableChunkTypes() {
     final String tableHeader = "Chunk compression summary";
     int rows = 0;
-    for (int j = 0; j < chunkTypes.length; ++j) if (chunk_counts != null && chunk_counts[j] > 0) rows++;
+    for (int j = 0; j < chunkTypes.length; ++j) {
+    	if (chunk_counts != null && chunk_counts[j] > 0) {
+    
+    		rows++;
+    	}
+    }
     final String[] rowHeaders = new String[rows];
     final String[] colHeaders = new String[]{"Chunk Type", "Chunk Name", "Count", "Count Percentage", "Size", "Size Percentage"};
     final String[] colTypes = new String[]{"string", "string", "int", "float", "string", "float"};

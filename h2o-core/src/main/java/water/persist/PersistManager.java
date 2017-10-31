@@ -282,7 +282,9 @@ public class PersistManager {
         fails.add(path); // Fails for e.g. broken sockets silently swallow exceptions and just record the failed path
       }
     } else if ("s3".equals(scheme)) {
-      if (I[Value.S3] == null) throw new H2OIllegalArgumentException("S3 support is not configured");
+      if (I[Value.S3] == null) {
+    	  throw new H2OIllegalArgumentException("S3 support is not configured");
+      }
       I[Value.S3].importFiles(path, pattern, files, keys, fails, dels);
     } else if ("hdfs".equals(scheme) ||
         "s3n:".equals(scheme) ||

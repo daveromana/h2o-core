@@ -47,8 +47,9 @@ public class DatasetServlet extends HttpServlet {
           }
           }
       String suggested_fname = f_name.substring(x + 1).replace(".hex", ".csv");
-      if (!suggested_fname.endsWith(".csv"))
+      if (!suggested_fname.endsWith(".csv")) {
         suggested_fname = suggested_fname + ".csv";
+        }
       f_name = suggested_fname;
       response.addHeader("Content-Disposition", "attachment; filename=" + f_name);
       JettyHTTPD.setResponseStatus(response, HttpServletResponse.SC_OK);

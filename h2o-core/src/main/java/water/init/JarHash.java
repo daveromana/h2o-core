@@ -68,7 +68,7 @@ public abstract class JarHash {
     } catch( IOException | NoSuchAlgorithmException e ) {
       Log.err(e);               // No MD5 algo handy???
     } finally {
-      try { if( is != null ) is.close(); } catch( IOException ignore ) { System.out.println("The error is: " + ignore);}
+      try { if( is != null ) {is.close();} } catch( IOException ignore ) { System.out.println("The error is: " + ignore);}
     }
     return ffHash;
   }

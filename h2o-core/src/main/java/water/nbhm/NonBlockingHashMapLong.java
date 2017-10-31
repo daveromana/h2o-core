@@ -407,7 +407,9 @@ public class NonBlockingHashMapLong<TypeV>
     // even if it gets promoted out from under us (i.e., the copy completes
     // and another KVS becomes the top-level copy).
     CHM topchm = _chm;
-    if( topchm._newchm == null ) return; // No copy in-progress
+    if( topchm._newchm == null ) {
+    	return; // No copy in-progress
+    }
     topchm.help_copy_impl(false);
   }
 

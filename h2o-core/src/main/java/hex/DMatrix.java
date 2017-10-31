@@ -229,8 +229,9 @@ public class DMatrix  {
         _vals[j] = c.atd(i);
       }
       assert j == n;
-      if(_idxs.length > _maxsz)
+      if(_idxs.length > _maxsz) {
         throw new RuntimeException("too many nonzeros! found at least " + _idxs.length + " nonzeros.");
+        }
     }
 
     @Override public void reduce(GetNonZerosTsk gnz){

@@ -240,7 +240,9 @@ public class AstTable extends AstPrimitive {
       }
 
       Vec vec = Vec.makeVec(left_categ, Vec.VectorGroup.VG_LEN1.addVec());
-      if (v1.isCategorical()) vec.setDomain(v1.domain());
+      if (v1.isCategorical()) {
+    	  vec.setDomain(v1.domain());
+      }
       res.add(colnames[0], vec);
       vec = Vec.makeVec(right_categ, Vec.VectorGroup.VG_LEN1.addVec());
       if (v2.isCategorical()) { vec.setDomain(v2.domain());

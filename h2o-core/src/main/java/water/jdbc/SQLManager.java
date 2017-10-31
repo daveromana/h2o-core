@@ -348,7 +348,9 @@ public class SQLManager {
         sqlConn.add(conn);
 
       }
-      if (_job != null) _job.update(1);
+      if (_job != null) {
+    	  _job.update(1);
+      }
     }
 
     @Override

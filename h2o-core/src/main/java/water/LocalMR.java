@@ -79,8 +79,9 @@ public class LocalMR<T extends MrFun<T>> extends H2O.H2OCountedCompleter<LocalMR
       if(_prevTsk != null && _prevTsk.completed){
         _mrFun = _prevTsk._mrFun;
         _prevTsk._mrFun = null;
-      } else if(this != _root)
+      } else if(this != _root) {
         _mrFun = _root._mrFun.makeCopy();
+        }
       try {
         _mrFun.map(mid);
       } catch (Throwable t) {

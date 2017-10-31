@@ -16,8 +16,9 @@ public class Merge {
   // This is a fully distributed and parallel sort.
   // It is not currently an in-place sort, so the data is doubled and a sorted copy is returned.
   public static Frame sort( final Frame fr, int[] cols ) {
-    if( cols.length==0 )        // Empty key list
-      return fr;                // Return original frame
+    if( cols.length==0 ) {        // Empty key list
+      return fr;          
+      }      // Return original frame
     for( int col : cols )
       if( col < 0 || col >= fr.numCols() ) {
         throw new IllegalArgumentException("Column "+col+" is out of range of "+fr.numCols());

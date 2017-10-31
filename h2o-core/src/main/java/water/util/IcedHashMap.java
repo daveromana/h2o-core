@@ -49,8 +49,9 @@ public class IcedHashMap<K, V> extends IcedHashMapBase<K,V> implements Concurren
       break;
     case 3: // <Freezable,String>
       for( int i=2; i<kvs.length; i += 2 )
-        if( kvs[i] instanceof Iced   && kvs[i+1] instanceof String )
+        if( kvs[i] instanceof Iced   && kvs[i+1] instanceof String ) {
           ab.put   ((Freezable  )kvs[i]).putStr((String)kvs[i+1]);
+          }
       break;
     case 4: // <Freezable,Freezable>
       for( int i=2; i<kvs.length; i += 2 )

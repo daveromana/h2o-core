@@ -460,8 +460,9 @@ public interface HyperSpaceWalker<MP extends Model.Parameters, C extends HyperSp
                                      HyperSpaceSearchCriteria.RandomDiscreteValueSearchCriteria search_criteria) {
       super(params, hyperParams, paramsBuilderFactory, search_criteria);
 
-      if (-1 == search_criteria.seed())
-        random = new Random();                       // true random
+      if (-1 == search_criteria.seed()) {
+        random = new Random();
+        }                       // true random
       else
         random = new Random(search_criteria.seed()); // seeded repeatable pseudorandom
     }
