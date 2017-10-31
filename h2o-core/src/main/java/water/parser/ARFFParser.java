@@ -32,10 +32,12 @@ class ARFFParser extends CsvParser {
     ArrayList<String> header = new ArrayList<>();
     offset = readArffHeader(offset, header, bits, singleQuotes);
     if (offset < bits.length && !CsvParser.isEOL(bits[offset])) {
-      haveData = true; //more than just the header
+      haveData = true;
+      } //more than just the header
 
     if (header.size() == 0) {
       throw new ParseDataset.H2OParseException("No data!");
+      }
     headerlines = header.toArray(headerlines);
 
     // process header
@@ -74,6 +76,7 @@ class ARFFParser extends CsvParser {
       }
       if (datablock.size() == 0) {
         throw new ParseDataset.H2OParseException("Unexpected line.");
+        }
       datalines = datablock.toArray(datalines);
 
       // process data section
@@ -82,7 +85,7 @@ class ARFFParser extends CsvParser {
 
       // First guess the field separator by counting occurrences in first few lines
       if (nlines2 == 1) {
-        if (sep == GUESS_SEP) {
+        if (sep == GUESS_SEP) {	
           if (datalines[0].split(",").length > 2) {
         	  sep = (byte) ',';
           }
@@ -90,16 +93,18 @@ class ARFFParser extends CsvParser {
         	  sep = ' ';
           }
           else {
-            throw new ParseDataset.H2OParseException("Failed to detect separator.");
+        	  throw new ParseDataset.H2OParseException("Failed to detect separator.");
+          }
+          data[0] = determineTokens(datalines[0], sep, singleQuotes);
+	        ncols = (ncols > 0) ? ncols : data[0].length;
+	        labels = null;
         }
-        data[0] = determineTokens(datalines[0], sep, singleQuotes);
-        ncols = (ncols > 0) ? ncols : data[0].length;
-        labels = null;
-      } else {                    // 2 or more lines
+        else {                    // 2 or more lines
         if (sep == GUESS_SEP) {   // first guess the separator
           sep = guessSeparator(datalines[0], datalines[1], singleQuotes);
           if (sep == GUESS_SEP && nlines2 > 2) {
-            sep = guessSeparator(datalines[1], datalines[2], singleQuotes);
+        	  sep = guessSeparator(datalines[1], datalines[2], singleQuotes);
+        	  }
             if (sep == GUESS_SEP) {
             	sep = guessSeparator(datalines[0], datalines[2], singleQuotes);
             }
@@ -163,6 +168,7 @@ class ARFFParser extends CsvParser {
       String[] line = headerlines[i].split("\\s+", 2);
       if (!line[0].equalsIgnoreCase(TAG_ATTRIBUTE)) {
         throw new ParseDataset.H2OParseException("Expected line to start with @ATTRIBUTE.");
+        }
       } else {
         final String spec = (line.length == 2) ? line[1].replaceAll("\\s", " ") : ""; // normalize separators
         int sepIdx = spec.lastIndexOf(' ');
@@ -194,17 +200,20 @@ class ARFFParser extends CsvParser {
           int domainSpecStart = spec.lastIndexOf('{');
           if (domainSpecStart < 0) {
             throw new ParseDataset.H2OParseException("Invalid type specification.");
+            }
           sepIdx = domainSpecStart - 1;
           String domainSpec = spec.substring(domainSpecStart + 1, line[1].length() - 1);
           domains[i] = domainSpec.split(",");
           for (int j = 0; j < domains[i].length; j++)
             domains[i][j] = domains[i][j].trim();
           if (domains[i][0].length() > 0) {
-            ctypes[i] = Vec.T_CAT; // case of {A,B,C} (valid list of factors)
+            ctypes[i] = Vec.T_CAT; 
+            }// case of {A,B,C} (valid list of factors)
         }
 
         if (ctypes[i] == Vec.T_BAD) {
           throw new ParseDataset.H2OParseException("Unexpected line, type not recognized. Attribute specification: " + type);
+          }
 
         // remove the whitespaces separating the label and the type specification
         while ((sepIdx > 0) && (spec.charAt(sepIdx - 1) == ' ')){
@@ -215,10 +224,11 @@ class ARFFParser extends CsvParser {
         // remove quotes
         if (label.length() >= 2 && label.startsWith("'") && label.endsWith("'")) {
           label = label.substring(1, label.length() - 1);
+          }
 
         labels[i] = label;
       }
     }
 
   }
-}
+

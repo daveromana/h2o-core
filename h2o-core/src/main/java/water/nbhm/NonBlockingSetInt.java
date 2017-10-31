@@ -205,6 +205,7 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
     for( int i=0; i<len; i++ )  // Read all bits
       if( s.readBoolean() ) {
         _nbsi.add(i);
+        }
   }
 
   // --- NBSI ----------------------------------------------------------------
@@ -282,7 +283,8 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
       // If so we need to grow the bit vector.
       if( (i>>6) >= _bits.length ) {
         return install_larger_new_bits(i). // Install larger pile-o-bits (duh)
-          help_copy().add(i);              // Finally, add to the new table
+          help_copy().add(i);    
+        }          // Finally, add to the new table
 
       // Handle every 64th bit via using a nested array
       NBSI nbsi = this;         // The bit array being added into
@@ -310,6 +312,7 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
     public boolean remove( final int i ) {
       if( (i>>6) >= _bits.length ) { // Out of bounds?  Not in this array!
         return _new != null && help_copy().remove(i);
+        }
 
       // Handle every 64th bit via using a nested array
       NBSI nbsi = this;         // The bit array being added into
@@ -326,9 +329,11 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
         if( old < 0 )  {         // Not mutable?
           // Not mutable: finish copy of word, and retry on copied word
           return help_copy_impl(i).help_copy().remove(i);
+          }
         if( (old & mask) == 0 ) {
-        	return false; // Bit is already clear?
-        }
+        	return false;
+        	} // Bit is already clear?
+        
       } while( !nbsi.CAS( j>>6, old, old & ~mask ) );
       _size.add(-1);
       return true;
@@ -337,6 +342,7 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
     public boolean contains( final int i ) {
       if( (i>>6) >= _bits.length ) { // Out of bounds?  Not in this array!
         return _new != null && help_copy().contains(i);
+        }
 
       // Handle every 64th bit via using a nested array
       NBSI nbsi = this;         // The bit array being added into
@@ -351,6 +357,7 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
       if( old < 0 )    {         // Not mutable?
         // Not mutable: finish copy of word, and retry on copied word
         return help_copy_impl(i).help_copy().contains(i);
+        }
       // Yes mutable: test & return bit
       return (old & mask) != 0;
     }
@@ -401,8 +408,8 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
 
       // Return the new bitvector for 'fluid' programming style
       return _new;
+      }
     }
-
     // Help copy this one word.  State Machine.
     // (1) If not "made immutable" in the old array, set the sign bit to make
     //     it immutable.
@@ -433,29 +440,33 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
         if( old.CAS( j>>6, oldbits, bits ) ) {
           if( oldbits == 0 ) {
         	  _copyDone.addAndGet(1);
+        	  }
           }
           break;                // Success - old array word is now immutable
         }
         bits = old._bits[j>>6]; // Retry if CAS failed
-      }
+      
 
       // Transit from state 2: non-zero in old and zero in new
       if( bits != mask(63) ) {  // Non-zero in old?
         long new_bits = nnn._bits[j>>6];
         if( new_bits == 0 ) {   // New array is still zero
-          new_bits = bits & ~mask(63); // Desired new value: a mutable copy of bits
+          new_bits = bits & ~mask(63);
+          } // Desired new value: a mutable copy of bits
           // One-shot CAS attempt, no loop, from 0 to non-zero.
           // If it fails, somebody else did the copy for us
           if( !nnn.CAS( j>>6, 0, new_bits ) ) {
-            new_bits = nnn._bits[j>>6]; // Since it failed, get the new value
+            new_bits = nnn._bits[j>>6];
+            } // Since it failed, get the new value
           assert new_bits != 0;
         }
 
         // Transit from state 3: non-zero in old and non-zero in new
         // One-shot CAS attempt, no loop, from non-zero to 0 (but immutable)
         if( old.CAS( j>>6, bits, mask(63) ) ) {
-          _copyDone.addAndGet(1); // One more word finished copying
-      }
+          _copyDone.addAndGet(1); 
+          }// One more word finished copying
+      
 
       // Now in state 4: zero (and immutable) in old
 
@@ -488,11 +499,12 @@ public class NonBlockingSetInt extends AbstractSet<Integer> implements Serializa
       }
 
       if( _copyIdx.get() != 0 || _copyDone.get() != 0 ) {
-        print(d,"_copyIdx="+_copyIdx.get()+" _copyDone="+_copyDone.get()+" _words_to_cpy="+_sum_bits_length);
-      if( _new != null ) {
-        print(d,"__has_new - ");
-        _new.print(d+1);
+    	  print(d,"_copyIdx="+_copyIdx.get()+" _copyDone="+_copyDone.get()+" _words_to_cpy="+_sum_bits_length);
       }
+      if( _new != null ) {
+    	  print(d,"__has_new - ");
+    	  _new.print(d+1);
+      }	
     }
   }
 }

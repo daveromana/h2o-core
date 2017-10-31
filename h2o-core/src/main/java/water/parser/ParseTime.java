@@ -58,7 +58,7 @@ public abstract class ParseTime {
       if( t4 != Long.MIN_VALUE ) return t4;     // Cant tell which date: 3/2/10 is
     } catch( org.joda.time.IllegalFieldValueException | // Not time at all
              org.joda.time.IllegalInstantException      // Parsed as time, but falls into e.g. a daylight-savings hour hole
-             ie ) {System.out.println("The error is: " + ie); } //FIXME should collect errors and report at end of parse
+             ie ) { } //FIXME should collect errors and report at end of parse
     return Long.MIN_VALUE;
   }
   // Tries to parse "yyyy-MM[-dd] [HH:mm:ss.SSS aa]"
@@ -67,13 +67,9 @@ public abstract class ParseTime {
     final byte[] buf = str.getBuffer();
     int i=str.getOffset();
     final int end = i+str.length();
-    while( i < end && buf[i] == ' ' ){ 
-    	i++;
-    }
-    if   ( i < end && buf[i] == '"' ) {
-    	i++;
-    if( (end-i) < 6 ) {
-    	return Long.MIN_VALUE;
+    while( i < end && buf[i] == ' ' ) i++;
+    if   ( i < end && buf[i] == '"' ) i++;
+    if( (end-i) < 6 ) return Long.MIN_VALUE;
     int yyyy=0, MM=0, dd=0;
 
     // Parse date
@@ -82,35 +78,26 @@ public abstract class ParseTime {
     yyyy = digit(yyyy,buf[i++]);
     yyyy = digit(yyyy,buf[i++]);
     final boolean dash = buf[i] == '-';
-    if( dash ){
-    	 i++;
+    if( dash ) i++;
     MM = digit(MM,buf[i++]);
     // note: at this point we need guard every increment of "i" to avoid reaching outside of the buffer
     MM = i<end && buf[i]!='-' ? digit(MM,buf[i++]) : MM;
-    if( MM < 1 || MM > 12 ) {
-    	return Long.MIN_VALUE;
+    if( MM < 1 || MM > 12 ) return Long.MIN_VALUE;
     if( (end-i)>=2 ) {
-      if( dash && buf[i++] != '-' ){
-      	 return Long.MIN_VALUE;
+      if( dash && buf[i++] != '-' ) return Long.MIN_VALUE;
       dd = digit(dd, buf[i++]);
       dd = i < end && buf[i] >= '0' && buf[i] <= '9' ? digit(dd, buf[i++]) : dd;
-      if( dd < 1 || dd > 31 ) {
-      	return Long.MIN_VALUE;
+      if( dd < 1 || dd > 31 ) return Long.MIN_VALUE;
     } else {
-      if( !dash ) {
-      	return Long.MIN_VALUE; // yyyyMM is ambiguous with plain numbers
+      if( !dash ) return Long.MIN_VALUE; // yyyyMM is ambiguous with plain numbers
       dd=1;                              // yyyy-MM; no day
     }
     if( dash ) {                // yyyy-MM[-dd]
-      while( i < end && buf[i] == ' ' ){ 
-    	  i++; // optional seperator or trailing blanks
-      	}
-      }
-      if( i==end ) {
+      while( i < end && buf[i] == ' ' ) i++; // optional seperator or trailing blanks
+      if( i==end )
         return new DateTime(yyyy,MM,dd,0,0,0, getTimezone()).getMillis();
     } else {                    // yyyyMMdd-HH:mm:ss.SSS; dash AND time is now required
-      if( i==end || buf[i++] != '-' ) {
-      	return Long.MIN_VALUE;
+      if( i==end || buf[i++] != '-' ) return Long.MIN_VALUE;
     }
 
     //Parse time
@@ -123,38 +110,27 @@ public abstract class ParseTime {
     final byte[] buf = str.getBuffer();
     int i=str.getOffset();
     final int end = i+str.length();
-    while( i < end && buf[i] == ' ' ){ 
-    		i++;
-    	}
-    if   ( i < end && buf[i] == '"' ) {
-    	i++;
-    if( (end-i) < 5 ) {
-    	return Long.MIN_VALUE;
+    while( i < end && buf[i] == ' ' ) i++;
+    if   ( i < end && buf[i] == '"' ) i++;
+    if( (end-i) < 5 ) return Long.MIN_VALUE;
     int yyyy=0, MM=0, dd=0;
 
     // Parse day
     if( isDigit(buf[i]) ) {
       dd = digit(dd,buf[i++]);
-      if( isDigit(buf[i]) ) {
-      	dd = digit(dd,buf[i++]);
-      if( dd < 1 || dd > 31 ) {
-      	return Long.MIN_VALUE;
-      if( buf[i] == '-' ) {
-      	i++;
+      if( isDigit(buf[i]) ) dd = digit(dd,buf[i++]);
+      if( dd < 1 || dd > 31 ) return Long.MIN_VALUE;
+      if( buf[i] == '-' ) i++;
     } else dd = 1;              // No date, assume 1st
-    if( !isChar(buf[i]) ){
-    	 return Long.MIN_VALUE;
+    if( !isChar(buf[i]) ) return Long.MIN_VALUE;
 
     // Parse month
     MM = parseMonth(buf,i,end);
-    if( MM == -1 ) {
-    	return Long.MIN_VALUE; // No matching month
+    if( MM == -1 ) return Long.MIN_VALUE; // No matching month
     i += (MM>>4);               // Skip parsed month bytes
     MM &= 0xF;                  // 1-based month in low nybble
-    if( end-i>=1 && buf[i] == '-' ) {
-    	i++;
-    if( end-i < 2 ){
-    	 return Long.MIN_VALUE;
+    if( end-i>=1 && buf[i] == '-' ) i++;
+    if( end-i < 2 ) return Long.MIN_VALUE;
 
     // Parse year
     yyyy = digit(yyyy,buf[i++]);    // 2-digit year
@@ -165,17 +141,13 @@ public abstract class ParseTime {
     } else { //POSIX 2004 & 2008 says 69-99 -> 1900s, 00-68 -> 2000s
       yyyy += (yyyy >= 69) ? 1900 : 2000;
     }
-    while( i<end && buf[i] == ' ' ){ 
-    		i++;
-    	}
-    if( i<end && buf[i] == '"' ){
-    	 i++;
-    if( i==end ) {
+    while( i<end && buf[i] == ' ' ) i++;
+    if( i<end && buf[i] == '"' ) i++;
+    if( i==end )
       return new DateTime(yyyy,MM,dd,0,0,0, getTimezone()).getMillis();
 
     // Parse time
-    if( buf[i] == ':'){
-    	 i++;
+    if( buf[i] == ':') i++;
     return parseTime(buf, i, end, yyyy, MM, dd, false);
   }
 
@@ -187,31 +159,21 @@ public abstract class ParseTime {
     final byte[] buf = str.getBuffer();
     int i=str.getOffset();
     final int end = i+str.length();
-    while( i < end && buf[i] == ' ' ){ 
-    		i++;
-    	}
-    if   ( i < end && buf[i] == '"' ) {
-    	i++;
-    if( (end-i) < 6 ) {
-    	return Long.MIN_VALUE;
+    while( i < end && buf[i] == ' ' ) i++;
+    if   ( i < end && buf[i] == '"' ) i++;
+    if( (end-i) < 6 ) return Long.MIN_VALUE;
     int yyyy=0, MM=0, dd=0;
 
     // Parse date
     MM = digit(MM,buf[i++]);
-    if( isDigit(buf[i]) ) {
-    	MM = digit(MM,buf[i++]);
-    if( MM < 1 || MM > 12 ){
-    	 return Long.MIN_VALUE;
+    if( isDigit(buf[i]) ) MM = digit(MM,buf[i++]);
+    if( MM < 1 || MM > 12 ) return Long.MIN_VALUE;
     byte sep = buf[i++];
-    if( sep != '-' && sep != '/' ) {
-    	return Long.MIN_VALUE;
+    if( sep != '-' && sep != '/' ) return Long.MIN_VALUE;
     dd = digit(dd,buf[i++]);
-    if( isDigit(buf[i]) ){
-    	 dd = digit(dd,buf[i++]);
-    if( dd < 1 || dd > 31 ) {
-    	return Long.MIN_VALUE;
-    if( sep != buf[i++] ) {
-    	return Long.MIN_VALUE;
+    if( isDigit(buf[i]) ) dd = digit(dd,buf[i++]);
+    if( dd < 1 || dd > 31 ) return Long.MIN_VALUE;
+    if( sep != buf[i++] ) return Long.MIN_VALUE;
     yyyy = digit(yyyy,buf[i++]);    // 2-digit year
     yyyy = digit(yyyy,buf[i++]);
     if( end-i>=2 && isDigit(buf[i]) ) {
@@ -220,17 +182,13 @@ public abstract class ParseTime {
     } else { //POSIX 2004 & 2008 says 69-99 -> 1900s, 00-68 -> 2000s
       yyyy += (yyyy >= 69) ? 1900 : 2000;
     }
-    while( i<end && buf[i] == ' ' ){ 
-    		i++;
-    	}
-    if( i<end && buf[i] == '"' ) {
-    	i++;
-    if( i==end ) {
+    while( i<end && buf[i] == ' ' ) i++;
+    if( i<end && buf[i] == '"' ) i++;
+    if( i==end )
       return new DateTime(yyyy,MM,dd,0,0,0, getTimezone()).getMillis();
 
     // Parse time
-    if( buf[i] == ':'){
-    	 i++;
+    if( buf[i] == ':') i++;
     return parseTime(buf, i, end, yyyy, MM, dd, false);
   }
 
@@ -240,13 +198,9 @@ public abstract class ParseTime {
     final byte[] buf = str.getBuffer();
     int i=str.getOffset();
     final int end = i+str.length();
-    while( i < end && buf[i] == ' ' ){
-    		i++;
-    	}
-    if   ( i < end && buf[i] == '"' ) {
-    	i++;
-    if( (end-i) < 6 ) {
-    	return Long.MIN_VALUE;
+    while( i < end && buf[i] == ' ' ) i++;
+    if   ( i < end && buf[i] == '"' ) i++;
+    if( (end-i) < 6 ) return Long.MIN_VALUE;
     int yyyy=0, MM=0;
 
     // Parse year
@@ -257,15 +211,11 @@ public abstract class ParseTime {
 
     // Parse month
     MM = parseMonth(buf,i,end);
-    if( MM == -1 ) {
-    	return Long.MIN_VALUE; // No matching month
+    if( MM == -1 ) return Long.MIN_VALUE; // No matching month
     i += (MM>>4);               // Skip parsed month bytes
     MM &= 0xF;                  // 1-based month in low nybble
-    while( i < end && buf[i] == ' ' ){
-    		i++;
-    	}
-    if( i==end ) {
-    	return new DateTime(yyyy,MM,1,0,0,0, getTimezone()).getMillis();
+    while( i < end && buf[i] == ' ' ) i++;
+    if( i==end ) return new DateTime(yyyy,MM,1,0,0,0, getTimezone()).getMillis();
     return Long.MIN_VALUE;      // Something odd
   }
 
@@ -274,16 +224,11 @@ public abstract class ParseTime {
     final byte[] buf = str.getBuffer();
     int i=str.getOffset();
     final int end = i+str.length();
-    while( i < end && buf[i] == ' ' ){
-    		i++;
-    	}
-    if   ( i < end && buf[i] == '"' ){
-    	 i++;
-    if( end-i < 5 ){
-    	 return Long.MIN_VALUE;
+    while( i < end && buf[i] == ' ' ) i++;
+    if   ( i < end && buf[i] == '"' ) i++;
+    if( end-i < 5 ) return Long.MIN_VALUE;
     long t1 = parseTime(buf,i,end,1970,1,1,true); // Unix Epoch dates
-    if( t1 == Long.MIN_VALUE ) {
-    	return Long.MIN_VALUE;
+    if( t1 == Long.MIN_VALUE ) return Long.MIN_VALUE;
     // Remove all TZ info; return bare msec from the morning of the epoch
     return t1+getTimezone().getOffsetFromLocal(t1);
   }
@@ -302,19 +247,16 @@ public abstract class ParseTime {
       INNER:
       for (byte[] ms : mss) {
         MMM = ms;
-        if (MMM == null) {
-        	continue;
-        if (i + MMM.length > end) { 
+        if (MMM == null) continue;
+        if (i + MMM.length > end) 
           continue INNER;
         for (int j = 0; j < MMM.length; j++)
-          if (MMM[j] != Character.toLowerCase(buf[i + j])) {
+          if (MMM[j] != Character.toLowerCase(buf[i + j]))
             continue INNER;
-        if (i+MMM.length==end || buf[i + MMM.length] == '-' || isDigit(buf[i + MMM.length])){
-        	 break OUTER;
+        if (i+MMM.length==end || buf[i + MMM.length] == '-' || isDigit(buf[i + MMM.length])) break OUTER;
       }
     }
-    if( MM == MMS.length ){
-    	 return -1; // No matching month
+    if( MM == MMS.length ) return -1; // No matching month
     MM++;                       // 1-based month
     return (MMM.length<<4)|MM;  // Return two values; skip in upper bytes, month in low nybble
   }
@@ -342,48 +284,32 @@ public abstract class ParseTime {
     int HH =0, mm=0, ss=0, SSS=0, ndots=0;
     HH = digit(HH,buf[i++]);
     HH = buf[i]>='0' && buf[i]<= '9' ? digit(HH,buf[i++]) : HH;
-    if(HH  < 0 || HH > 23 ) {
-    	return Long.MIN_VALUE;
-    if( buf[i] != ':' && buf[i] != '.' ) {
-    	return Long.MIN_VALUE;
-    if( buf[i]=='.' ) {
-    	ndots++;
+    if(HH  < 0 || HH > 23 ) return Long.MIN_VALUE;
+    if( buf[i] != ':' && buf[i] != '.' ) return Long.MIN_VALUE;
+    if( buf[i]=='.' ) ndots++;
     ++i;
     mm = digit(mm,buf[i++]);
     mm = buf[i]>='0' && buf[i]<= '9' ? digit(mm,buf[i++]) : mm;
-    if( mm < 0 || mm > 59 ) {
-    	return Long.MIN_VALUE;
-    if( i+2 >= buf.length ){
-    	 return Long.MIN_VALUE;
-    if( buf[i] != ':' && buf[i] != '.' ) {
-    	return Long.MIN_VALUE;
-    if( buf[i]=='.' ) {
-    	ndots++;
+    if( mm < 0 || mm > 59 ) return Long.MIN_VALUE;
+    if( i+2 >= buf.length ) return Long.MIN_VALUE;
+    if( buf[i] != ':' && buf[i] != '.' ) return Long.MIN_VALUE;
+    if( buf[i]=='.' ) ndots++;
     ++i;
     ss = digit(ss,buf[i++]);
     ss = buf[i]>='0' && buf[i]<= '9' ? digit(ss,buf[i++]) : ss;
-    if( ss < 0 || ss > 59 ){
-    	 return Long.MIN_VALUE;
+    if( ss < 0 || ss > 59 ) return Long.MIN_VALUE;
     if( i<end && (buf[i] == ':' || buf[i] == '.' )) {
-      if( buf[i]=='.' ) {
-      	ndots++;
+      if( buf[i]=='.' ) ndots++;
       i++;
-      if( i<end ){
-      	 SSS = digit(SSS,buf[i++]);
-      if( i<end ){
-      	 SSS = digit(SSS,buf[i++]);
-      if( i<end ) {
-      	SSS = digit(SSS,buf[i++]);
-      if( SSS < 0 || SSS > 999 ){
-      	 return Long.MIN_VALUE;
-      while( i<end && isDigit(buf[i]) ){
-    	  	i++; // skip micros and nanos
-      	}
+      if( i<end ) SSS = digit(SSS,buf[i++]);
+      if( i<end ) SSS = digit(SSS,buf[i++]);
+      if( i<end ) SSS = digit(SSS,buf[i++]);
+      if( SSS < 0 || SSS > 999 ) return Long.MIN_VALUE;
+      while( i<end && isDigit(buf[i]) ) i++; // skip micros and nanos
     }
-    if( i<end && buf[i] == '"' ) {
-    	i++;
+    if( i<end && buf[i] == '"' ) i++;
     if( i == end) {
-      if( timeOnly && ndots==3 ) {
+      if( timeOnly && ndots==3 )
         return Long.MIN_VALUE; // Ambiguous: tell 1.2.3.4 apart from an IP address
       return new DateTime(yyyy, MM, dd, HH, mm, ss, getTimezone()).getMillis() + SSS;
     }
@@ -391,36 +317,30 @@ public abstract class ParseTime {
     // extract halfday of day, if present
     if( buf[i] == ' ' ) {
       ++i;
-      if( i==end ) {
-      	return new DateTime(yyyy, MM, dd, HH, mm, ss, getTimezone()).getMillis() + SSS;
+      if( i==end ) return new DateTime(yyyy, MM, dd, HH, mm, ss, getTimezone()).getMillis() + SSS;
     }
     if( (buf[i] == 'A' || buf[i] == 'P') && buf[i+1] == 'M') {
-      if (HH < 1 || HH > 12) {
-      	return Long.MIN_VALUE;
+      if (HH < 1 || HH > 12) return Long.MIN_VALUE;
       // convert 1-12 hours into 0-23
-      if (buf[i] == 'P') { // PM
-        if (HH < 12) { HH += 12;
+      if (buf[i] == 'P') // PM
+        if (HH < 12) HH += 12;
       else // AM
-        if (HH == 12) {HH = 0;
+        if (HH == 12) HH = 0;
       i += 2;
     } else return Long.MIN_VALUE;
 
-    if( i<end && buf[i] == '"' ) {
-    	i++;
-    if( i<end ){
-    	 return Long.MIN_VALUE;
+    if( i<end && buf[i] == '"' ) i++;
+    if( i<end ) return Long.MIN_VALUE;
     return new DateTime(yyyy,MM,dd,HH,mm,ss,getTimezone()).getMillis()+SSS;
   }
 
   private static int digit( int x, int c ) {
-    if( x < 0 || c < '0' || c > '9' ){
-    	 return -1;
+    if( x < 0 || c < '0' || c > '9' ) return -1;
     return x*10+(c-'0');
   }
   private static boolean isDigit(byte b) { return (b >= '0' && b <= '9'); }
   private static boolean isChar(byte b) {
-    if (b < 'A' || (b >'Z' && b < 'a')  || b > 'z') {
-    	return false;
+    if (b < 'A' || (b >'Z' && b < 'a')  || b > 'z') return false;
     else return true;
   }
 
@@ -470,10 +390,9 @@ public abstract class ParseTime {
       offset = offsetFormatter.withZone(tz).print(tz.getStandardOffset(millis));
       key = offset + " " + cid;
       if (id == cid) { // Canonical ID
-        if (!tzMap.containsKey(key)) {
-        	tzMap.put(key, "");
+        if (!tzMap.containsKey(key)) tzMap.put(key, "");
       }  else {// alias ID
-        if (!tzMap.containsKey(key)) {
+        if (!tzMap.containsKey(key))
           tzMap.put(key, "");
         tzMap.put(key,  tzMap.get(key) + ", " + id);
       }
@@ -505,7 +424,7 @@ public abstract class ParseTime {
    *  @throws IllegalArgumentException if the pattern is invalid
    */
   public static DateTimeFormatter forStrptimePattern(String pattern) {
-    if (pattern == null || pattern.length() == 0) {
+    if (pattern == null || pattern.length() == 0)
       throw new IllegalArgumentException("Empty date time pattern specification");
 
     DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
@@ -725,8 +644,7 @@ public abstract class ParseTime {
       //Grab pattern tokens
       c = pattern.charAt(++i);
       //0 is ignored for input, and this ignores alternative religious eras
-      if ((c == '0' || c == 'E') && i + 1 >= length){
-      	 c = pattern.charAt(++i);
+      if ((c == '0' || c == 'E') && i + 1 >= length) c = pattern.charAt(++i);
       buf.append('%');
       buf.append(c);
     } else { // Grab all else as text
@@ -735,8 +653,7 @@ public abstract class ParseTime {
       for (i++; i < length;i++) {
         c = pattern.charAt(i);
         if (c == '%' ) { // consume literal % otherwise break
-          if (i + 1 < length && pattern.charAt(i + 1) == '%'){
-          	 i++;
+          if (i + 1 < length && pattern.charAt(i + 1) == '%') i++;
           else { i--; break; }
         }
         buf.append(c);

@@ -65,7 +65,8 @@ public class CategoricalColumnCfcm extends CreateFrameColumnMaker {
     System.arraycopy(_animals, 0, domain, 0, Math.min(numFactors, _animals.length));
     if (numFactors > _animals.length) {
       int k = _animals.length;
-      OUTER:
+      final boolean OUTER = true;
+      while(OUTER)
       for (int i = 0; i < _animals.length; i++)
         for (int j = 0; j < _animals.length; j++) {
           if (i == j) {
@@ -73,7 +74,9 @@ public class CategoricalColumnCfcm extends CreateFrameColumnMaker {
           }
           domain[k++] = _animals[i] + _animals[j];
           if (k == numFactors) {
-        	  break OUTER;
+        	  OUTER=true;
+          }else{
+        	  OUTER=false;
           }
         }
     }

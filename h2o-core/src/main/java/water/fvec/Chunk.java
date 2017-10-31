@@ -658,6 +658,7 @@ public abstract class Chunk extends Iced<Chunk> implements Vec.Holder {
     for( int i = 0; i < _len; ++i)
       if(atd(i) != 0) {
         res[k++] = i;
+        }
     return k;
   }
 

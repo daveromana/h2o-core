@@ -84,6 +84,7 @@ class SVMLightParser extends Parser {
           ++offset;
           if (offset >= bits.length) {
             return dout;
+            }
           c = bits[offset];
         }
       }
@@ -95,15 +96,18 @@ class SVMLightParser extends Parser {
           case SKIP_LINE:
             if (!isEOL(c)) {
               break;
+              }
             // fall through
           case EOL:
             if (colIdx != 0) {
               colIdx = 0;
               if(lstate != SKIP_LINE) {
                 dout.newLine();
+                }
             }
             if( !firstChunk ) {
-              break MAIN_LOOP; // second chunk only does the first row
+              break MAIN_LOOP; 
+              }// second chunk only does the first row
             lstate = (c == CHAR_CR) ? EXPECT_COND_LF : POSSIBLE_EMPTY_LINE;
             gstate = TGT;
             break;
@@ -112,6 +116,7 @@ class SVMLightParser extends Parser {
             lstate = POSSIBLE_EMPTY_LINE;
             if (c == CHAR_LF) {
               break;
+              }
             continue MAIN_LOOP;
           // ---------------------------------------------------------------------
 
@@ -122,6 +127,7 @@ class SVMLightParser extends Parser {
             if (isEOL(c)) {
               if (c == CHAR_CR) {
                 lstate = EXPECT_COND_LF;
+                }
               break;
             }
             lstate = WHITESPACE_BEFORE_TOKEN;
@@ -130,6 +136,7 @@ class SVMLightParser extends Parser {
           case WHITESPACE_BEFORE_TOKEN:
             if (isWhitespace(c)) {
                 break;
+                }
             if (isEOL(c)){
               lstate = EOL;
               continue MAIN_LOOP;
@@ -167,6 +174,7 @@ class SVMLightParser extends Parser {
               number = (number*10)+(c-'0');
               if (number >= LARGEST_DIGIT_NUMBER) {
                 lstate = INVALID_NUMBER;
+                }
               break;
             } else if (c == CHAR_DECIMAL_SEP) {
               lstate = NUMBER_FRACTION;
@@ -199,17 +207,21 @@ class SVMLightParser extends Parser {
                     String err;
                     if(number <= colIdx) {
                       err = "Columns come in non-increasing sequence. Got " + number + " after " + colIdx + ". Rest of the line is skipped.";
+                      }
                     else if(exp != 0) {
                       err = "Got non-integer as column id: " + PrettyPrint.pow10(number,exp) + ". Rest of the line is skipped.";
+                      }
                     else {
                       err = "column index out of range, " + number + " does not fit into integer." + " Rest of the line is skipped.";
                     dout.invalidLine(new ParseWriter.ParseErr(err,cidx,dout.lineNum(),offset + din.getGlobalByteOffset()));
                     lstate = SKIP_LINE;
+                    }
                   }
                 } else { // we're probably out of sync, skip the rest of the line
                   String err = "Unexpected character after column id: " + c;
                   dout.invalidLine(new ParseWriter.ParseErr(err,cidx,dout.lineNum(),offset + din.getGlobalByteOffset()));
                   lstate = SKIP_LINE;
+                  }
                 }
                 break NEXT_CHAR;
               case TGT:
@@ -228,16 +240,18 @@ class SVMLightParser extends Parser {
             if ((c > '0') && (c <= '9')) {
               if (number < LARGEST_DIGIT_NUMBER) {
                 number = (number*PrettyPrint.pow10i(zeros+1))+(c-'0');
-              } else {
+              }
+            } else {
                 String err = "number " + number + " is out of bounds.";
                 dout.invalidLine(new ParseWriter.ParseErr(err,cidx,dout.lineNum(),offset + din.getGlobalByteOffset()));
                 lstate = SKIP_LINE;
-              }
+            }
               zeros = 0;
               break;
             } else if ((c == 'e') || (c == 'E')) {
               if (decimal) {
                 fractionDigits = offset - zeros - 1 - fractionDigits;
+                }
               lstate = NUMBER_EXP_START;
               sgnExp = 1;
               zeros = 0;
@@ -246,6 +260,7 @@ class SVMLightParser extends Parser {
             lstate = NUMBER_END;
             if (decimal) {
               fractionDigits = offset - zeros - fractionDigits-1;
+              }
             if (exp == -1) {
               number = -number;
             }
@@ -311,6 +326,7 @@ class SVMLightParser extends Parser {
           case SKIP_TOKEN:
             if(isEOL(c)) {
               lstate = EOL;
+              }
             else if(isWhitespace(c)) {
               lstate = WHITESPACE_BEFORE_TOKEN;
             break;
@@ -345,10 +361,12 @@ class SVMLightParser extends Parser {
           firstChunk = false;
           if (lstate == NUMBER_FRACTION) {
             fractionDigits -= bits.length;
+            }
           offset -= bits.length;
           bits = bits1;           // Set main parsing loop bits
           if( bits[0] == CHAR_LF && lstate == EXPECT_COND_LF ) {
             break; // when the first character we see is a line end
+            }
         }
         c = bits[offset];
       } // end MAIN_LOOP
@@ -370,12 +388,14 @@ class SVMLightParser extends Parser {
       _ncols = Math.max(_ncols,colIdx);
       if(colIdx < MAX_PREVIEW_COLS && _nlines < MAX_PREVIEW_LINES) {
         _data[_nlines][colIdx] = Double.toString(PrettyPrint.pow10(number,exp));
+        }
     }
 
     @Override public void addNumCol(int colIdx, double d) {
       _ncols = Math.max(_ncols,colIdx);
       if(colIdx < MAX_PREVIEW_COLS && _nlines < MAX_PREVIEW_LINES) {
         _data[_nlines][colIdx] = Double.toString(d);
+        }
     }
 
     public byte[] guessTypes() { return col_types(_ncols); }

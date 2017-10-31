@@ -97,9 +97,10 @@ public class CXIChunk extends Chunk {
     	  lb = mid + 1;
       }
       else {ub = mid;
+      }
     }
     return -getOff(ub)-1;
-  }
+  }	
 
   @Override public long at8_impl(int idx){
     int x = findOffset(idx);
@@ -183,9 +184,11 @@ public class CXIChunk extends Chunk {
       }
       long val = getVal(x);
       if(val ==_NAS[_val_sz]) {
-        v.addNAs(1);}
+        v.addNAs(1);
+        }
       else {
         v.addValue(val);
+        }
       prevId = id;
       x+=_elem_sz;
     }
@@ -219,14 +222,18 @@ public class CXIChunk extends Chunk {
         }
         long val = getVal(x);
         if(val == _NAS[_val_sz]) {
-          v.addNAs(1);}
+          v.addNAs(1);
+          }
         else {
-          v.addValue(val);}
+          v.addValue(val);
+        }
         zeros = 0;
         x+=_elem_sz;
-      } else {
+      } 
+      else {	
         zeros++;
-      k++;}      
+        k++;
+      }      
     }
     if(zeros > 0){
       if(_isNA) {
@@ -238,6 +245,7 @@ public class CXIChunk extends Chunk {
     }
     return v;
   }
+  
 
   @Override
   public boolean hasFloat(){return false;}

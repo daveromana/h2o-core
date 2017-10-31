@@ -272,9 +272,11 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
   private final void initialize( int initial_sz ) {
     if( initial_sz < 0 ) {
     	throw new IllegalArgumentException();
+    	}
     int i;                      // Convert to next largest power-of-2
     if( initial_sz > 1024*1024 ) {
     	initial_sz = 1024*1024;
+    	}
     for( i=MIN_SIZE_LOG; (1<<i) < (initial_sz<<2); i++ ) ;
     // Double size for K,V pairs, add 1 for CHM and 1 for hashes
     _kvs = new Object[((1<<i)<<1)+2];
@@ -360,6 +362,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
   private final TypeV putIfMatch( Object key, Object newVal, Object oldVal ) {
     if (oldVal == null || newVal == null){
     	 throw new NullPointerException();
+    	 }
     final Object res = putIfMatch( this, _kvs, key, newVal, oldVal );
     assert !(res instanceof Prime);
     assert res != null;
@@ -394,9 +397,11 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
   public boolean containsValue( final Object val ) {
     if( val == null ){
     	 throw new NullPointerException();
+    	 }
     for( TypeV V : values() )
       if( V == val || V.equals(val) ) {
         return true;
+        }
     return false;
   }
 
@@ -454,6 +459,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
     Iterator<Entry<TypeK,TypeV>> i = entrySet().iterator();
     if( !i.hasNext()) {
       return "{}";
+      }
 
     StringBuilder sb = new StringBuilder();
     sb.append('{');
@@ -466,6 +472,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       sb.append(value == this ? "(this Map)" : value);
       if( !i.hasNext()) {
         return sb.append('}').toString();
+        }
       sb.append(", ");
     }
   }
@@ -501,7 +508,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       final Object K = key(kvs,idx); // Get key   before volatile read, could be null
       final Object V = val(kvs,idx); // Get value before volatile read, could be null or Tombstone or Prime
       if( K == null ) {
-      	return null;   // A clear miss
+      	return null; 
+      	}  // A clear miss
 
       // We need a volatile-read here to preserve happens-before semantics on
       // newly inserted Keys.  If the Key body was written just before inserting
@@ -518,7 +526,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       if( K == key ) {
         // Key hit!  Check for no table-copy-in-progress
         if( !(V instanceof Prime) ) { // No copy?
-          return (V == TOMBSTONE) ? null : V; // Return the value
+          return (V == TOMBSTONE) ? null : V;
+          } // Return the value
         // Key hit - but slot is (possibly partially) copied to the new table.
         // Finish the copy & retry in the new table.
         return get_impl(topmap,chm.copy_slot_and_check(topmap,kvs,idx,key),key); // Retry in the new table
@@ -528,7 +537,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       // Check for too-many-reprobes on get - and flip to the new table.
       if( ++reprobe_cnt >= reprobe_limit(len) || // too many probes
           key == TOMBSTONE ) { // found a TOMBSTONE key, means no more keys in this table
-        return newkvs == null ? null : get_impl(topmap,topmap.help_copy(newkvs),key); // Retry in the new table
+        return newkvs == null ? null : get_impl(topmap,topmap.help_copy(newkvs),key);
+        } // Retry in the new table
 
       idx = (idx+1)&(len-1);    // Reprobe by 1!  (could now prefetch)
     }
@@ -561,7 +571,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
         // Found an empty Key slot - which means this Key has never been in
         // this table.  No need to put a Tombstone - the Key is not here!
         if( putval == TOMBSTONE ) {
-        	return putval; // Not-now & never-been in this table
+        	return putval; 
+        	}// Not-now & never-been in this table
         // Claim the null key-slot
         if( CAS_key(kvs,idx, null, key ) ) { // Claim slot for Key
           chm._slots.add(1);      // Raise key-slots-used count
@@ -592,7 +603,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       newkvs = chm._newkvs;     // VOLATILE READ before key compare
 
       if( K == key ) {
-        break;                  // Got it!
+        break; 
+        }                 // Got it!
 
       // get and put must have the same key lookup logic!  Lest 'get' give
       // up looking too soon.
@@ -604,7 +616,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
         // to claim a key slot (indeed, we cannot find a free one to claim!).
         newkvs = chm.resize(topmap,kvs);
         if( expVal != null ){
-        	 topmap.help_copy(newkvs); // help along an existing copy
+        	 topmap.help_copy(newkvs); 
+        }// help along an existing copy
         return putIfMatch(topmap,newkvs,key,putval,expVal);
       }
 
@@ -617,7 +630,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
     // not-null (deleted Values use Tombstone).  Thus if 'V' is null we
     // fail this fast cutout and fall into the check for table-full.
     if( putval == V ) {
-    	return V; // Fast cutout for no-change
+    	return V; 
+    	}// Fast cutout for no-change
 
     // See if we want to move to a new table (to avoid high average re-probe
     // counts).  We only check on the initial set of a Value from null to
@@ -635,11 +649,13 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
          // swapped and we still read a null _newkvs.  The resize call below
          // will do a CAS on _newkvs forcing the read.
          V instanceof Prime) ) {
-      newkvs = chm.resize(topmap,kvs); // Force the new table copy to start
+      newkvs = chm.resize(topmap,kvs);
+      } // Force the new table copy to start
     // See if we are moving to a new table.
     // If so, copy our slot and retry in the new table.
     if( newkvs != null ) {
       return putIfMatch(topmap,chm.copy_slot_and_check(topmap,kvs,idx,expVal),key,putval,expVal);
+      }
 
     // ---
     // We are finally prepared to update the existing table
@@ -666,8 +682,10 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
         // Adjust sizes - a striped counter
         if(  (V == null || V == TOMBSTONE) && putval != TOMBSTONE ){
         	 chm._size.add( 1);
+        	 }
         if( !(V == null || V == TOMBSTONE) && putval == TOMBSTONE ){
         	 chm._size.add(-1);
+        	 }
       }
     } else {                    // Else CAS failed
       V = val(kvs,idx);         // Get new value
@@ -676,6 +694,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       // Simply retry from the start.
       if( V instanceof Prime ) {
         return putIfMatch(topmap,chm.copy_slot_and_check(topmap,kvs,idx,expVal),key,putval,expVal);
+        }
     }
     // Win or lose the CAS, we are done.  If we won then we know the update
     // happened as expected.  If we lost, it means "we won but another thread
@@ -695,7 +714,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
     Object[] topkvs = _kvs;
     CHM topchm = chm(topkvs);
     if( topchm._newkvs == null ){
-    	 return helper; // No copy in-progress
+    	 return helper;
+    	 } // No copy in-progress
     topchm.help_copy_impl(this,topkvs,false);
     return helper;
   }
@@ -736,6 +756,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       while( _newkvs == null ){
         if( _newkvsUpdater.compareAndSet(this,null,newkvs) ) {
           return true;
+          }
       }
       return false;
     }
@@ -791,7 +812,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       // Check for resize already in progress, probably triggered by another thread
       Object[] newkvs = _newkvs; // VOLATILE READ
       if( newkvs != null ) {       // See if resize is already in progress
-        return newkvs;           // Use the new table already
+        return newkvs;   
+        }        // Use the new table already
 
       // No copy in-progress, so start one.  First up: compute new table size.
       int oldlen = len(kvs);    // Old count of K,V pairs allowed
@@ -803,7 +825,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       if( sz >= (oldlen>>2) ) { // If we are >25% full of keys then...
         newsz = oldlen<<1;      // Double size
         if( sz >= (oldlen>>1) ) { // If we are >50% full of keys then...
-          newsz = oldlen<<2;    // Double double size
+          newsz = oldlen<<2;
+          }    // Double double size
       }
       // This heuristic in the next 2 lines leads to a much denser table
       // with a higher reprobe rate
@@ -817,11 +840,13 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       if( newsz <= oldlen && // New table would shrink or hold steady?
           tm <= topmap._last_resize_milli+10000 && // Recent resize (less than 1 sec ago)
           (q=_slots.estimate_get()) >= (sz<<1) ) {// 1/2 of keys are dead?
-        newsz = oldlen<<1;      // Double the existing size
+        newsz = oldlen<<1; 
+        }     // Double the existing size
 
       // Do not shrink, ever
       if( newsz < oldlen ) {
       	newsz = oldlen;
+      	}
 
       // Convert to power-of-2
       int log2;
@@ -841,7 +866,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       if( r >= 2 && megs > 0 ) { // Already 2 guys trying; wait and see
         newkvs = _newkvs;        // Between dorking around, another thread did it
         if( newkvs != null )    { // See if resize is already in progress
-          return newkvs;         // Use the new table already
+          return newkvs;    
+          }     // Use the new table already
         // TODO - use a wait with timeout, so we'll wakeup as soon as the new table
         // is ready, or after the timeout in any case.
         //synchronized( this ) { wait(8*megs); }         // Timeout - we always wakeup
@@ -853,7 +879,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       // that another thread slipped in a new thread while we ran the heuristic.
       newkvs = _newkvs;
       if( newkvs != null ) {     // See if resize is already in progress
-        return newkvs;          // Use the new table already
+        return newkvs;   
+        }       // Use the new table already
 
       // Double size for K,V pairs, add 1 for CHM
       newkvs = new Object[((1<<log2)<<1)+2]; // This can get expensive for big arrays
@@ -862,7 +889,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
 
       // Another check after the slow allocation
       if( _newkvs != null ) {    // See if resize is already in progress
-        return _newkvs;         // Use the new table already
+        return _newkvs; 
+        }        // Use the new table already
 
       // The new table must be CAS'd in so only 1 winner amongst duplicate
       // racing resizing threads.  Extra CHM's will be GC'd.
@@ -927,16 +955,19 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
             copyidx = (int)_copyIdx;      // Re-read
           }
           if( !(copyidx < (oldlen<<1)) ) { // Panic!
-            panic_start = copyidx;        // Record where we started to panic-copy
+            panic_start = copyidx;  
+            }      // Record where we started to panic-copy
         }
-
+      }
         // We now know what to copy.  Try to copy.
         int workdone = 0;
         for( int i=0; i<MIN_COPY_WORK; i++ )
           if( copy_slot(topmap,(copyidx+i)&(oldlen-1),oldkvs,newkvs) ) {// Made an oldtable slot go dead?
-            workdone++;         // Yes!
+            workdone++;      
+            }   // Yes!
         if( workdone > 0 )  {    // Report work-done occasionally
-          copy_check_and_promote( topmap, oldkvs, workdone );// See if we can promote
+          copy_check_and_promote( topmap, oldkvs, workdone );
+          }// See if we can promote
         //for( int i=0; i<MIN_COPY_WORK; i++ )
         //  if( copy_slot(topmap,(copyidx+i)&(oldlen-1),oldkvs,newkvs) ) // Made an oldtable slot go dead?
         //    copy_check_and_promote( topmap, oldkvs, 1 );// See if we can promote
@@ -971,7 +1002,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       // table-copy is in progress.
       assert newkvs != null;
       if( copy_slot(topmap,idx,oldkvs,_newkvs) ) {  // Copy the desired slot
-        copy_check_and_promote(topmap, oldkvs, 1); // Record the slot copied
+        copy_check_and_promote(topmap, oldkvs, 1);
+        } // Record the slot copied
       // Generically help along any copy (except if called recursively from a helper)
       return (should_help == null) ? newkvs : topmap.help_copy(newkvs);
     }
@@ -1051,7 +1083,8 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
         oldval = val(oldkvs,idx); // Else try, try again
       }
       if( oldval == TOMBPRIME ){
-      	 return false; // Copy already complete here!
+      	 return false;
+      	 } // Copy already complete here!
 
       // ---
       // Copy the value into the new table, but only if we overwrite a null.
@@ -1115,6 +1148,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       // 'next' key.
       if( _idx != 0 && _nextV == null ) {
       	throw new NoSuchElementException();
+      	}
       _prevK = _nextK;          // This will become the previous key
       _prevV = _nextV;          // This will become the previous value
       _nextV = null;            // We have no more next-key
@@ -1125,13 +1159,15 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
         if( _nextK != null && // Found something?
             _nextK != TOMBSTONE &&
             (_nextV=get(_nextK)) != null ) {
-          break;                // Got it!  _nextK is a valid Key
+          break;          
+          }      // Got it!  _nextK is a valid Key
       }                         // Else keep scanning
       return _prevV;            // Return current value.
     }
     public void remove() {
       if( _prevV == null ){
       	 throw new IllegalStateException();
+      	 }
       putIfMatch( NonBlockingIdentityHashMap.this, _sskvs, _prevK, TOMBSTONE, _prevV );
       _prevV = null;
     }
@@ -1217,6 +1253,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
     public TypeV setValue(final TypeV val) {
       if( val == null ) {
       	throw new NullPointerException();
+      	}
       _val = val;
       return put(_key, val);
     }
@@ -1259,12 +1296,14 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       @Override public boolean remove( final Object o ) {
         if( !(o instanceof Map.Entry)) {
         	return false;
+        	}
         final Map.Entry<?,?> e = (Map.Entry<?,?>)o;
         return NonBlockingIdentityHashMap.this.remove(e.getKey(), e.getValue());
       }
       @Override public boolean contains(final Object o) {
         if( !(o instanceof Map.Entry)){
         	 return false;
+        	 }
         final Map.Entry<?,?> e = (Map.Entry<?,?>)o;
         TypeV v = get(e.getKey());
         return v.equals(e.getValue());
@@ -1296,6 +1335,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV>
       final TypeV V = (TypeV) s.readObject();
       if( K == null ) {
       	break;
+      	}
       put(K,V);                 // Insert with an offical put
     }
   }

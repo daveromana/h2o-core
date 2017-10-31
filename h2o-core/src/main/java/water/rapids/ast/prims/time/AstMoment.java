@@ -51,38 +51,33 @@ public class AstMoment extends AstBuiltin<AstMoment> {
       Val vi = args[i + 1];
       if (vi.isFrame()) {
         Frame fr = vi.getFrame();
-        if (fr.numCols() != 1) {
+        if (fr.numCols() != 1)
           throw new IllegalArgumentException("Argument " + i + " is a frame with " + fr.numCols() + " columns");
-          }
-        if (!fr.vec(0).isNumeric()) {
-          throw new IllegalArgumentException("Argument " + i + " is not a numeric column");}
-        if (fr.numRows() == 0) {
+        if (!fr.vec(0).isNumeric())
+          throw new IllegalArgumentException("Argument " + i + " is not a numeric column");
+        if (fr.numRows() == 0)
           throw new IllegalArgumentException("Column " + i + " has 0 rows");
-          }
         if (fr.numRows() == 1) {
           double d = fr.vec(0).at(0);
-          if (Double.isNaN(d)) {
+          if (Double.isNaN(d))
             naResult = true;
-          }
-          else {
-            timeparts[i] = (int) d; }
+          else
+            timeparts[i] = (int) d;
         } else {
-          if (numRows == -1) {
-            numRows = fr.numRows();}
-          if (fr.numRows() != numRows) {
+          if (numRows == -1)
+            numRows = fr.numRows();
+          if (fr.numRows() != numRows)
             throw new IllegalArgumentException("Incompatible vec " + i + " having " + fr.numRows() + " rows, whereas " +
-                                               "other vecs have " + numRows + " rows.");}
+                                               "other vecs have " + numRows + " rows.");
           timevecs.add(fr.vec(0));
-          chunksmap.add(i);}
+          chunksmap.add(i);
         }
       } else if (vi.isNum()){
         double d = vi.getNum();
-        if (Double.isNaN(d)) {
+        if (Double.isNaN(d))
           naResult = true;
-          }
-        else {
+        else
           timeparts[i] = (int) d;
-          }
       } else {
         throw new IllegalArgumentException("Argument " + i + " is neither a number nor a frame");
       }
@@ -95,9 +90,7 @@ public class AstMoment extends AstBuiltin<AstMoment> {
         try {
           val = ISOChronology.getInstanceUTC().getDateTimeMillis(timeparts[0], timeparts[1], timeparts[2],
               timeparts[3], timeparts[4], timeparts[5], timeparts[6]);
-        } catch (IllegalFieldValueException ignored) {
-        	System.out.println("The error is: " + ignore);
-        }
+        } catch (IllegalFieldValueException ignored) {}
       }
       return make1x1Frame(val);
     }

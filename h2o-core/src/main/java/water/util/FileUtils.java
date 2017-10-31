@@ -18,12 +18,7 @@ public class FileUtils {
    */
   public static void close(Closeable...closeable) {
     for(Closeable c : closeable)
-      try { 
-    	  if( c != null ) {
-    	  c.close();
-    	  }
-      	} catch( IOException xe ) { System.out.println("The error is: " + xe);}
-      }
+      try { if( c != null ) c.close(); } catch( IOException xe ) { }
   }
 
   public static void copyStream(InputStream is, OutputStream os, final int buffer_size) {
@@ -32,13 +27,12 @@ public class FileUtils {
       while( is.available() > 0 )
       {
         int count=is.read(bytes, 0, buffer_size);
-        if(count<=0) {
+        if(count<=0)
           break;
-          }
         os.write(bytes, 0, count);
       }
     }
-    catch(EofException eofe) {System.out.println("The error is: " + eofe);
+    catch(EofException eofe) {
       // no problem
     }
     catch(Exception ex) {
@@ -58,9 +52,8 @@ public class FileUtils {
   }
 
   public static boolean delete(File file) {
-    if (file.isFile()) {
+    if (file.isFile())
       file.delete();
-      }
     else if (file.isDirectory()) {
       File[] files = file.listFiles();
       for (File f: files) {
@@ -80,32 +73,25 @@ public class FileUtils {
     // When run from eclipse, the working directory is different.
     // Try pointing at another likely place
     File file = new File(fname);
-    if( !file.exists() ) {
+    if( !file.exists() )
       file = new File("target/" + fname);
-      }
-    if( !file.exists() ) {
+    if( !file.exists() )
       file = new File("../" + fname);
-      }
-    if( !file.exists() ) {
+    if( !file.exists() )
       file = new File("../../" + fname);
-      }
-    if( !file.exists() ) {
+    if( !file.exists() )
       file = new File("../target/" + fname);
-      }
-    if( !file.exists() ) {
+    if( !file.exists() )
       file = new File(StringUtils.expandPath(fname));
-      }
-    if( !file.exists() ) {
+    if( !file.exists() )
       file = null;
-      }
     return file;
   }
 
   private static void check(boolean cond, String msg) throws IOException{
-    if (!cond) {
-    	throw new IOException(msg);
-    }
+    if (!cond) throw new IOException(msg);
   }
+  
   private static void checkFileEntry(String name, File file) throws IOException {
     check(file != null, "File not found: " + name);
     check(file.exists(), "File should exist: "  + name);
@@ -125,13 +111,9 @@ public class FileUtils {
 
   public static File[] contentsOf(File folder, String name) throws IOException {
     checkFileEntry(name, folder);
-    if (!folder.isDirectory()) {
-    	throw new IOException("Expected a folder: " + name);
-    	}
+    if (!folder.isDirectory()) throw new IOException("Expected a folder: " + name);
     File[] files = folder.listFiles();
-    if (files == null) {
-    	throw new IOException("Cannot read folder: " + folder);
-    	}
+    if (files == null) throw new IOException("Cannot read folder: " + folder);
     return files;
   }
 

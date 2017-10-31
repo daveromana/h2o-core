@@ -160,10 +160,7 @@ class BinaryMerge extends DTask<BinaryMerge> {
 
     long retSize = leftTo - _leftFrom - 1;   // since leftTo and leftFrom are 1 outside the extremes
     assert retSize >= 0;
-    if (retSize==0) { 
-    	
-    	tryComplete(); 
-        return; } // nothing can match, even when allLeft
+    if (retSize==0) { tryComplete(); return; } // nothing can match, even when allLeft
     _retBatchSize = 268435456;    // 2^31 / 8 since Java arrays are limited to 2^31 bytes
     int retNBatch = (int)((retSize - 1) / _retBatchSize + 1);
     int retLastSize = (int)(retSize - (retNBatch - 1) * _retBatchSize);
@@ -183,16 +180,13 @@ class BinaryMerge extends DTask<BinaryMerge> {
     bmerge_r(_leftFrom, leftTo, -1, rightN);   
     _timings[1] += (System.nanoTime() - t0) / 1e9;
 
-   /* if (_allLeft) {
+    if (_allLeft) {
       assert _leftKO.numRowsToFetch() == retSize;
     } else {
       long tt = 0;
-      for( long[] retFirstx : _ret1st )  {  // i.e. sum(_ret1st>0) in R
-        for( long rF : retFirstx ) {
-        	 tt += (rF > 0) ? 1 : 0;
-        }
-         */
-        }
+      for( long[] retFirstx : _ret1st )    // i.e. sum(_ret1st>0) in R
+        for( long rF : retFirstx )
+          tt += (rF > 0) ? 1 : 0;
       // TODO: change to tt.privateAssertMethod() containing the loop above to
       //       avoid that loop when asserts are off, or accumulate the tt
       //       inside the merge_r, somehow
@@ -200,9 +194,7 @@ class BinaryMerge extends DTask<BinaryMerge> {
       assert _leftKO.numRowsToFetch() == tt;
     }
 
-    if (_numRowsInResult > 0) {
-    	createChunksInDKV();
-    }
+    if (_numRowsInResult > 0) createChunksInDKV();
 
     // TODO: set 2 Frame and 2 int[] to NULL at the end of compute2 to save
     // some traffic back, but should be small and insignificant
@@ -240,18 +232,14 @@ class BinaryMerge extends DTask<BinaryMerge> {
 
     long[][] fillPerNodeRows( int i ) {
       final int batchSizeLong = 256*1024*1024 / 16;  // 256GB DKV limit / sizeof(UUID)
-      if( _perNodeNumRowsToFetch[i] <= 0 ) { 
-    	  return null;
-      }
+      if( _perNodeNumRowsToFetch[i] <= 0 ) return null;
       int nbatch  = (int) ((_perNodeNumRowsToFetch[i] - 1) / batchSizeLong + 1);  // TODO: wrap in class to avoid this boiler plate
       assert nbatch >= 1;
       int lastSize = (int) (_perNodeNumRowsToFetch[i] - (nbatch - 1) * batchSizeLong);
       assert lastSize > 0;
       long[][] res = new long[nbatch][];
-      for( int b = 0; b < nbatch; b++ ) {
-    	   res[b] = MemoryManager.malloc8(b==nbatch-1 ? lastSize : batchSizeLong);
-      }
-       
+      for( int b = 0; b < nbatch; b++ )
+        res[b] = MemoryManager.malloc8(b==nbatch-1 ? lastSize : batchSizeLong);
       return res;
     }
   }

@@ -36,25 +36,19 @@ public class RollupStatsHelpers {
 
     // loop over all values for dense chunks, but only the non-zeros for sparse chunks
     for (int i = c.nextNZ(-1); i < c._len; i = c.nextNZ(i)) {
-      if (hasNA && c.isNA(i)){
-      	 naCnt++;
+      if (hasNA && c.isNA(i)) naCnt++;
       else {
         double x = c.atd(i);
         long l = hasFloat ? Double.doubleToRawLongBits(x) : c.at8(i);
-        if (l != 0) {// ignore 0s in checksum to be consistent with sparse chunks
+        if (l != 0) // ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start + i)) ^ 23 * l;
-        if (x == Double.POSITIVE_INFINITY) {
-        	pinfs++;
+        if (x == Double.POSITIVE_INFINITY) pinfs++;
         else if (x == Double.NEGATIVE_INFINITY) ninfs++;
         else {
-          if (x != 0) {
-          	nzCnt++;
-          if (x < dmin) {
-          	dmin = _rs.min(x);
-          if (x > dmax) {
-          	dmax = _rs.max(x);
-          if (isInt){
-          	 isInt = (long)x == x;
+          if (x != 0) nzCnt++;
+          if (x < dmin) dmin = _rs.min(x);
+          if (x > dmax) dmax = _rs.max(x);
+          if (isInt) isInt = (long)x == x;
           rows++;
           double delta = x - mean;
           mean += delta / rows;
@@ -95,25 +89,21 @@ public class RollupStatsHelpers {
     // loop over all values for dense chunks, but only the non-zeros for sparse chunks
     int len = c._len;
     for (int i=0; i < len; ++i){
-      if (hasNA && c.isNA(i)) {
-      	naCnt++;
+      if (hasNA && c.isNA(i)) naCnt++;
       else {
 //        double x = c.atd(i);
         long l = c.at8(i);
         double x = (double)l;
 //        long l = hasFloat ? Double.doubleToRawLongBits(x) : c.at8(i);
-        if (l != 0) { // ignore 0s in checksum to be consistent with sparse chunks
+        if (l != 0) // ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start + i)) ^ 23 * l;
 //        if (x == Double.POSITIVE_INFINITY) pinfs++;
 //        else if (x == Double.NEGATIVE_INFINITY) ninfs++;
 //        else
         {
-          if (x != 0){
-          	 nzCnt++;
-          if (x < dmin) {
-          	dmin = _rs.min(x);
-          if (x > dmax){
-          	 dmax = _rs.max(x);
+          if (x != 0) nzCnt++;
+          if (x < dmin) dmin = _rs.min(x);
+          if (x > dmax) dmax = _rs.max(x);
 //          if (isInt) isInt = (long)x == x;
           rows++;
           double delta = x - mean;
@@ -155,25 +145,21 @@ public class RollupStatsHelpers {
     // loop over all values for dense chunks, but only the non-zeros for sparse chunks
     int len = c._len;
     for (int i=0; i < len; ++i){
-      if (hasNA && c.isNA(i)){
-      	 naCnt++;
+      if (hasNA && c.isNA(i)) naCnt++;
       else {
         long l = c.at8(i);
         double x = (double)l;
 //        double x = c.atd(i);
 //        long l = hasFloat ? Double.doubleToRawLongBits(x) : c.at8(i);
-        if (l != 0) {// ignore 0s in checksum to be consistent with sparse chunks
+        if (l != 0) // ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start + i)) ^ 23 * l;
 //        if (x == Double.POSITIVE_INFINITY) pinfs++;
 //        else if (x == Double.NEGATIVE_INFINITY) ninfs++;
 //        else
         {
-          if (x != 0){
-          	 nzCnt++;
-          if (x < dmin){
-          	 dmin = _rs.min(x);
-          if (x > dmax){
-          	 dmax = _rs.max(x);
+          if (x != 0) nzCnt++;
+          if (x < dmin) dmin = _rs.min(x);
+          if (x > dmax) dmax = _rs.max(x);
 //          if (isInt) isInt = (long)x == x;
           rows++;
           double delta = x - mean;
@@ -213,25 +199,19 @@ public class RollupStatsHelpers {
     // loop over all values for dense chunks, but only the non-zeros for sparse chunks
     int len = c._len;
     for (int i=0; i < len; ++i){
-      if (hasNA && c.isNA(i)){
-      	 naCnt++;
+      if (hasNA && c.isNA(i)) naCnt++;
       else {
         double x = c.atd(i);
         long l = hasFloat ? Double.doubleToRawLongBits(x) : c.at8(i);
-        if (l != 0) { // ignore 0s in checksum to be consistent with sparse chunks
+        if (l != 0) // ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start + i)) ^ 23 * l;
-        if (x == Double.POSITIVE_INFINITY){
-        	 pinfs++;
+        if (x == Double.POSITIVE_INFINITY) pinfs++;
         else if (x == Double.NEGATIVE_INFINITY) ninfs++;
         else {
-          if (x != 0){
-          	 nzCnt++;
-          if (x < dmin) {
-          	dmin = _rs.min(x);
-          if (x > dmax) {
-          	dmax = _rs.max(x);
-          if (isInt){
-          	 isInt = (long)x == x;
+          if (x != 0) nzCnt++;
+          if (x < dmin) dmin = _rs.min(x);
+          if (x > dmax) dmax = _rs.max(x);
+          if (isInt) isInt = (long)x == x;
           rows++;
           double delta = x - mean;
           mean += delta / rows;
@@ -272,25 +252,21 @@ public class RollupStatsHelpers {
     // loop over all values for dense chunks, but only the non-zeros for sparse chunks
     int len = c._len;
     for (int i=0; i < len; ++i){
-      if (hasNA && c.isNA(i)) {
-      	naCnt++;
+      if (hasNA && c.isNA(i)) naCnt++;
       else {
         long l = c.at8(i);
         double x = (double)l;
 //        double x = c.atd(i);
 //        long l = hasFloat ? Double.doubleToRawLongBits(x) : c.at8(i);
-        if (l != 0) { // ignore 0s in checksum to be consistent with sparse chunks
+        if (l != 0) // ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start + i)) ^ 23 * l;
 //        if (x == Double.POSITIVE_INFINITY) pinfs++;
 //        else if (x == Double.NEGATIVE_INFINITY) ninfs++;
 //        else
         {
-          if (x != 0) {
-          	nzCnt++;
-          if (x < dmin) {
-          	dmin = _rs.min(x);
-          if (x > dmax){
-          	 dmax = _rs.max(x);
+          if (x != 0) nzCnt++;
+          if (x < dmin) dmin = _rs.min(x);
+          if (x > dmax) dmax = _rs.max(x);
 //          if (isInt) isInt = (long)x == x;
           rows++;
           double delta = x - mean;
@@ -330,25 +306,19 @@ public class RollupStatsHelpers {
     // loop over all values for dense chunks, but only the non-zeros for sparse chunks
     int len = c._len;
     for (int i=0; i < len; ++i){
-      if (hasNA && c.isNA(i)){
-      	 naCnt++;
+      if (hasNA && c.isNA(i)) naCnt++;
       else {
         double x = c.atd(i);
         long l = hasFloat ? Double.doubleToRawLongBits(x) : c.at8(i);
-        if (l != 0) { // ignore 0s in checksum to be consistent with sparse chunks
+        if (l != 0) // ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start + i)) ^ 23 * l;
-        if (x == Double.POSITIVE_INFINITY) {
-        	pinfs++;
+        if (x == Double.POSITIVE_INFINITY) pinfs++;
         else if (x == Double.NEGATIVE_INFINITY) ninfs++;
         else {
-          if (x != 0) {
-          	nzCnt++;
-          if (x < dmin) {
-          	dmin = _rs.min(x);
-          if (x > dmax) {
-          	dmax = _rs.max(x);
-          if (isInt){
-          	 isInt = (long)x == x;
+          if (x != 0) nzCnt++;
+          if (x < dmin) dmin = _rs.min(x);
+          if (x > dmax) dmax = _rs.max(x);
+          if (isInt) isInt = (long)x == x;
           rows++;
           double delta = x - mean;
           mean += delta / rows;
@@ -389,25 +359,21 @@ public class RollupStatsHelpers {
     // loop over all values for dense chunks, but only the non-zeros for sparse chunks
     int len = c._len;
     for (int i=0; i < len; ++i){
-      if (hasNA && c.isNA(i)) {
-      	naCnt++;
+      if (hasNA && c.isNA(i)) naCnt++;
       else {
         long l = c.at8(i);
         double x = (double)l;
 //        double x = c.atd(i);
 //        long l = hasFloat ? Double.doubleToRawLongBits(x) : c.at8(i);
-        if (l != 0) { // ignore 0s in checksum to be consistent with sparse chunks
+        if (l != 0) // ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start + i)) ^ 23 * l;
 //        if (x == Double.POSITIVE_INFINITY) pinfs++;
 //        else if (x == Double.NEGATIVE_INFINITY) ninfs++;
 //        else
         {
-          if (x != 0) {
-          	nzCnt++;
-          if (x < dmin) {
-          	dmin = _rs.min(x);
-          if (x > dmax) {
-          	dmax = _rs.max(x);
+          if (x != 0) nzCnt++;
+          if (x < dmin) dmin = _rs.min(x);
+          if (x > dmax) dmax = _rs.max(x);
 //          if (isInt) isInt = (long)x == x;
           rows++;
           double delta = x - mean;
@@ -447,25 +413,19 @@ public class RollupStatsHelpers {
     // loop over all values for dense chunks, but only the non-zeros for sparse chunks
     int len = c._len;
     for (int i=0; i < len; ++i){
-      if (hasNA && c.isNA(i)){
-      	 naCnt++;
+      if (hasNA && c.isNA(i)) naCnt++;
       else {
         double x = c.atd(i);
         long l = hasFloat ? Double.doubleToRawLongBits(x) : c.at8(i);
-        if (l != 0) {// ignore 0s in checksum to be consistent with sparse chunks
+        if (l != 0) // ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start + i)) ^ 23 * l;
-        if (x == Double.POSITIVE_INFINITY){
-        	 pinfs++;
+        if (x == Double.POSITIVE_INFINITY) pinfs++;
         else if (x == Double.NEGATIVE_INFINITY) ninfs++;
         else {
-          if (x != 0){
-          	 nzCnt++;
-          if (x < dmin){
-          	 dmin = _rs.min(x);
-          if (x > dmax){
-          	 dmax = _rs.max(x);
-          if (isInt) {
-          	isInt = (long)x == x;
+          if (x != 0) nzCnt++;
+          if (x < dmin) dmin = _rs.min(x);
+          if (x > dmax) dmax = _rs.max(x);
+          if (isInt) isInt = (long)x == x;
           rows++;
           double delta = x - mean;
           mean += delta / rows;
@@ -504,25 +464,19 @@ public class RollupStatsHelpers {
     // loop over all values for dense chunks, but only the non-zeros for sparse chunks
     int len = c._len;
     for (int i=0; i < len; ++i){
-      if (hasNA && c.isNA(i)) {
-      	naCnt++;
+      if (hasNA && c.isNA(i)) naCnt++;
       else {
         double x = c.atd(i);
         long l = hasFloat ? Double.doubleToRawLongBits(x) : c.at8(i);
-        if (l != 0) {// ignore 0s in checksum to be consistent with sparse chunks
+        if (l != 0) // ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start + i)) ^ 23 * l;
-        if (x == Double.POSITIVE_INFINITY){
-        	 pinfs++;
+        if (x == Double.POSITIVE_INFINITY) pinfs++;
         else if (x == Double.NEGATIVE_INFINITY) ninfs++;
         else {
-          if (x != 0) {
-          	nzCnt++;
-          if (x < dmin) {
-          	dmin = _rs.min(x);
-          if (x > dmax) {
-          	dmax = _rs.max(x);
-          if (isInt) {
-          	isInt = (long)x == x;
+          if (x != 0) nzCnt++;
+          if (x < dmin) dmin = _rs.min(x);
+          if (x > dmax) dmax = _rs.max(x);
+          if (isInt) isInt = (long)x == x;
           rows++;
           double delta = x - mean;
           mean += delta / rows;
@@ -562,25 +516,21 @@ public class RollupStatsHelpers {
     // loop over all values for dense chunks, but only the non-zeros for sparse chunks
     int len = c._len;
     for (int i=0; i < len; ++i){
-      if (hasNA && c.isNA(i)) {
-      	naCnt++;
+      if (hasNA && c.isNA(i)) naCnt++;
       else {
         long l = c.at8(i);
         double x = (double)l;
 //        double x = c.atd(i);
 //        long l = hasFloat ? Double.doubleToRawLongBits(x) : c.at8(i);
-        if (l != 0) {// ignore 0s in checksum to be consistent with sparse chunks
+        if (l != 0) // ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start + i)) ^ 23 * l;
 //        if (x == Double.POSITIVE_INFINITY) pinfs++;
 //        else if (x == Double.NEGATIVE_INFINITY) ninfs++;
 //        else
         {
-          if (x != 0) {
-          	nzCnt++;
-          if (x < dmin) {
-          	dmin = _rs.min(x);
-          if (x > dmax) {
-          	dmax = _rs.max(x);
+          if (x != 0) nzCnt++;
+          if (x < dmin) dmin = _rs.min(x);
+          if (x > dmax) dmax = _rs.max(x);
 //          if (isInt) isInt = (long)x == x;
           rows++;
           double delta = x - mean;
@@ -621,25 +571,19 @@ public class RollupStatsHelpers {
     // loop over all values for dense chunks, but only the non-zeros for sparse chunks
     int len = c._len;
     for (int i=0; i < len; ++i){
-      if (hasNA && c.isNA(i)) {
-      	naCnt++;
+      if (hasNA && c.isNA(i)) naCnt++;
       else {
         double x = c.atd(i);
         long l = hasFloat ? Double.doubleToRawLongBits(x) : c.at8(i);
-        if (l != 0) {// ignore 0s in checksum to be consistent with sparse chunks
+        if (l != 0) // ignore 0s in checksum to be consistent with sparse chunks
           checksum ^= (17 * (start + i)) ^ 23 * l;
-        if (x == Double.POSITIVE_INFINITY){
-        	 pinfs++;
+        if (x == Double.POSITIVE_INFINITY) pinfs++;
         else if (x == Double.NEGATIVE_INFINITY) ninfs++;
         else {
-          if (x != 0) {
-          	nzCnt++;
-          if (x < dmin) {
-          	dmin = _rs.min(x);
-          if (x > dmax) {
-          	dmax = _rs.max(x);
-          if (isInt) {
-          	isInt = (long)x == x;
+          if (x != 0) nzCnt++;
+          if (x < dmin) dmin = _rs.min(x);
+          if (x > dmax) dmax = _rs.max(x);
+          if (isInt) isInt = (long)x == x;
           rows++;
           double delta = x - mean;
           mean += delta / rows;

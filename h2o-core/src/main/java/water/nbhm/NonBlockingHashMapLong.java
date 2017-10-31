@@ -187,6 +187,7 @@ public class NonBlockingHashMapLong<TypeV>
   private static final void print2_impl(final int i, final long K, final Object V) {
     if( V != null && Prime.unbox(V) != TOMBSTONE ) {
       print_impl(i,K,V);
+      }
   }
 
   // Count of reprobes
@@ -239,6 +240,7 @@ public class NonBlockingHashMapLong<TypeV>
   private final void initialize( final int initial_sz ) {
     if( initial_sz < 0 ) {
     	throw new IllegalArgumentException();
+    	}
     int i;                      // Convert to next largest power-of-2
     for( i=MIN_SIZE_LOG; (1<<i) < initial_sz; i++ ) ;
     _chm = new CHM(this,new ConcurrentAutoTable(),i);
@@ -309,6 +311,7 @@ public class NonBlockingHashMapLong<TypeV>
   private final TypeV putIfMatch( long key, Object newVal, Object oldVal ) {
     if (oldVal == null || newVal == null)  {
     	throw new NullPointerException();
+    	}
     if( key == NO_KEY ) {
       Object curVal = _val_1;
       if( oldVal == NO_MATCH_OLD || // Do we care about expected-Value at all?
@@ -316,7 +319,8 @@ public class NonBlockingHashMapLong<TypeV>
           (oldVal == MATCH_ANY && curVal != TOMBSTONE) ||
           oldVal.equals(curVal) ) { // Expensive equals check
         if( !CAS(_val_1_offset,curVal,newVal) ){ // One shot CAS update attempt
-          curVal = _val_1;                      // Failed; get failing witness
+          curVal = _val_1;    
+          }                  // Failed; get failing witness
       }
       return curVal == TOMBSTONE ? null : (TypeV)curVal; // Return the last value present
     }
@@ -342,12 +346,15 @@ public class NonBlockingHashMapLong<TypeV>
    *  @throws NullPointerException if the specified value is null */
   public boolean containsValue( Object val ) {
     if( val == null ) {
-    	return false;
+    	return false;}
+    
     if( val == _val_1 ){
-    	 return true; // Key 0
+    	 return true;
+    	 } // Key 0
     for( TypeV V : values() )
       if( V == val || V.equals(val) ) {
-        return true;
+        return true;}
+    
     return false;
   }
 
@@ -485,6 +492,7 @@ public class NonBlockingHashMapLong<TypeV>
         long K = _keys[i];
         if( K != NO_KEY ) {
           print_impl(i,K,_vals[i]);
+          }
       }
       CHM newchm = _newchm;     // New table, if any
       if( newchm != null ) {
@@ -499,6 +507,7 @@ public class NonBlockingHashMapLong<TypeV>
         long K = _keys[i];
         if( K != NO_KEY )    {   // key is sane
           print2_impl(i,K,_vals[i]);
+          }
       }
       CHM newchm = _newchm;     // New table, if any
       if( newchm != null ) {
@@ -519,7 +528,8 @@ public class NonBlockingHashMapLong<TypeV>
         final long   K = _keys[idx]; // Get key   before volatile read, could be NO_KEY
         final Object V = _vals[idx]; // Get value before volatile read, could be null or Tombstone or Prime
         if( K == NO_KEY ) {
-        	return null; // A clear miss
+        	return null;
+        	} // A clear miss
 
         // Key-compare
         if( key == K ) {
@@ -527,6 +537,7 @@ public class NonBlockingHashMapLong<TypeV>
           if( !(V instanceof Prime) ) { // No copy?
             if( V == TOMBSTONE) {
             	return null;
+            	}
             // We need a volatile-read between reading a newly inserted Value
             // and returning the Value (so the user might end up reading the
             // stale Value contents).
@@ -545,7 +556,8 @@ public class NonBlockingHashMapLong<TypeV>
         if( ++reprobe_cnt >= reprobe_limit(len) ) {// too many probes
           return _newchm == null // Table copy in progress?
             ? null               // Nope!  A clear miss
-            : copy_slot_and_check(idx,key).get_impl(key); // Retry in the new table
+            : copy_slot_and_check(idx,key).get_impl(key); 
+          }// Retry in the new table
 
         idx = (idx+1)&(len-1);    // Reprobe by 1!  (could now prefetch)
       }
@@ -576,7 +588,8 @@ public class NonBlockingHashMapLong<TypeV>
           // Found an empty Key slot - which means this Key has never been in
           // this table.  No need to put a Tombstone - the Key is not here!
           if( putval == TOMBSTONE ) {
-          	return putval; // Not-now & never-been in this table
+          	return putval; 
+          	}// Not-now & never-been in this table
           // Claim the zero key-slot
           if( CAS_key(idx, NO_KEY, key) ) { // Claim slot for Key
             _slots.add(1);      // Raise key-slots-used count
@@ -600,7 +613,8 @@ public class NonBlockingHashMapLong<TypeV>
         }
         // Key slot was not null, there exists a Key here
         if( K == key ) {
-          break;                // Got it!
+          break;     
+          }           // Got it!
 
         // get and put must have the same key lookup logic!  Lest 'get' give
         // up looking too soon.
@@ -611,7 +625,8 @@ public class NonBlockingHashMapLong<TypeV>
           // to claim a key slot (indeed, we cannot find a free one to claim!).
           final CHM newchm = resize();
           if( expVal != null ){
-          	 _nbhml.help_copy(); // help along an existing copy
+          	 _nbhml.help_copy(); 
+          	 }// help along an existing copy
           return newchm.putIfMatch(key,putval,expVal);
         }
 
@@ -624,7 +639,8 @@ public class NonBlockingHashMapLong<TypeV>
       // not-null (deleted Values use Tombstone).  Thus if 'V' is null we
       // fail this fast cutout and fall into the check for table-full.
       if( putval == V ) {
-      	return V; // Fast cutout for no-change
+      	return V;
+      	} // Fast cutout for no-change
 
       // See if we want to move to a new table (to avoid high average re-probe
       // counts).  We only check on the initial set of a Value from null to
@@ -651,7 +667,8 @@ public class NonBlockingHashMapLong<TypeV>
           (expVal != MATCH_ANY || V == TOMBSTONE || V == null) &&
           !(V==null && expVal == TOMBSTONE) &&    // Match on null/TOMBSTONE combo
           (expVal == null || !expVal.equals(V)) ) { // Expensive equals check at the last
-        return V;               // Do not update!
+        return V;  
+        }             // Do not update!
 
       // Actually change the Value in the Key,Value pair
       if( CAS_val(idx, V, putval ) ) {
@@ -662,8 +679,10 @@ public class NonBlockingHashMapLong<TypeV>
           // Adjust sizes - a striped counter
           if(  (V == null || V == TOMBSTONE) && putval != TOMBSTONE ){
           	 _size.add( 1);
+          	 }
           if( !(V == null || V == TOMBSTONE) && putval == TOMBSTONE ){
           	 _size.add(-1);
+          	 }
         }
       } else {                  // Else CAS failed
         V = _vals[idx];         // Get new value
@@ -672,6 +691,7 @@ public class NonBlockingHashMapLong<TypeV>
         // Simply retry from the start.
         if( V instanceof Prime ) {
           return copy_slot_and_check(idx,expVal).putIfMatch(key,putval,expVal);
+          }
       }
       // Win or lose the CAS, we are done.  If we won then we know the update
       // happened as expected.  If we lost, it means "we won but another thread
@@ -706,7 +726,8 @@ public class NonBlockingHashMapLong<TypeV>
       // Check for resize already in progress, probably triggered by another thread
       CHM newchm = _newchm;     // VOLATILE READ
       if( newchm != null )   {   // See if resize is already in progress
-        return newchm;          // Use the new table already
+        return newchm; 
+        }         // Use the new table already
 
       // No copy in-progress, so start one.  First up: compute new table size.
       int oldlen = _keys.length; // Old count of K,V pairs allowed
@@ -718,12 +739,14 @@ public class NonBlockingHashMapLong<TypeV>
       if( _nbhml._opt_for_space ) {
         // This heuristic leads to a much denser table with a higher reprobe rate
         if( sz >= (oldlen>>1) ) { // If we are >50% full of keys then...
-          newsz = oldlen<<1;    // Double size
+          newsz = oldlen<<1; 
+          }   // Double size
       } else {
         if( sz >= (oldlen>>2) ) { // If we are >25% full of keys then...
           newsz = oldlen<<1;      // Double size
           if( sz >= (oldlen>>1) ) { // If we are >50% full of keys then...
-            newsz = oldlen<<2;    // Double double size
+            newsz = oldlen<<2;
+            }    // Double double size
         }
       }
 
@@ -734,11 +757,13 @@ public class NonBlockingHashMapLong<TypeV>
           tm <= _nbhml._last_resize_milli+10000 && // Recent resize (less than 1 sec ago)
           //(q=_slots.estimate_sum()) >= (sz<<1) ) // 1/2 of keys are dead?
           true ) {
-        newsz = oldlen<<1;      // Double the existing size
+        newsz = oldlen<<1; 
+        }     // Double the existing size
 
       // Do not shrink, ever
       if( newsz < oldlen ){
       	 newsz = oldlen;
+      	 }
       //System.out.println("old="+oldlen+" new="+newsz+" size()="+sz+" est_slots()="+q+" millis="+(tm-_nbhml._last_resize_milli));
 
       // Convert to power-of-2
@@ -759,7 +784,8 @@ public class NonBlockingHashMapLong<TypeV>
       if( r >= 2 && megs > 0 ) { // Already 2 guys trying; wait and see
         newchm = _newchm;        // Between dorking around, another thread did it
         if( newchm != null ) {    // See if resize is already in progress
-          return newchm;         // Use the new table already
+          return newchm;  
+          }       // Use the new table already
         // TODO - use a wait with timeout, so we'll wakeup as soon as the new table
         // is ready, or after the timeout in any case.
         //synchronized( this ) { wait(8*megs); }         // Timeout - we always wakeup
@@ -771,14 +797,16 @@ public class NonBlockingHashMapLong<TypeV>
       // that another thread slipped in a new thread while we ran the heuristic.
       newchm = _newchm;
       if( newchm != null )  {    // See if resize is already in progress
-        return newchm;          // Use the new table already
+        return newchm;  
+        }        // Use the new table already
 
       // New CHM - actually allocate the big arrays
       newchm = new CHM(_nbhml,_size,log2);
 
       // Another check after the slow allocation
       if( _newchm != null ) {    // See if resize is already in progress
-        return _newchm;         // Use the new table already
+        return _newchm;
+        }         // Use the new table already
 
       // The new table must be CAS'd in so only 1 winner amongst duplicate
       // racing resizing threads.  Extra CHM's will be GC'd.
@@ -841,16 +869,19 @@ public class NonBlockingHashMapLong<TypeV>
             copyidx = (int)_copyIdx;     // Re-read
           }
           if( !(copyidx < (oldlen<<1)) ) {// Panic!
-            panic_start = copyidx;       // Record where we started to panic-copy
+            panic_start = copyidx;    
+            }   // Record where we started to panic-copy
         }
 
         // We now know what to copy.  Try to copy.
         int workdone = 0;
         for( int i=0; i<MIN_COPY_WORK; i++ )
-          if( copy_slot((copyidx+i)&(oldlen-1)) ) // Made an oldtable slot go dead?
-            workdone++;         // Yes!
+          if( copy_slot((copyidx+i)&(oldlen-1)) ) {// Made an oldtable slot go dead?
+            workdone++;    
+            }     // Yes!
         if( workdone > 0 )   {   // Report work-done occasionally
-          copy_check_and_promote( workdone );// See if we can promote
+          copy_check_and_promote( workdone );
+          }// See if we can promote
         //for( int i=0; i<MIN_COPY_WORK; i++ )
         //  if( copy_slot((copyidx+i)&(oldlen-1)) ) // Made an oldtable slot go dead?
         //    copy_check_and_promote( 1 );// See if we can promote
@@ -859,7 +890,8 @@ public class NonBlockingHashMapLong<TypeV>
         // Uncomment these next 2 lines to turn on incremental table-copy.
         // Otherwise this thread continues to copy until it is all done.
         if( !copy_all && panic_start == -1 ) { // No panic?
-          return;               // Then done copying after doing MIN_COPY_WORK
+          return;      
+          }         // Then done copying after doing MIN_COPY_WORK
       }
       // Extra promotion check, in case another thread finished all copying
       // then got stalled before promoting.
@@ -883,10 +915,12 @@ public class NonBlockingHashMapLong<TypeV>
       // table-copy is in progress.
       assert _newchm != null;
       if( copy_slot(idx) )  {    // Copy the desired slot
-        copy_check_and_promote(1); // Record the slot copied
+        copy_check_and_promote(1); 
+        }// Record the slot copied
       // Generically help along any copy (except if called recursively from a helper)
       if( should_help != null ){
       	 _nbhml.help_copy();
+      	 }
       return _newchm;
     }
 
@@ -955,8 +989,9 @@ public class NonBlockingHashMapLong<TypeV>
           // vaccuously available in the new table.  We return with true here:
           // any thread looking for a value for this key can correctly go
           // straight to the new table and skip looking in the old table.
-          if( box == TOMBPRIME )
+          if( box == TOMBPRIME ) {
             return true;
+            }
           // Otherwise we boxed something, but it still needs to be
           // copied into the new table.
           oldval = box;         // Record updated oldval
@@ -965,7 +1000,8 @@ public class NonBlockingHashMapLong<TypeV>
         oldval = _vals[idx];    // Else try, try again
       }
       if( oldval == TOMBPRIME ) {
-      	return false; // Copy already complete here!
+      	return false;
+      	} // Copy already complete here!
 
       // ---
       // Copy the value into the new table, but only if we overwrite a null.
@@ -1001,6 +1037,7 @@ public class NonBlockingHashMapLong<TypeV>
         topchm = _chm;
         if( topchm._newchm == null ) { // No table-copy-in-progress
           break;
+          }
         // Table copy in-progress - so we cannot get a clean iteration.  We
         // must help finish the table copy before we can start iterating.
         topchm.help_copy_impl(true);
@@ -1027,6 +1064,7 @@ public class NonBlockingHashMapLong<TypeV>
       // 'next' key.
       if( _idx != -1 && _nextV == null ) {
       	throw new NoSuchElementException();
+      	}
       _prevK = _nextK;          // This will become the previous key
       _prevV = _nextV;          // This will become the previous value
       _nextV = null;            // We have no more next-key
@@ -1037,18 +1075,21 @@ public class NonBlockingHashMapLong<TypeV>
         _nextK = NO_KEY;
         if( (_nextV=get(_nextK)) != null ) {
         	return _prevV;
+        	}
       }
       while( _idx<length() ) {  // Scan array
         _nextK = key(_idx++); // Get a key that definitely is in the set (for the moment!)
         if( _nextK != NO_KEY && // Found something?
             (_nextV=get(_nextK)) != null ) {
-          break;                // Got it!  _nextK is a valid Key
+          break;      
+          }          // Got it!  _nextK is a valid Key
       }                         // Else keep scanning
       return _prevV;            // Return current value.
     }
     public void remove() {
       if( _prevV == null ){
       	 throw new IllegalStateException();
+      	 }
       _sschm.putIfMatch( _prevK, TOMBSTONE, _prevV );
       _prevV = null;
     }
@@ -1154,6 +1195,7 @@ public class NonBlockingHashMapLong<TypeV>
     public TypeV setValue(final TypeV val) {
       if (val == null) {
       	throw new NullPointerException();
+      	}
       _val = val;
       return put(_key, val);
     }
@@ -1195,12 +1237,14 @@ public class NonBlockingHashMapLong<TypeV>
       public boolean remove( final Object o ) {
         if (!(o instanceof Map.Entry)){
         	 return false;
+        	 }
         final Map.Entry<?,?> e = (Map.Entry<?,?>)o;
         return NonBlockingHashMapLong.this.remove(e.getKey(), e.getValue());
       }
       public boolean contains(final Object o) {
         if (!(o instanceof Map.Entry)){
         	 return false;
+        	 }
         final Map.Entry<?,?> e = (Map.Entry<?,?>)o;
         TypeV v = get(e.getKey());
         return v.equals(e.getValue());
@@ -1232,6 +1276,7 @@ public class NonBlockingHashMapLong<TypeV>
       final TypeV V = (TypeV) s.readObject();
       if( K == NO_KEY && V == null ){
       	 break;
+      	 }
       put(K,V);               // Insert with an offical put
     }
   }

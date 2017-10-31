@@ -41,7 +41,7 @@ public final class ParseDataset {
   }
   public static ParseDataset parse(Key okey, Key[] keys, boolean deleteOnDone, ParseSetup globalSetup, boolean blocking) {
     ParseDataset pds = forkParseDataset(okey, keys, globalSetup, deleteOnDone);
-    if( blocking ) {
+    if( blocking )
       pds._job.get();
     return pds;
   }
@@ -49,7 +49,7 @@ public final class ParseDataset {
   // Allow both ByteVec keys and Frame-of-1-ByteVec
   static ByteVec getByteVec(Key key) {
     Iced ice = DKV.getGet(key);
-    if(ice == null) {
+    if(ice == null)
       throw new H2OIllegalArgumentException("Missing data","Did not find any data under key " + key);
     return (ByteVec)(ice instanceof ByteVec ? ice : ((Frame)ice).vecs()[0]);
   }
@@ -80,14 +80,12 @@ public final class ParseDataset {
     for( int i = 0; i < keys.length; ++i ) {
       Iced ice = DKV.getGet(keys[i]);
       if(ice instanceof FileVec) {
-        if(i == 0){
-        	 v = ((FileVec) ice);
+        if(i == 0) v = ((FileVec) ice);
         ((FileVec) ice).setChunkSize(setup._chunk_size);
         nchunks += ((FileVec) ice).nChunks();
         Log.info("Parse chunk size " + setup._chunk_size);
       } else if(ice instanceof Frame && ((Frame)ice).vec(0) instanceof FileVec) {
-        if(i == 0) {
-        	v = ((Frame)ice).vec(0);
+        if(i == 0) v = ((Frame)ice).vec(0);
         ((FileVec) ((Frame) ice).vec(0)).setChunkSize((Frame) ice, setup._chunk_size);
         nchunks += (((Frame) ice).vec(0)).nChunks();
         Log.info("Parse chunk size " + setup._chunk_size);
@@ -122,17 +120,17 @@ public final class ParseDataset {
 
     HashSet<String> conflictingNames = setup.checkDupColumnNames();
     for( String x : conflictingNames )
-    if ( x != null && !x.equals("")) {
+    if ( x != null && !x.equals(""))
       throw new IllegalArgumentException("Found duplicate column name "+x);
     // Some quick sanity checks: no overwriting your input key, and a resource check.
     long totalParseSize=0;
     for( int i=0; i<keys.length; i++ ) {
       Key k = keys[i];
-      if( dest.equals(k) ) {
+      if( dest.equals(k) )
         throw new IllegalArgumentException("Destination key "+dest+" must be different from all sources");
-      if( deleteOnDone ) {
+      if( deleteOnDone )
         for( int j=i+1; j<keys.length; j++ )
-          if( k==keys[j] ) {
+          if( k==keys[j] )
             throw new IllegalArgumentException("Source key "+k+" appears twice, deleteOnDone must be false");
 
       // estimate total size in bytes
@@ -158,10 +156,10 @@ public final class ParseDataset {
     } else Log.info("Orc Parse chunk sizes may be different across files");
 
     long memsz = H2O.CLOUD.free_mem();
-    if( totalParseSize > memsz*4 ) {
+    if( totalParseSize > memsz*4 )
       throw new IllegalArgumentException("Total input file size of "+PrettyPrint.bytes(totalParseSize)+" is much larger than total cluster memory of "+PrettyPrint.bytes(memsz)+", please use either a larger cluster or smaller data.");
 
-    if (H2O.GA != null) {
+    if (H2O.GA != null)
       GAUtils.logParse(totalParseSize, keys.length, setup._number_columns);
 
     // Fire off the parse
@@ -204,7 +202,7 @@ public final class ParseDataset {
     }
 
     @Override public void onCompletion(CountedCompleter caller) {
-      if( _pds._job.stop_requested() ) {
+      if( _pds._job.stop_requested() )
         parseCleanup();
       _pds._mfpt = null;
     }
@@ -236,10 +234,9 @@ public final class ParseDataset {
     assert setup._number_columns > 0;
     if( setup._column_names != null &&
         ( (setup._column_names.length == 0) ||
-          (setup._column_names.length == 1 && setup._column_names[0].isEmpty())) ) {
+          (setup._column_names.length == 1 && setup._column_names[0].isEmpty())) )
       setup._column_names = null; // // FIXME: annoyingly front end sends column names as String[] {""} even if setup returned null
-    if(setup._na_strings != null && setup._na_strings.length != setup._number_columns){
-    	 setup._na_strings = null;
+    if(setup._na_strings != null && setup._na_strings.length != setup._number_columns) setup._na_strings = null;
     if( fkeys.length == 0) { job.stop();  return pds;  }
 
     job.update(0, "Ingesting files.");
@@ -247,8 +244,7 @@ public final class ParseDataset {
     MultiFileParseTask mfpt = pds._mfpt = new MultiFileParseTask(vg,setup,job._key,fkeys,deleteOnDone);
     mfpt.doAll(fkeys);
     Log.trace("Done ingesting files.");
-    if( job.stop_requested() ) {
-    	return pds;
+    if( job.stop_requested() ) return pds;
 
     final AppendableVec [] avs = mfpt.vecs();
     setup._column_names = getColumnNames(avs.length, setup._column_names);
@@ -272,13 +268,12 @@ public final class ParseDataset {
           List<String> offendingColNames = new ArrayList<>();
           for (int i = 0; i < ecols.length; i++) {
             if (gcdt.getDomainLength(i) < Categorical.MAX_CATEGORICAL_COUNT) {
-              if( gcdt.getDomainLength(i)==0 ) {
-              	avs[ecols[i]].setBad(); // The all-NA column
+              if( gcdt.getDomainLength(i)==0 ) avs[ecols[i]].setBad(); // The all-NA column
               else avs[ecols[i]].setDomain(gcdt.getDomain(i));
             } else
               offendingColNames.add(setup._column_names[ecols[i]]);
           }
-          if (offendingColNames.size() > 0) {
+          if (offendingColNames.size() > 0)
             throw new H2OParseException("Exceeded categorical limit on columns "+ offendingColNames+".   Consider reparsing these columns as a string.");
         }
         Log.trace("Done collecting categorical domains across nodes.");
@@ -322,16 +317,14 @@ public final class ParseDataset {
       Log.trace("Done closing all Vecs.");
     }
     // Check for job cancellation
-    if ( job.stop_requested() ){
-    	 return pds;
+    if ( job.stop_requested() ) return pds;
 
     // SVMLight is sparse format, there may be missing chunks with all 0s, fill them in
-    if (setup._parse_type.equals(SVMLight_INFO)) {
+    if (setup._parse_type.equals(SVMLight_INFO))
       new SVFTask(fr).doAllNodes();
 
     // Check for job cancellation
-    if ( job.stop_requested() ) {
-    	return pds;
+    if ( job.stop_requested() ) return pds;
 
     ParseWriter.ParseErr [] errs = ArrayUtils.append(setup.errs(),mfpt._errors);
     if(errs.length > 0) {
@@ -351,10 +344,8 @@ public final class ParseDataset {
         @Override
         public int compare(ParseWriter.ParseErr o1, ParseWriter.ParseErr o2) {
           long res = o1._gLineNum - o2._gLineNum;
-          if (res == 0){
-          	 res = o1._byteOffset - o2._byteOffset;
-          if (res == 0) {
-          	return o1._err.compareTo(o2._err);
+          if (res == 0) res = o1._byteOffset - o2._byteOffset;
+          if (res == 0) return o1._err.compareTo(o2._err);
           return (int) res < 0 ? -1 : 1;
         }
       });
@@ -373,7 +364,7 @@ public final class ParseDataset {
     assert fr2._names.length == fr2.numCols();
     fr.unlock(job);
     // Remove CSV files from H2O memory
-    if( deleteOnDone ) {
+    if( deleteOnDone )
       for( Key k : fkeys ) {
         DKV.remove(k);
         assert DKV.get(k) == null : "Input key " + k + " not deleted during parse";
@@ -443,7 +434,7 @@ public final class ParseDataset {
 
     @Override public void map(Chunk [] chks){
       CategoricalUpdateMap temp = DKV.getGet(Key.make(_parseCatMapsKey.toString() + "parseCatMapNode" + _chunk2ParseNodeMap[chks[0].cidx()]));
-      if ( temp == null || temp.map == null) {
+      if ( temp == null || temp.map == null)
         throw new H2OIllegalValueException("Missing categorical update map",this);
       int[][] _parse2GlobalCatMaps = temp.map;
 
@@ -453,17 +444,16 @@ public final class ParseDataset {
         Chunk chk = chks[i];
         if (!(chk instanceof CStrChunk)) {
           for( int j = 0; j < chk._len; ++j){
-            if( chk.isNA(j) ){
-            	continue;
+            if( chk.isNA(j) )continue;
             final int old = (int) chk.at8(j);
-            if (old < 0 || (_parse2GlobalCatMaps[i] != null && old >= _parse2GlobalCatMaps[i].length)) {
+            if (old < 0 || (_parse2GlobalCatMaps[i] != null && old >= _parse2GlobalCatMaps[i].length))
               chk.reportBrokenCategorical(i, j, old, _parse2GlobalCatMaps[i], _fr.vec(i).domain().length);
-            if(_parse2GlobalCatMaps[i] != null && _parse2GlobalCatMaps[i][old] < 0) {
+            if(_parse2GlobalCatMaps[i] != null && _parse2GlobalCatMaps[i][old] < 0)
               throw new H2OParseException("Error in unifying categorical values. This is typically "
                   +"caused by unrecognized characters in the data.\n The problem categorical value "
                   +"occurred in the " + PrettyPrint.withOrdinalIndicator(i+1)+ " categorical col, "
                   +PrettyPrint.withOrdinalIndicator(chk.start() + j) +" row.");
-            if (_parse2GlobalCatMaps[i] != null) {
+            if (_parse2GlobalCatMaps[i] != null)
               chk.set(j, _parse2GlobalCatMaps[i][old]);
           }
           Log.trace("Updated domains for "+PrettyPrint.withOrdinalIndicator(i+1)+ " categorical column.");
@@ -488,8 +478,7 @@ public final class ParseDataset {
 
     @Override
     public void setupLocal() {
-      if (!MultiFileParseTask._categoricals.containsKey(_k)){
-      	 return;
+      if (!MultiFileParseTask._categoricals.containsKey(_k)) return;
       _packedDomains = new byte[_catColIdxs.length][];
       final BufferedString[][] _perColDomains = new BufferedString[_catColIdxs.length][];
       final Categorical[] _colCats = MultiFileParseTask._categoricals.get(_k);
@@ -540,13 +529,11 @@ public final class ParseDataset {
     private final Frame _f;
     private SVFTask( Frame f ) { _f = f; }
     @Override public void setupLocal() {
-      if( _f.numCols() == 0 ) {
-      	return;
+      if( _f.numCols() == 0 ) return;
       Vec v0 = _f.anyVec();
       ArrayList<RecursiveAction> rs = new ArrayList<RecursiveAction>();
       for( int i = 0; i < v0.nChunks(); ++i ) {
-        if( !v0.chunkKey(i).home() ) {
-        	continue;
+        if( !v0.chunkKey(i).home() ) continue;
         final int fi = i;
         rs.add(new RecursiveAction() {
           @Override
@@ -567,7 +554,7 @@ public final class ParseDataset {
               Vec vec = _f.vec(j);
               Key k = vec.chunkKey(fi);
               Value val = Value.STORE_get(k);   // Local-get only
-              if( val == null ) {        // Missing?  Fill in w/zero chunk
+              if( val == null )         // Missing?  Fill in w/zero chunk
                 H2O.putIfMatch(k, new Value(k, new C0LChunk(0, fnlines)), null);
             }
           }
@@ -633,10 +620,8 @@ public final class ParseDataset {
       // Compress nulls out of _dout array
       int n=0;
       for( int i=0; i<_dout.length; i++ )
-        if( _dout[i] != null ) {
-        	_dout[n++] = _dout[i];
-      if( n < _dout.length )  {
-      	_dout = Arrays.copyOf(_dout,n);
+        if( _dout[i] != null ) _dout[n++] = _dout[i];
+      if( n < _dout.length )  _dout = Arrays.copyOf(_dout,n);
       // Fast path: only one Vec result, so never needs to have his Chunks renumbered
       if(_dout.length == 1) {
         _vecs = _dout[0]._vecs;
@@ -653,8 +638,7 @@ public final class ParseDataset {
       // AppendableVecs that are sized across the sum of all files.
       // Preallocated a bunch of Keys, but if we didn't get enough (for very
       // wide SVMLight) we need to get more here.
-      if( nCols > _reservedKeys ) {
-      	throw H2O.unimpl();
+      if( nCols > _reservedKeys ) throw H2O.unimpl();
       AppendableVec[] res = new AppendableVec[nCols];
       if(_parseSetup._parse_type.equals(SVMLight_INFO)) {
         _parseSetup._number_columns = res.length;
@@ -688,8 +672,7 @@ public final class ParseDataset {
     // Fetch out the node-local Categorical[] using _cKey and _categoricals hashtable
     private static Categorical[] categoricals(Key cKey, int ncols) {
       Categorical[] categoricals = _categoricals.get(cKey);
-      if( categoricals != null ){
-      	 return categoricals;
+      if( categoricals != null ) return categoricals;
       categoricals = new Categorical[ncols];
       for( int i = 0; i < categoricals.length; ++i ) categoricals[i] = new Categorical();
       _categoricals.putIfAbsent(cKey, categoricals);
@@ -703,12 +686,10 @@ public final class ParseDataset {
       // For Big Data, must delete data as eagerly as possible.
       Iced ice = DKV.get(key).get();
       if( ice==vec ) {
-        if(_deleteOnDone) {
-        	vec.remove();
+        if(_deleteOnDone) vec.remove();
       } else {
         Frame fr = (Frame)ice;
-        if(_deleteOnDone) {
-        	fr.delete(_jobKey,new Futures()).blockForPending();
+        if(_deleteOnDone) fr.delete(_jobKey,new Futures()).blockForPending();
         else if( fr._key != null ) fr.unlock(_jobKey);
       }
     }
@@ -726,8 +707,7 @@ public final class ParseDataset {
 
     // Called once per file
     @Override public void map( Key key ) {
-      if( _jobKey.get().stop_requested() ) {
-      	return;
+      if( _jobKey.get().stop_requested() ) return;
       // FIXME: refactor parser setup to be configurable via parser object
       ParseSetup localSetup = (ParseSetup) _parseSetup.clone();
       ByteVec vec = getByteVec(key);
@@ -736,7 +716,7 @@ public final class ParseDataset {
 
       byte[] zips = vec.getFirstBytes();
       ZipUtil.Compression cpr = ZipUtil.guessCompressionMethod(zips);
-      if (localSetup._check_header == ParseSetup.HAS_HEADER) {//check for header on local file
+      if (localSetup._check_header == ParseSetup.HAS_HEADER) //check for header on local file
         localSetup._check_header = localSetup.parser(_jobKey).fileHasHeader(ZipUtil.unzipBytes(zips,cpr, localSetup._chunk_size), localSetup);
       // Parse the file
       try {
@@ -767,7 +747,7 @@ public final class ParseDataset {
           }
           ZipEntry ze = zis.getNextEntry(); // Get the *FIRST* entry
           // There is at least one entry in zip file and it is not a directory.
-          if( ze != null && !ze.isDirectory() ) {
+          if( ze != null && !ze.isDirectory() )
             _dout[_lo] = streamParse(zis,localSetup, makeDout(localSetup,chunkStartIdx,vec.nChunks()), bvs);
             _errors = _dout[_lo].removeErrors();
           zis.close();       // Confused: which zipped file to decompress
@@ -801,15 +781,12 @@ public final class ParseDataset {
       Log.trace("Begin a reduce stage of a file parse.");
 
       // Collect & combine columns across files
-      if( _dout == null ){
-      	 _dout = mfpt._dout;
+      if( _dout == null ) _dout = mfpt._dout;
       else if(_dout != mfpt._dout) _dout = ArrayUtils.append(_dout,mfpt._dout);
-      if( _chunk2ParseNodeMap == null ) {
-      	_chunk2ParseNodeMap = mfpt._chunk2ParseNodeMap;
+      if( _chunk2ParseNodeMap == null ) _chunk2ParseNodeMap = mfpt._chunk2ParseNodeMap;
       else if(_chunk2ParseNodeMap != mfpt._chunk2ParseNodeMap) { // we're sharing global array!
         for( int i = 0; i < _chunk2ParseNodeMap.length; ++i ) {
-          if( _chunk2ParseNodeMap[i] == -1 ){
-          	 _chunk2ParseNodeMap[i] = mfpt._chunk2ParseNodeMap[i];
+          if( _chunk2ParseNodeMap[i] == -1 ) _chunk2ParseNodeMap[i] = mfpt._chunk2ParseNodeMap[i];
           else assert mfpt._chunk2ParseNodeMap[i] == -1 : Arrays.toString(_chunk2ParseNodeMap) + " :: " + Arrays.toString(mfpt._chunk2ParseNodeMap);
         }
       }
@@ -817,7 +794,7 @@ public final class ParseDataset {
         _errors = mfpt._errors;
       else if(_errors.length < 20) {
         _errors = ArrayUtils.append(_errors, mfpt._errors);
-        if(_errors.length > 20) {
+        if(_errors.length > 20)
           _errors = Arrays.copyOf(_errors,20);
       }
       Log.trace("Finished a reduce stage of a file parse.");
@@ -830,7 +807,7 @@ public final class ParseDataset {
       // All output into a fresh pile of NewChunks, one per column
       Parser p = localSetup.parser(_jobKey);
       // assume 2x inflation rate
-      if(localSetup._parse_type.isParallelParseSupported()) {
+      if(localSetup._parse_type.isParallelParseSupported())
         p.streamParseZip(is, dout, bvs);
       else
         p.streamParse(is,dout);
@@ -875,11 +852,10 @@ public final class ParseDataset {
         _setup = ParserService.INSTANCE.getByInfo(_setup._parse_type).setupLocal(_fr.anyVec(),_setup);
       }
       @Override public void map( Chunk in ) {
-        if( _jobKey.get().stop_requested() ) {
-        	throw new Job.JobCancelledException();
+        if( _jobKey.get().stop_requested() ) throw new Job.JobCancelledException();
         AppendableVec [] avs = new AppendableVec[_setup._number_columns];
         for(int i = 0; i < avs.length; ++i)
-          if (_setup._column_types == null) {// SVMLight
+          if (_setup._column_types == null) // SVMLight
             avs[i] = new AppendableVec(_vg.vecKey(_vecIdStart + i), _espc, Vec.T_NUM, _startChunkIdx);
           else
             avs[i] = new AppendableVec(_vg.vecKey(_vecIdStart + i), _espc, _setup._column_types[i], _startChunkIdx);
@@ -930,8 +906,7 @@ public final class ParseDataset {
           cidx += i;
           if (!_visited.add(cidx)) { // Second visit
             Value v = Value.STORE_get(in.vec().chunkKey(cidx));
-            if (v == null || !v.isPersisted()){
-            	 return; // Not found, or not on disk somewhere
+            if (v == null || !v.isPersisted()) return; // Not found, or not on disk somewhere
             v.freePOJO();           // Eagerly toss from memory
             v.freeMem();
           }
@@ -959,16 +934,13 @@ public final class ParseDataset {
         _dout = null;           // Reclaim GC eagerly
         // For Big Data, must delete data as eagerly as possible.
         Value val = DKV.get(_srckey);
-        if( val == null ){
-        	 return;
+        if( val == null ) return;
         Iced ice = val.get();
         if( ice instanceof ByteVec ) {
-          if( _outerMFPT._deleteOnDone) {
-          	((ByteVec)ice).remove();
+          if( _outerMFPT._deleteOnDone) ((ByteVec)ice).remove();
         } else {
           Frame fr = (Frame)ice;
-          if( _outerMFPT._deleteOnDone) {
-          	fr.delete(_outerMFPT._jobKey,new Futures()).blockForPending();
+          if( _outerMFPT._deleteOnDone) fr.delete(_outerMFPT._jobKey,new Futures()).blockForPending();
           else if( fr._key != null ) fr.unlock(_outerMFPT._jobKey);
         }
       }
@@ -1064,7 +1036,7 @@ public final class ParseDataset {
         }
       }
 
-      if (printLogSeparatorToStdout) {
+      if (printLogSeparatorToStdout)
         Log.info("Additional column information only sent to log file...");
 
       String s = String.format(format, CStr, typeStr, minStr, maxStr, meanStr, sigmaStr, naStr, isConstantStr, numLevelsStr);
