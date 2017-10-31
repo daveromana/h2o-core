@@ -134,7 +134,7 @@ public class RequestServer extends HttpServlet {
   public static int numRoutes(int version) {
     int count = 0;
     for (Route route : routesList)
-      if (route.getVersion() == version) {
+      if (route.getVersion() == version)
         count++;
     return count;
   }
@@ -262,9 +262,8 @@ public class RequestServer extends HttpServlet {
         String line = null;
         try {
           BufferedReader reader = request.getReader();
-          while ((line = reader.readLine()) != null){
+          while ((line = reader.readLine()) != null)
             jb.append(line);
-          }
         } catch (Exception e) {
           throw new H2OIllegalArgumentException("Exception reading POST body JSON for URL: " + uri);
         }
@@ -284,9 +283,7 @@ public class RequestServer extends HttpServlet {
             sb.append("[");
             boolean first = true;
             for (String value : values) {
-              if (!first) {
-            	  sb.append(",");
-              }
+              if (!first) sb.append(",");
               sb.append("\"").append(value).append("\"");
               first = false;
             }
@@ -334,17 +331,15 @@ public class RequestServer extends HttpServlet {
               confirmations[H2O.SELF.index()] = true;
             }
             for(H2ONode n:H2O.CLOUD._memary) {
-              if(n != H2O.SELF) {
+              if(n != H2O.SELF)
                 new RPC<>(n, new UDPRebooted.ShutdownTsk(H2O.SELF,n.index(), 1000, confirmations, 0)).call();
             }
             try { Thread.sleep(2000); }
-            catch (Exception ignore) {System.out.println("The error is: " + ignore);}
+            catch (Exception ignore) {}
             int failedToShutdown = 0;
             // shutdown failed
             for(boolean b:confirmations)
-              if(!b) {
-            	  failedToShutdown++;
-              }
+              if(!b) failedToShutdown++;
             Log.info("Orderly shutdown: " + (failedToShutdown > 0? failedToShutdown + " nodes failed to shut down! ":"") + " Shutting down now.");
             H2O.closeAll();
             H2O.exit(failedToShutdown);
@@ -371,9 +366,7 @@ public class RequestServer extends HttpServlet {
 
       // For certain "special" requests that produce non-JSON payloads we require special handling.
       NanoResponse special = maybeServeSpecial(uri);
-      if (special != null) {
-    	  return special;
-      }
+      if (special != null) return special;
 
       // Determine the Route corresponding to this request, and also fill in {parms} with the path parameters
       Route route = routesTree.lookup(uri, parms);
@@ -446,9 +439,9 @@ public class RequestServer extends HttpServlet {
 
       if (route == null) {
         // if the request is not known, treat as resource request, or 404 if not found
-        if (uri.isGetMethod()) {
+        if (uri.isGetMethod())
           return getResource(type, url);
-        else {
+        else
           return response404(method + " " + url, type);
 
       } else {
@@ -489,7 +482,7 @@ public class RequestServer extends HttpServlet {
       // make sure that no Exception is ever thrown out from the request
       H2OError error = new H2OError(e, url);
       // some special cases for which we return 400 because it's likely a problem with the client request:
-      if (e instanceof IllegalArgumentException || e instanceof FileNotFoundException || e instanceof MalformedURLException) {
+      if (e instanceof IllegalArgumentException || e instanceof FileNotFoundException || e instanceof MalformedURLException)
         error._http_status = HttpResponseStatus.BAD_REQUEST.getCode();
       Log.err("Caught exception: " + error.toString() +";parms=" + parms);
       return serveError(error);
@@ -501,9 +494,7 @@ public class RequestServer extends HttpServlet {
    */
   private static void maybeLogRequest(RequestUri uri, Properties header, Properties parms) {
     for(HttpLogFilter f: _filters)
-      if( f.filter(uri,header,parms) ) {
-    	  return; // do not log anything if filtered
-      }
+      if( f.filter(uri,header,parms) ) return; // do not log anything if filtered
     String url = uri.getUrl();
     Log.info(uri + ", parms: " + parms);
     GAUtils.logRequest(url, header);
@@ -529,9 +520,7 @@ public class RequestServer extends HttpServlet {
         if (url.endsWith(".css") ||
           url.endsWith(".js")  ||
           url.endsWith(".png") ||
-          url.endsWith(".ico")) {
-        	return true;
-        }
+          url.endsWith(".ico")) return true;
         String[] path = uri.getPath();
         return path[2].equals("Cloud") ||
           path[2].equals("Jobs") && uri.isGetMethod() ||
@@ -565,9 +554,7 @@ public class RequestServer extends HttpServlet {
     }
 
     public Route lookup(RequestUri uri, Properties parms) {
-      if (!uri.isApiUrl()) {
-    	  return null;
-      }
+      if (!uri.isApiUrl()) return null;
       String[] path = uri.getPath();
       ArrayList<String> path_params = new ArrayList<>(3);
 
@@ -586,7 +573,7 @@ public class RequestServer extends HttpServlet {
     private void addByPath(String[] path, int index, Route route) {
       if (index + 1 < path.length) {
         String nextToken = isWildcardToken(path[index+1])? "*" : path[index+1];
-        if (!branches.containsKey(nextToken)) {
+        if (!branches.containsKey(nextToken))
           branches.put(nextToken, new RouteTree(nextToken));
         branches.get(nextToken).addByPath(path, index + 1, route);
       } else {
@@ -602,17 +589,13 @@ public class RequestServer extends HttpServlet {
         // First attempt an exact match
         if (branches.containsKey(nextToken)) {
           Route route = branches.get(nextToken).lookupByPath(path, index+1, path_params);
-          if (route != null) {
-        	  return route;
-          }
+          if (route != null) return route;
         }
         // Then match against a wildcard
         if (branches.containsKey("*")) {
           path_params.add(path[index+1]);
           Route route = branches.get("*").lookupByPath(path, index + 1, path_params);
-          if (route != null) {
-        	  return route;
-          }
+          if (route != null) return route;
           path_params.remove(path_params.size() - 1);
         }
         // If we are at the deepest level of the tree and no match was found, attempt to look for alternative versions.
@@ -621,9 +604,7 @@ public class RequestServer extends HttpServlet {
         if (index == path.length - 2) {
           int v = Integer.parseInt(nextToken);
           for (String key : branches.keySet()) {
-            if (branches.get(key).leaf == null) {
-            	continue;
-            }
+            if (branches.get(key).leaf == null) continue;
             if (Integer.parseInt(key) <= v) {
               // We also create a new branch in the tree to memorize this new route path.
               RouteTree newBranch = new RouteTree(nextToken);
@@ -646,7 +627,7 @@ public class RequestServer extends HttpServlet {
 
   private static Route findRouteByApiName(String apiName) {
     for (Route route : routesList) {
-      if (route._api_name.equals(apiName)) {
+      if (route._api_name.equals(apiName))
         return route;
     }
     return null;
@@ -665,21 +646,15 @@ public class RequestServer extends HttpServlet {
 
     if (uri.isHeadMethod()) {
       // Blank response used by R's uri.exists("/")
-      if (uri.getUrl().equals("/")) {
+      if (uri.getUrl().equals("/"))
         return new NanoResponse(HTTP_OK, MIME_PLAINTEXT, "");
     }
     if (uri.isGetMethod()) {
       // url "/3/Foo/bar" => path ["", "GET", "Foo", "bar", "3"]
       String[] path = uri.getPath();
-      if (path[2].equals("")) {
-    	  return redirectToFlow();
-      }
-      if (path[2].equals("Logs") && path[3].equals("download")) {
-    	  return downloadLogs();
-      }
-      if (path[2].equals("NodePersistentStorage.bin") && path.length == 6) {
-    	  return downloadNps(path[3], path[4]);
-      }
+      if (path[2].equals("")) return redirectToFlow();
+      if (path[2].equals("Logs") && path[3].equals("download")) return downloadLogs();
+      if (path[2].equals("NodePersistentStorage.bin") && path.length == 6) return downloadNps(path[3], path[4]);
     }
     return null;
   }
@@ -896,9 +871,9 @@ public class RequestServer extends HttpServlet {
           //
 
         }
-      } catch( IOException ignore ) {System.out.println("The error is: " + ignore); }
+      } catch( IOException ignore ) { }
     }
-    if (bytes == null || bytes.length == 0) { // No resource found?
+    if (bytes == null || bytes.length == 0) // No resource found?
       return response404("Resource " + url, request_type);
 
     int i = url.lastIndexOf('.');

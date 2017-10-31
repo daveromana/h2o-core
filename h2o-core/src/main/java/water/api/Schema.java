@@ -219,6 +219,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
     Class<? extends Iced> impl_class = ReflectionUtils.findActualClassParameter(clz, 0);
     if (null == impl_class) {
       Log.warn("Failed to find an impl class for Schema: " + clz);
+      }
     return impl_class;
   }
 
@@ -273,6 +274,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
           current = f;
           if (null == fields.get(f.getName())) {
             fields.put(f.getName(), f);
+            }
         }
 
         clz = clz.getSuperclass();
@@ -324,7 +326,8 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
       for (Field f : fields.values()) {
         int mods = f.getModifiers();
         if (Modifier.isTransient(mods) || Modifier.isStatic(mods)) {
-          continue;             // Ignore transient & static
+          continue; 
+          }            // Ignore transient & static
         try {
           API api = (API) f.getAnnotations()[0]; // TODO: is there a more specific way we can do this?
           if (api.required()) {
@@ -400,171 +403,170 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
     }
     if (fclz.equals(int.class)){
     	 return parseInteger(s, int.class);
+    	 }
     if (fclz.equals(long.class)) {
     	return parseInteger(s, long.class);
+    	}
     if (fclz.equals(short.class)){
     	 return parseInteger(s, short.class);
+    	 }
     if (fclz.equals(boolean.class)) {
       if (s.equals("0")){
       	 return Boolean.FALSE;
+      	 }
       if (s.equals("1")) {
       	return Boolean.TRUE;
+      	}
       return Boolean.valueOf(s);
     }
     if (fclz.equals(byte.class)) {
     	return parseInteger(s, byte.class);
+    	}
     if (fclz.equals(double.class)){
     	 return Double.valueOf(s);
+    	 }
     if (fclz.equals(float.class)){
     	 return Float.valueOf(s);
+    	 }
     //FIXME: if (fclz.equals(char.class)) return Character.valueOf(s);
     throw H2O.fail("Unknown primitive type to parse: " + fclz.getSimpleName());
   }
 
   // URL parameter parse
   static <E> Object parse(String field_name, String s, Class fclz, boolean required, Class schemaClass) {
-    if (fclz.isPrimitive() || String.class.equals(fclz)) {
-      try {
-        return parsePrimitve(s, fclz);
-      } catch (NumberFormatException ne) {
-        String msg = "Illegal argument for field: " + field_name + " of schema: " +  schemaClass.getSimpleName() + ": cannot convert \"" + s + "\" to type " + fclz.getSimpleName();
-        throw new H2OIllegalArgumentException(msg);
-      }
-    }
-    // An array?
-    if (fclz.isArray()) {
-      // Get component type
-      Class<E> afclz = (Class<E>) fclz.getComponentType();
-      // Result
-      E[] a = null;
-      // Handle simple case with null-array
-      if (s.equals("null") || s.length() == 0){
-      	 return null;
-      // Splitted values
-      String[] splits; // "".split(",") => {""} so handle the empty case explicitly
-      if (s.startsWith("[") && s.endsWith("]") ) { // It looks like an array
-        read(s, 0, '[', fclz);
-        read(s, s.length() - 1, ']', fclz);
-        String inside = s.substring(1, s.length() - 1).trim();
-        if (inside.length() == 0) {
-          splits = new String[]{};
-        else
-          splits = splitArgs(inside);
-      } else { // Lets try to parse single value as an array!
-        // See PUBDEV-1955
-        splits = new String[] { s.trim() };
-      }
+	    if (fclz.isPrimitive() || String.class.equals(fclz)) {
+	      try {
+	        return parsePrimitve(s, fclz);
+	      } catch (NumberFormatException ne) {
+	        String msg = "Illegal argument for field: " + field_name + " of schema: " +  schemaClass.getSimpleName() + ": cannot convert \"" + s + "\" to type " + fclz.getSimpleName();
+	        throw new H2OIllegalArgumentException(msg);
+	      }
+	    }
+	    // An array?
+	    if (fclz.isArray()) {
+	      // Get component type
+	      Class<E> afclz = (Class<E>) fclz.getComponentType();
+	      // Result
+	      E[] a = null;
+	      // Handle simple case with null-array
+	      if (s.equals("null") || s.length() == 0) return null;
+	      // Splitted values
+	      String[] splits; // "".split(",") => {""} so handle the empty case explicitly
+	      if (s.startsWith("[") && s.endsWith("]") ) { // It looks like an array
+	        read(s, 0, '[', fclz);
+	        read(s, s.length() - 1, ']', fclz);
+	        String inside = s.substring(1, s.length() - 1).trim();
+	        if (inside.length() == 0)
+	          splits = new String[]{};
+	        else
+	          splits = splitArgs(inside);
+	      } else { // Lets try to parse single value as an array!
+	        // See PUBDEV-1955
+	        splits = new String[] { s.trim() };
+	      }
 
-      // Can't cast an int[] to an Object[].  Sigh.
-      if (afclz == int.class) { // TODO: other primitive types. . .
-        a = (E[]) Array.newInstance(Integer.class, splits.length);
-      } else if (afclz == double.class) {
-        a = (E[]) Array.newInstance(Double.class, splits.length);
-      } else if (afclz == float.class) {
-        a = (E[]) Array.newInstance(Float.class, splits.length);
-      } else {
-        // Fails with primitive classes; need the wrapper class.  Thanks, Java.
-        a = (E[]) Array.newInstance(afclz, splits.length);
-      }
+	      // Can't cast an int[] to an Object[].  Sigh.
+	      if (afclz == int.class) { // TODO: other primitive types. . .
+	        a = (E[]) Array.newInstance(Integer.class, splits.length);
+	      } else if (afclz == double.class) {
+	        a = (E[]) Array.newInstance(Double.class, splits.length);
+	      } else if (afclz == float.class) {
+	        a = (E[]) Array.newInstance(Float.class, splits.length);
+	      } else {
+	        // Fails with primitive classes; need the wrapper class.  Thanks, Java.
+	        a = (E[]) Array.newInstance(afclz, splits.length);
+	      }
 
-      for (int i = 0; i < splits.length; i++) {
-        if (String.class == afclz || KeyV3.class.isAssignableFrom(afclz)) {
-          // strip quotes off string values inside array
-          String stripped = splits[i].trim();
+	      for (int i = 0; i < splits.length; i++) {
+	        if (String.class == afclz || KeyV3.class.isAssignableFrom(afclz)) {
+	          // strip quotes off string values inside array
+	          String stripped = splits[i].trim();
 
-          if ("null".equals(stripped.toLowerCase()) || "na".equals(stripped.toLowerCase())) {
-            a[i] = null;
-            continue;
-          }
+	          if ("null".equals(stripped.toLowerCase()) || "na".equals(stripped.toLowerCase())) {
+	            a[i] = null;
+	            continue;
+	          }
 
-          // Quotes are now optional because standard clients will send arrays of length one as just strings.
-          if (stripped.startsWith("\"") && stripped.endsWith("\"")) {
-            stripped = stripped.substring(1, stripped.length() - 1);
-          }
+	          // Quotes are now optional because standard clients will send arrays of length one as just strings.
+	          if (stripped.startsWith("\"") && stripped.endsWith("\"")) {
+	            stripped = stripped.substring(1, stripped.length() - 1);
+	          }
 
-          a[i] = (E) parse(field_name, stripped, afclz, required, schemaClass);
-        } else {
-          a[i] = (E) parse(field_name, splits[i].trim(), afclz, required, schemaClass);
-        }
-      }
-      return a;
-    }
+	          a[i] = (E) parse(field_name, stripped, afclz, required, schemaClass);
+	        } else {
+	          a[i] = (E) parse(field_name, splits[i].trim(), afclz, required, schemaClass);
+	        }
+	      }
+	      return a;
+	    }
 
-    // Are we parsing an object from a string? NOTE: we might want to make this check more restrictive.
-    if (! fclz.isAssignableFrom(Schema.class) && s != null && s.startsWith("{") && s.endsWith("}")) {
-      return gson.fromJson(s, fclz);
-    }
+	    // Are we parsing an object from a string? NOTE: we might want to make this check more restrictive.
+	    if (! fclz.isAssignableFrom(Schema.class) && s != null && s.startsWith("{") && s.endsWith("}")) {
+	      return gson.fromJson(s, fclz);
+	    }
 
-    if (fclz.equals(Key.class)) {
-      if ((s == null || s.length() == 0) && required){
-      	 throw new H2OKeyNotFoundArgumentException(field_name, s);
-      else if (!required && (s == null || s.length() == 0)) return null;
-      else
-        return Key.make(s.startsWith("\"") ? s.substring(1, s.length() - 1) : s); // If the key name is in an array we need to trim surrounding quotes.
+	    if (fclz.equals(Key.class))
+	      if ((s == null || s.length() == 0) && required) throw new H2OKeyNotFoundArgumentException(field_name, s);
+	      else if (!required && (s == null || s.length() == 0)) return null;
+	      else
+	        return Key.make(s.startsWith("\"") ? s.substring(1, s.length() - 1) : s); // If the key name is in an array we need to trim surrounding quotes.
 
-    if (KeyV3.class.isAssignableFrom(fclz)) {
-      if ((s == null || s.length() == 0) && required) {
-      	throw new H2OKeyNotFoundArgumentException(field_name, s);
-      if (!required && (s == null || s.length() == 0)) {
-      	return null;
+	    if (KeyV3.class.isAssignableFrom(fclz)) {
+	      if ((s == null || s.length() == 0) && required) throw new H2OKeyNotFoundArgumentException(field_name, s);
+	      if (!required && (s == null || s.length() == 0)) return null;
 
-      return KeyV3.make(fclz, Key.make(s.startsWith("\"") ? s.substring(1, s.length() - 1) : s)); // If the key name is in an array we need to trim surrounding quotes.
-    }
+	      return KeyV3.make(fclz, Key.make(s.startsWith("\"") ? s.substring(1, s.length() - 1) : s)); // If the key name is in an array we need to trim surrounding quotes.
+	    }
 
-    if (Enum.class.isAssignableFrom(fclz)) {
-      return EnumUtils.valueOf(fclz, s);
-    }
+	    if (Enum.class.isAssignableFrom(fclz)) {
+	      return EnumUtils.valueOf(fclz, s);
+	    }
 
-    // TODO: these can be refactored into a single case using the facilities in Schema:
-    if (FrameV3.class.isAssignableFrom(fclz)) {
-      if ((s == null || s.length() == 0) && required){
-      	 throw new H2OKeyNotFoundArgumentException(field_name, s);
-      else if (!required && (s == null || s.length() == 0)) return null;
-      else {
-        Value v = DKV.get(s);
-        if (null == v){
-        	 return null; // not required
-        if (!v.isFrame()) {
-        	throw H2OIllegalArgumentException.wrongKeyType(field_name, s, "Frame", v.get().getClass());
-        return new FrameV3((Frame) v.get()); // TODO: version!
-      }
-    }
+	    // TODO: these can be refactored into a single case using the facilities in Schema:
+	    if (FrameV3.class.isAssignableFrom(fclz)) {
+	      if ((s == null || s.length() == 0) && required) throw new H2OKeyNotFoundArgumentException(field_name, s);
+	      else if (!required && (s == null || s.length() == 0)) return null;
+	      else {
+	        Value v = DKV.get(s);
+	        if (null == v) return null; // not required
+	        if (!v.isFrame()) throw H2OIllegalArgumentException.wrongKeyType(field_name, s, "Frame", v.get().getClass());
+	        return new FrameV3((Frame) v.get()); // TODO: version!
+	      }
+	    }
 
-    if (JobV3.class.isAssignableFrom(fclz)) {
-      if ((s == null || s.length() == 0) && required) {
-      	throw new H2OKeyNotFoundArgumentException(s);
-      else if (!required && (s == null || s.length() == 0)) return null;
-      else {
-        Value v = DKV.get(s);
-        if (null == v){
-        	 return null; // not required
-        if (!v.isJob()) {
-        	throw H2OIllegalArgumentException.wrongKeyType(field_name, s, "Job", v.get().getClass());
-        return new JobV3().fillFromImpl((Job) v.get()); // TODO: version!
-      }
-    }
+	    if (JobV3.class.isAssignableFrom(fclz)) {
+	      if ((s == null || s.length() == 0) && required) throw new H2OKeyNotFoundArgumentException(s);
+	      else if (!required && (s == null || s.length() == 0)) return null;
+	      else {
+	        Value v = DKV.get(s);
+	        if (null == v) return null; // not required
+	        if (!v.isJob()) throw H2OIllegalArgumentException.wrongKeyType(field_name, s, "Job", v.get().getClass());
+	        return new JobV3().fillFromImpl((Job) v.get()); // TODO: version!
+	      }
+	    }
 
-    // TODO: for now handle the case where we're only passing the name through; later we need to handle the case
-    // where the frame name is also specified.
-    if (FrameV3.ColSpecifierV3.class.isAssignableFrom(fclz)) {
-      return new FrameV3.ColSpecifierV3(s);
-    }
+	    // TODO: for now handle the case where we're only passing the name through; later we need to handle the case
+	    // where the frame name is also specified.
+	    if (FrameV3.ColSpecifierV3.class.isAssignableFrom(fclz)) {
+	      return new FrameV3.ColSpecifierV3(s);
+	    }
 
-    if (ModelSchemaV3.class.isAssignableFrom(fclz)) {
-      throw H2O.fail("Can't yet take ModelSchemaV3 as input.");
-    /*
-      if( (s==null || s.length()==0) && required ) throw new IllegalArgumentException("Missing key");
-      else if (!required && (s == null || s.length() == 0)) return null;
-      else {
-      Value v = DKV.get(s);
-      if (null == v) return null; // not required
-      if (! v.isModel()) throw new IllegalArgumentException("Model argument points to a non-model object.");
-      return v.get();
-      }
-    */
-    throw H2O.fail("Unimplemented schema fill from " + fclz.getSimpleName());
-  } // parse()
+	    if (ModelSchemaV3.class.isAssignableFrom(fclz))
+	      throw H2O.fail("Can't yet take ModelSchemaV3 as input.");
+	    /*
+	      if( (s==null || s.length()==0) && required ) throw new IllegalArgumentException("Missing key");
+	      else if (!required && (s == null || s.length() == 0)) return null;
+	      else {
+	      Value v = DKV.get(s);
+	      if (null == v) return null; // not required
+	      if (! v.isModel()) throw new IllegalArgumentException("Model argument points to a non-model object.");
+	      return v.get();
+	      }
+	    */
+	    throw H2O.fail("Unimplemented schema fill from " + fclz.getSimpleName());
+	  } // parse()
 
+	  
   /**
    * Helper functions for parse()
    **/
@@ -593,6 +595,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
   static private int read( String s, int x, char c, Class fclz ) {
     if( peek(s,x,c) ){
     	 return x+1;
+    	 }
     throw new IllegalArgumentException("Expected '"+c+"' while reading a "+fclz.getSimpleName()+", but found "+s);
   }
   static private boolean peek( String s, int x, char c ) { return x < s.length() && s.charAt(x) == c; }
@@ -630,6 +633,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
     }
     if (arg.length() > 0) {
       splitArgList.add(arg.toString());
+      }
 
     return splitArgList.toArray(new String[splitArgList.size()]);
   }
@@ -664,82 +668,82 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
    * @throws H2ONotFoundArgumentException if reflection on a field fails
    */
   public StringBuffer markdown(SchemaMetadata meta, boolean include_input_fields, boolean include_output_fields) {
-    MarkdownBuilder builder = new MarkdownBuilder();
+	    MarkdownBuilder builder = new MarkdownBuilder();
 
-    builder.comment("Preview with http://jbt.github.io/markdown-editor");
-    builder.heading1("schema ", this.getClass().getSimpleName());
-    builder.hline();
-    // builder.paragraph(metadata.summary);
+	    builder.comment("Preview with http://jbt.github.io/markdown-editor");
+	    builder.heading1("schema ", this.getClass().getSimpleName());
+	    builder.hline();
+	    // builder.paragraph(metadata.summary);
 
-    // TODO: refactor with Route.markdown():
+	    // TODO: refactor with Route.markdown():
 
-    // fields
-    boolean first; // don't print the table at all if there are no rows
+	    // fields
+	    boolean first; // don't print the table at all if there are no rows
 
-    try {
-      if (include_input_fields) {
-        first = true;
-        builder.heading2("input fields");
+	    try {
+	      if (include_input_fields) {
+	        first = true;
+	        builder.heading2("input fields");
 
-        for (SchemaMetadata.FieldMetadata field_meta : meta.fields) {
-          if (field_meta.direction == API.Direction.INPUT || field_meta.direction == API.Direction.INOUT) {
-            if (first) {
-              builder.tableHeader("name", "required?", "level", "type", "schema?", "schema", "default", "description", "values", "is member of frames", "is mutually exclusive with");
-              first = false;
-            }
-            builder.tableRow(
-                field_meta.name,
-                String.valueOf(field_meta.required),
-                field_meta.level.name(),
-                field_meta.type,
-                String.valueOf(field_meta.is_schema),
-                field_meta.is_schema ? field_meta.schema_name : "", (null == field_meta.value ? "(null)" : field_meta.value.toString()), // Something better for toString()?
-                field_meta.help,
-                (field_meta.values == null || field_meta.values.length == 0 ? "" : Arrays.toString(field_meta.values)),
-                (field_meta.is_member_of_frames == null ? "[]" : Arrays.toString(field_meta.is_member_of_frames)),
-                (field_meta.is_mutually_exclusive_with == null ? "[]" : Arrays.toString(field_meta.is_mutually_exclusive_with))
-            );
-          }
-        }
-        if (first) {
-          builder.paragraph("(none)");
-      }
+	        for (SchemaMetadata.FieldMetadata field_meta : meta.fields) {
+	          if (field_meta.direction == API.Direction.INPUT || field_meta.direction == API.Direction.INOUT) {
+	            if (first) {
+	              builder.tableHeader("name", "required?", "level", "type", "schema?", "schema", "default", "description", "values", "is member of frames", "is mutually exclusive with");
+	              first = false;
+	            }
+	            builder.tableRow(
+	                field_meta.name,
+	                String.valueOf(field_meta.required),
+	                field_meta.level.name(),
+	                field_meta.type,
+	                String.valueOf(field_meta.is_schema),
+	                field_meta.is_schema ? field_meta.schema_name : "", (null == field_meta.value ? "(null)" : field_meta.value.toString()), // Something better for toString()?
+	                field_meta.help,
+	                (field_meta.values == null || field_meta.values.length == 0 ? "" : Arrays.toString(field_meta.values)),
+	                (field_meta.is_member_of_frames == null ? "[]" : Arrays.toString(field_meta.is_member_of_frames)),
+	                (field_meta.is_mutually_exclusive_with == null ? "[]" : Arrays.toString(field_meta.is_mutually_exclusive_with))
+	            );
+	          }
+	        }
+	        if (first)
+	          builder.paragraph("(none)");
+	      }
 
-      if (include_output_fields) {
-        first = true;
-        builder.heading2("output fields");
-        for (SchemaMetadata.FieldMetadata field_meta : meta.fields) {
-          if (field_meta.direction == API.Direction.OUTPUT || field_meta.direction == API.Direction.INOUT) {
-            if (first) {
-              builder.tableHeader("name", "type", "schema?", "schema", "default", "description", "values", "is member of frames", "is mutually exclusive with");
-              first = false;
-            }
-            builder.tableRow(
-                field_meta.name,
-                field_meta.type,
-                String.valueOf(field_meta.is_schema),
-                field_meta.is_schema ? field_meta.schema_name : "",
-                (null == field_meta.value ? "(null)" : field_meta.value.toString()), // something better than toString()?
-                field_meta.help,
-                (field_meta.values == null || field_meta.values.length == 0 ? "" : Arrays.toString(field_meta.values)),
-                (field_meta.is_member_of_frames == null ? "[]" : Arrays.toString(field_meta.is_member_of_frames)),
-                (field_meta.is_mutually_exclusive_with == null ? "[]" : Arrays.toString(field_meta.is_mutually_exclusive_with)));
-          }
-        }
-        if (first) {
-          builder.paragraph("(none)");
-      }
+	      if (include_output_fields) {
+	        first = true;
+	        builder.heading2("output fields");
+	        for (SchemaMetadata.FieldMetadata field_meta : meta.fields) {
+	          if (field_meta.direction == API.Direction.OUTPUT || field_meta.direction == API.Direction.INOUT) {
+	            if (first) {
+	              builder.tableHeader("name", "type", "schema?", "schema", "default", "description", "values", "is member of frames", "is mutually exclusive with");
+	              first = false;
+	            }
+	            builder.tableRow(
+	                field_meta.name,
+	                field_meta.type,
+	                String.valueOf(field_meta.is_schema),
+	                field_meta.is_schema ? field_meta.schema_name : "",
+	                (null == field_meta.value ? "(null)" : field_meta.value.toString()), // something better than toString()?
+	                field_meta.help,
+	                (field_meta.values == null || field_meta.values.length == 0 ? "" : Arrays.toString(field_meta.values)),
+	                (field_meta.is_member_of_frames == null ? "[]" : Arrays.toString(field_meta.is_member_of_frames)),
+	                (field_meta.is_mutually_exclusive_with == null ? "[]" : Arrays.toString(field_meta.is_mutually_exclusive_with)));
+	          }
+	        }
+	        if (first)
+	          builder.paragraph("(none)");
+	      }
 
-      // TODO: render examples and other stuff, if it's passed in
-    }
-    catch (Exception e) {
-      IcedHashMapGeneric.IcedHashMapStringObject values = new IcedHashMapGeneric.IcedHashMapStringObject();
-      values.put("schema", this);
-      // TODO: This isn't quite the right exception type:
-      throw new H2OIllegalArgumentException("Caught exception using reflection on schema: " + this,
-          "Caught exception using reflection on schema: " + this + ": " + e,
-          values);
-    }
-    return builder.stringBuffer();
-  }
-}
+	      // TODO: render examples and other stuff, if it's passed in
+	    }
+	    catch (Exception e) {
+	      IcedHashMapGeneric.IcedHashMapStringObject values = new IcedHashMapGeneric.IcedHashMapStringObject();
+	      values.put("schema", this);
+	      // TODO: This isn't quite the right exception type:
+	      throw new H2OIllegalArgumentException("Caught exception using reflection on schema: " + this,
+	          "Caught exception using reflection on schema: " + this + ": " + e,
+	          values);
+	    }
+	    return builder.stringBuffer();
+	  }
+	}

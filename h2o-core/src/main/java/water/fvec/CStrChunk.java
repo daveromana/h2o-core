@@ -84,7 +84,7 @@ public class CStrChunk extends Chunk {
     int len = 0;
     while (byteAt(off + len) != 0){
     		len++;
-    	}
+    	
     }
     return len;
   }

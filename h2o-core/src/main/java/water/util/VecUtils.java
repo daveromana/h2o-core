@@ -125,10 +125,12 @@ public class VecUtils {
             double d = c0.atd(r);
             if(Double.isNaN(d)) {
               c1.setNA(r);
-            else
+            }
+            else{
               c1.set(r,Arrays.binarySearch(dom,d));
           }
         }
+       }
       }.doAll(new Vec[]{src,dst});
       assert dst.min() == 0;
       assert dst.max() == dom.length-1;
@@ -192,8 +194,9 @@ public class VecUtils {
     Vec res = new MRTask() {
       @Override public void map(Chunk chk, NewChunk newChk){
         if (chk instanceof C0DChunk) { // all NAs
-          for (int i=0; i < chk._len; i++)
+          for (int i=0; i < chk._len; i++){
             newChk.addNA();
+          }
         } else {
           BufferedString tmpStr = new BufferedString();
           for (int i=0; i < chk._len; i++) {
@@ -252,7 +255,7 @@ public class VecUtils {
     	System.out.println("The error is: " + e);
     }
       // makeCopy and return...
-    }
+ 
     if( useDomain ) {
       new MRTask() {
         @Override public void map(Chunk c) {
@@ -260,7 +263,9 @@ public class VecUtils {
             if( !c.isNA(i) ) {
               c.set(i, Integer.parseInt(src.domain()[(int)c.at8(i)]));
         }
+        }
       }.doAll(newVec);
+      
     }
     return newVec;
   }
@@ -297,6 +302,7 @@ public class VecUtils {
             + " given to toStringVec().");
     }
   }
+  
 
   /**
    * Create a new {@link Vec} of string values from a categorical {@link Vec}.
@@ -320,9 +326,9 @@ public class VecUtils {
     @Override public void map(Chunk c, NewChunk nc) {
       for(int i=0;i<c._len;++i)
         if (!c.isNA(i)) {
-          nc.addStr(_domain == null ? "" + c.at8(i) : _domain[(int) c.at8(i)]);
-        else
-          nc.addNA();
+          nc.addStr(_domain == null ? "" + c.at8(i) : _domain[(int) c.at8(i)]);}
+        else{
+          nc.addNA();}
     }
   }
 
@@ -348,9 +354,9 @@ public class VecUtils {
         } else {
           for (int i=0; i < chk._len; i++) {
             if (!chk.isNA(i)) {
-              newChk.addStr(PrettyPrint.number(chk, chk.atd(i), 4));
-            else
-              newChk.addNA();
+              newChk.addStr(PrettyPrint.number(chk, chk.atd(i), 4));}
+            else{
+              newChk.addNA();}
           }
         }
       }
@@ -368,7 +374,7 @@ public class VecUtils {
    * @return a string {@link Vec}
    */
   public static Vec UUIDToStringVec(Vec src) {
-    if( !src.isUUID() ) throw new H2OIllegalArgumentException("UUIDToStringVec() conversion only works on UUID columns");
+    if( !src.isUUID() ){ throw new H2OIllegalArgumentException("UUIDToStringVec() conversion only works on UUID columns");}
     Vec res = new MRTask() {
       @Override public void map(Chunk chk, NewChunk newChk) {
         if (chk instanceof C0DChunk) { // all NAs
@@ -377,9 +383,9 @@ public class VecUtils {
         } else {
           for (int i=0; i < chk._len; i++) {
             if (!chk.isNA(i)) {
-              newChk.addStr(PrettyPrint.UUID(chk.at16l(i), chk.at16h(i)));
-            else
-              newChk.addNA();
+              newChk.addStr(PrettyPrint.UUID(chk.at16l(i), chk.at16h(i)));}
+            else{
+              newChk.addNA();}
           }
         }
       }
@@ -387,6 +393,7 @@ public class VecUtils {
     assert res != null;
     return res;
   }
+  
 
   /**
    * Create a new {@link Vec} of numeric values from a categorical {@link Vec}.
@@ -410,6 +417,7 @@ public class VecUtils {
               c.set(i, Integer.parseInt(src.domain()[(int)c.at8(i)]));
         }
       }.doAll(Vec.T_NUM, src).outputFrame().anyVec();
+  }
   }
 
   public static class CollectDoubleDomain extends MRTask<CollectDoubleDomain> {
@@ -754,9 +762,10 @@ public class VecUtils {
         if (c.isNA(i)) {
         	nc.addNA();
         }
-        else nc.addNum(_map[(int)c.at8(i)], 0);
+        else{ nc.addNum(_map[(int)c.at8(i)], 0);}
       }
     }
   }
 
 }
+
