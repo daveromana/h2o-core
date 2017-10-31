@@ -1,4 +1,4 @@
-papackage water;
+package water;
 
 import javassist.*;
 import sun.misc.Unsafe;

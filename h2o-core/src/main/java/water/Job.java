@@ -101,12 +101,8 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
   /** Current runtime; zero if not started. */
   public long msec() {
     update_from_remote();
-    if( created() ) {
-    	return 0;   // Created, not running
-    }
-    if( running() ) {
-    	return System.currentTimeMillis() - _start_time;
-    }
+    if( created() ) return 0;   // Created, not running
+    if( running() ) return System.currentTimeMillis() - _start_time;
     return _end_time - _start_time; // Stopped
   }
 
@@ -122,12 +118,12 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
   private volatile boolean _stop_requested; // monotonic change from false to true
   public boolean stop_requested() { update_from_remote(); return _stop_requested; }
   public void stop() { 
-	    if( !_stop_requested )      // fast path cutout
-	      new JAtomic() {
-	        @Override boolean abort(Job job) { return job._stop_requested; }
-	        @Override void update(Job job) { job._stop_requested = true; }
-	      }.apply(this);
-	  }
+    if( !_stop_requested )      // fast path cutout
+      new JAtomic() {
+        @Override boolean abort(Job job) { return job._stop_requested; }
+        @Override void update(Job job) { job._stop_requested = true; }
+      }.apply(this);
+  }
 
   /** Any exception thrown by this Job, or null if none.  Note that while
    *  setting an exception generally triggers stopping a Job, stopping
@@ -135,9 +131,7 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
    *  posted. */
   private byte [] _ex;
   public Throwable ex() {
-    if(_ex == null) {
-    	return null;
-    }
+    if(_ex == null) return null;
     return (Throwable)AutoBuffer.javaSerializeReadPojo(_ex);
   }
 
@@ -151,9 +145,7 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
    *  Can default to returning e.g. 0 always.  */
   public float progress() { update_from_remote();
     float regularProgress = _work==0 ? 0f : Math.min(1,(float)_worked/_work);
-    if (_max_runtime_msecs>0) {
-    	return Math.min(1,Math.max(regularProgress, (float)msec()/_max_runtime_msecs));
-    }
+    if (_max_runtime_msecs>0) return Math.min(1,Math.max(regularProgress, (float)msec()/_max_runtime_msecs));
     return regularProgress;
   }
   /** Returns last progress message. */
@@ -191,22 +183,15 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
    *  @return The list of all Jobs, past and present */
   public static Job[] jobs() {
     final Value val = DKV.get(LIST);
-    if( val==null ) {
-    	return new Job[0];
-    	
-    }
+    if( val==null ) return new Job[0];
     JobList jl = val.get();
     Job[] jobs = new Job[jl._jobs.length];
     int j=0;
     for( int i=0; i<jl._jobs.length; i++ ) {
       final Value job = DKV.get(jl._jobs[i]);
-      if( job != null ) {
-    	    jobs[j++] = job.get();
-    	    }
+      if( job != null ) jobs[j++] = job.get();
     }
-    if( j==jobs.length ){
-         return jobs;
-         } // All jobs still exist
+    if( j==jobs.length ) return jobs; // All jobs still exist
     jobs = Arrays.copyOf(jobs,j);     // Shrink out removed
     Key keys[] = new Key[j];
     for( int i=0; i<j; i++ ) keys[i] = jobs[i]._key;
@@ -320,7 +305,7 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
       } else {
         try {
           Log.err(ex);
-        } catch (Throwable t) {System.out.println("The error is: " + t);/* do nothing */}
+        } catch (Throwable t) {/* do nothing */}
         new Barrier1OnExCom(ex).apply(Job.this);
       }
       _barrier = null;          // Free for GC
@@ -365,9 +350,8 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
     if( bar != null )           // Barrier may be null if task already completed
       bar.join(); // Block on the *barrier* task, which blocks until the fjtask on*Completion code runs completely
     assert isStopped();
-    if (_ex!=null) {
+    if (_ex!=null)
       throw new RuntimeException((Throwable)AutoBuffer.javaSerializeReadPojo(_ex));
-      }
     // Maybe null return, if the started fjtask does not actually produce a result at this Key
     return _result==null ? null : _result.get(); 
   }
@@ -393,34 +377,19 @@ public final class Job<T extends Keyed> extends Keyed<Job> {
   // Update the *this* object from a remote object.
   private void update_from_remote( ) {
     Job remote = DKV.getGet(_key); // Watch for changes in the DKV
-    if( this==remote ){
-         return; 
-         }// Trivial!
-    if( null==remote ) {
-        return;
-        } // Stay with local version
+    if( this==remote ) return; // Trivial!
+    if( null==remote ) return; // Stay with local version
     boolean differ = false;
-    if( _stop_requested != remote._stop_requested ) {
-        differ = true;
-        }
-    if(_start_time!= remote._start_time) {
-        differ = true;
-        }
-    if(_end_time  != remote._end_time  ) {
-        differ = true;}
-    if(_ex        != remote._ex        ) {
-        differ = true;}
-    if(_work      != remote._work      ) {
-        differ = true;}
-    if(_worked    != remote._worked    ) {
-        differ = true;}
-    if(_msg       != remote._msg       ) {
-        differ = true;}
-    if(_max_runtime_msecs != remote._max_runtime_msecs) {
-        differ = true;}
-    if(! Arrays.equals(_warns, remote._warns)) {
-        differ = true;}
-    if( differ ) {
+    if( _stop_requested != remote._stop_requested ) differ = true;
+    if(_start_time!= remote._start_time) differ = true;
+    if(_end_time  != remote._end_time  ) differ = true;
+    if(_ex        != remote._ex        ) differ = true;
+    if(_work      != remote._work      ) differ = true;
+    if(_worked    != remote._worked    ) differ = true;
+    if(_msg       != remote._msg       ) differ = true;
+    if(_max_runtime_msecs != remote._max_runtime_msecs) differ = true;
+    if(! Arrays.equals(_warns, remote._warns)) differ = true;
+    if( differ )
       synchronized(this) { 
         _stop_requested = remote._stop_requested;
         _start_time= remote._start_time;

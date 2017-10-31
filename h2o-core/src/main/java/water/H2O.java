@@ -390,28 +390,20 @@ final public class H2O {
     }
     public boolean matches(String s) {
       _lastMatchedFor = s;
-      if (_s.equals("-"  + s)) {
-    	  return true;
-      }
-      if (_s.equals("--" + s)) {
-    	  return true;
-      }
+      if (_s.equals("-"  + s)) return true;
+      if (_s.equals("--" + s)) return true;
       return false;
     }
 
     public int incrementAndCheck(int i, String[] args) {
       i = i + 1;
-      if (i >= args.length) {
-    	  parseFailed(_lastMatchedFor + " not specified");
-      }
+      if (i >= args.length) parseFailed(_lastMatchedFor + " not specified");
       return i;
     }
 
     public int parseInt(String a) {
       try { return Integer.parseInt(a); }
-      catch (Exception e) {
-    	  System.out.println("The error is: " + e);
-      }
+      catch (Exception e) { }
       parseFailed("Argument " + _lastMatchedFor + " must be an integer (was given '" + a + "')" );
       return 0;
     }
@@ -510,9 +502,8 @@ final public class H2O {
         i = s.incrementAndCheck(i, args);
         int nthreads = s.parseInt(args[i]);
         if (nthreads >= 1) { //otherwise keep default (all cores)
-          if (nthreads > Short.MAX_VALUE) {
+          if (nthreads > Short.MAX_VALUE)
             throw H2O.unimpl("Can't handle more than " + Short.MAX_VALUE + " threads.");
-            }
           trgt.nthreads = (short) nthreads;
         }
       }
@@ -585,8 +576,7 @@ final public class H2O {
       else if (s.matches("session_timeout")) {
         i = s.incrementAndCheck(i, args);
         trgt.session_timeout_spec = args[i];
-        try { trgt.session_timeout = Integer.parseInt(args[i]); } catch (Exception e) { 
-        	{ System.out.println("The error is: " + e);/* ignored */}/* ignored */ 
+        try { trgt.session_timeout = Integer.parseInt(args[i]); } catch (Exception e) { /* ignored */ }
       }
       else if (s.matches("internal_security_conf")) {
         i = s.incrementAndCheck(i, args);
@@ -616,18 +606,10 @@ final public class H2O {
     }
 
     int login_arg_count = 0;
-    if (ARGS.hash_login) {
-    	login_arg_count++;
-    }
-    if (ARGS.ldap_login) {
-    	login_arg_count++;
-    	}
-    if (ARGS.kerberos_login) {
-    	login_arg_count++;
-    	}
-    if (ARGS.pam_login) {
-    	login_arg_count++;
-    	}
+    if (ARGS.hash_login) login_arg_count++;
+    if (ARGS.ldap_login) login_arg_count++;
+    if (ARGS.kerberos_login) login_arg_count++;
+    if (ARGS.pam_login) login_arg_count++;
     if (login_arg_count > 1) {
       parseFailed("Can only specify one of -hash_login, -ldap_login, -kerberos_login and -pam_login");
     }
@@ -647,7 +629,7 @@ final public class H2O {
       if (! ARGS.form_auth) {
         parseFailed("Session timeout can only be enabled for Form based authentication (use -form_auth)");
       }
-      if (ARGS.session_timeout <= 0) {
+      if (ARGS.session_timeout <= 0)
         parseFailed("Invalid session timeout specification (" + ARGS.session_timeout + ")");
     }
 
@@ -691,13 +673,11 @@ final public class H2O {
 
 
   public static void closeAll() {
-    try { NetworkInit._udpSocket.close(); } catch( IOException ignore ) { System.out.println("The error is: " + ignore);}
-    try { H2O.getJetty().stop(); } catch( Exception ignore ) { System.out.println("The error is: " + ignore);}
-    try { NetworkInit._tcpSocket.close(); } catch( IOException ignore ){ System.out.println("The error is: " + ignore);}
+    try { NetworkInit._udpSocket.close(); } catch( IOException ignore ) { }
+    try { H2O.getJetty().stop(); } catch( Exception ignore ) { }
+    try { NetworkInit._tcpSocket.close(); } catch( IOException ignore ) { }
     PersistManager PM = H2O.getPM();
-    if( PM != null ) {
-    	PM.getIce().cleanUp();
-    	}
+    if( PM != null ) PM.getIce().cleanUp();
   }
 
 
@@ -706,9 +686,8 @@ final public class H2O {
    */
   public static void exit(int status) {
     // Embedded H2O path (e.g. inside Hadoop mapper task).
-    if( embeddedH2OConfig != null ) {
+    if( embeddedH2OConfig != null )
       embeddedH2OConfig.exit(status);
-      }
     // Flush all cached messages
     Log.flushStdout();
 
@@ -718,9 +697,7 @@ final public class H2O {
 
   /** Cluster shutdown itself by sending a shutdown UDP packet. */
   public static void shutdown(int status) {
-    if(status == 0) {
-    	H2O.orderlyShutdown();
-    	}
+    if(status == 0) H2O.orderlyShutdown();
     UDPRebooted.T.error.send(H2O.SELF);
     H2O.exit(status);
   }
@@ -734,26 +711,21 @@ final public class H2O {
     boolean [] confirmations = new boolean[H2O.CLOUD.size()];
     if (H2O.SELF.index() >= 0) { // Do not wait for clients to shutdown
       confirmations[H2O.SELF.index()] = true;
-      }
     }
     Futures fs = new Futures();
     for(H2ONode n:H2O.CLOUD._memary) {
-      if(n != H2O.SELF) {
+      if(n != H2O.SELF)
         fs.add(new RPC(n, new ShutdownTsk(H2O.SELF,n.index(), 1000, confirmations, 0)).call());
-        }
     }
-    if(timeout > 0) {
+    if(timeout > 0)
       try { Thread.sleep(timeout); }
       catch (Exception ignore) {}
-      }
     else fs.blockForPending(); // todo, should really have block for pending with a timeout
 
     int failedToShutdown = 0;
     // shutdown failed
     for(boolean b:confirmations)
-      if(!b) {
-      	failedToShutdown++;
-      	}
+      if(!b) failedToShutdown++;
     return failedToShutdown;
   }
 
@@ -776,9 +748,7 @@ final public class H2O {
       Class klass = Class.forName("water.init.BuildVersion");
       java.lang.reflect.Constructor constructor = klass.getConstructor();
       abv = (AbstractBuildVersion) constructor.newInstance();
-    } catch (Exception ignore) { 
-    	System.out.println("The error is: " + ignore);
-    }
+    } catch (Exception ignore) { }
     ABV = abv;
   }
 
@@ -1033,9 +1003,7 @@ final public class H2O {
    */
   public static H2OFailException fail(String msg, Throwable cause) {
     Log.fatal(msg);
-    if (null != cause) {
-    	Log.fatal(cause);
-    	}
+    if (null != cause) Log.fatal(cause);
     Log.fatal("Stacktrace: ");
     Log.fatal(Arrays.toString(Thread.currentThread().getStackTrace()));
 
@@ -1185,14 +1153,11 @@ final public class H2O {
   // Submit to the correct priority queue
   public static <T extends H2OCountedCompleter> T submitTask( T task ) {
     int priority = task.priority();
-    if( priority < LOW_PRIORITY_API_WORK ) {
+    if( priority < LOW_PRIORITY_API_WORK )
       LOW_PRIORITY_API_WORK_CLASS = task.getClass().toString();
-      }
     assert MIN_PRIORITY <= priority && priority <= MAX_PRIORITY:"priority " + priority + " is out of range, expected range is < " + MIN_PRIORITY + "," + MAX_PRIORITY + ">";
-    if( FJPS[priority]==null ) {
-      synchronized( H2O.class ) }
-    if( FJPS[priority] == null ) {
-      	FJPS[priority] = new PrioritizedForkJoinPool(priority,-1); }
+    if( FJPS[priority]==null )
+      synchronized( H2O.class ) { if( FJPS[priority] == null ) FJPS[priority] = new PrioritizedForkJoinPool(priority,-1); }
     FJPS[priority].submit(task);
     return task;
   }
@@ -1237,8 +1202,7 @@ final public class H2O {
       // If there's no completer, then current thread will block on this task
       // at the current priority, possibly filling up the current-priority
       // thread pool - so the task has to run at the next higher priority.
-      if( completer == null ){
-      	 return (byte)(currThrPrior+1);
+      if( completer == null ) return (byte)(currThrPrior+1);
       // With a completer - no thread blocks on this task, so no thread pool
       // gets filled-up with blocked threads.  We can run at the current
       // priority (or the completer's priority if it's higher).
@@ -1267,9 +1231,7 @@ final public class H2O {
         assert t._priority <= pp; // Thread attempting the job is only a low-priority?
         final int p2 = Math.max(pp,MIN_HI_PRIORITY);
         for( int p = MAX_PRIORITY; p > p2; p-- ) {
-          if( FJPS[p] == null ){
-          	 continue;
-          	 }
+          if( FJPS[p] == null ) continue;
           h2o = FJPS[p].poll2();
           if( h2o != null ) {     // Got a hi-priority job?
             t._priority = p;      // Set & do it now!
@@ -1282,17 +1244,14 @@ final public class H2O {
       } catch( Throwable ex ) {
         // If the higher priority job popped an exception, complete it
         // exceptionally...  but then carry on and do the lower priority job.
-        if( h2o != null ){
-        	 h2o.completeExceptionally(ex);
-        	 }
+        if( h2o != null ) h2o.completeExceptionally(ex);
         else { ex.printStackTrace(); throw ex; }
       } finally {
         t._priority = pp;
         if( pp == MIN_PRIORITY && set_t_prior ) t.setPriority(Thread.NORM_PRIORITY-1);
       }
       // Now run the task as planned
-      if( this instanceof DTask ){
-      	 icer().compute1(this);
+      if( this instanceof DTask ) icer().compute1(this);
       else compute2();
     }
 
@@ -1327,7 +1286,7 @@ final public class H2O {
       int id = _ice_id;
       if(id != 0) {
         int tyid;
-        if (id != 0) {
+        if (id != 0)
           assert id == (tyid = TypeMap.onIce(this)) : "incorrectly cashed id " + id + ", typemap has " + tyid + ", type = " + getClass().getName();
       }
       return TypeMap.getIcer(id!=0 ? id : (_ice_id=(short)TypeMap.onIce(this)),this);
@@ -1394,13 +1353,9 @@ final public class H2O {
   public static URI ICE_ROOT;
   public static String DEFAULT_ICE_ROOT() {
     String username = System.getProperty("user.name");
-    if (username == null){
-    	 username = "";
-    	 }
+    if (username == null) username = "";
     String u2 = username.replaceAll(" ", "_");
-    if (u2.length() == 0) {
-    	u2 = "unknown";
-    	}
+    if (u2.length() == 0) u2 = "unknown";
     return "/tmp/h2o-" + u2;
   }
 
@@ -1413,10 +1368,8 @@ final public class H2O {
         PersistManager pm = getPM();
         if (pm != null) {
           String s = pm.getHdfsHomeDirectory();
-          }
           if (pm.exists(s)) {
             flow_dir = s;
-            }
           }
         }
         if (flow_dir != null) {
@@ -1429,7 +1382,6 @@ final public class H2O {
     catch (Exception ignore) {
       // Never want this to fail, as it will kill program startup.
       // Returning null is fine if it fails for whatever reason.
-    	System.out.println("The error is: " + ignore);
     }
 
     return flow_dir;
@@ -1673,9 +1625,7 @@ final public class H2O {
   void set_next_Cloud( H2ONode[] h2os, int hash ) {
     synchronized(this) {
       int idx = _idx+1; // Unique 1-byte Cloud index
-      if( idx == 256 ) {
-      	idx=1;
-      	} // wrap, avoiding zero
+      if( idx == 256 ) idx=1; // wrap, avoiding zero
       CLOUDS[idx] = CLOUD = new H2O(h2os,hash,idx);
     }
     SELF._heartbeat._cloud_size=(char)CLOUD.size();
@@ -1715,31 +1665,24 @@ final public class H2O {
   public boolean healthy() {
     long now = System.currentTimeMillis();
     for (H2ONode node : H2O.CLOUD.members())
-      if (!node.isHealthy(now)) {
+      if (!node.isHealthy(now))
         return false;
-        }
     return true;
   }
 
   public static void waitForCloudSize(int x, long ms) {
     long start = System.currentTimeMillis();
     while( System.currentTimeMillis() - start < ms ) {
-      if( CLOUD.size() >= x && Paxos._commonKnowledge ) {
+      if( CLOUD.size() >= x && Paxos._commonKnowledge )
         break;
-        }
-      try { Thread.sleep(100); } catch( InterruptedException ignore ) { 
-    	  System.out.println("The error is: " + ignore);
-      }
+      try { Thread.sleep(100); } catch( InterruptedException ignore ) { }
     }
-    if( H2O.CLOUD.size() < x ) {
+    if( H2O.CLOUD.size() < x )
       throw new RuntimeException("Cloud size under " + x);
-      }
   }
 
   public static int getCloudSize() {
-    if (! Paxos._commonKnowledge) {
-    	return -1;
-    	}
+    if (! Paxos._commonKnowledge) return -1;
     return CLOUD.size();
   }
 
@@ -1752,12 +1695,9 @@ final public class H2O {
   public static void joinOthers() {
     long start = System.currentTimeMillis();
     while( System.currentTimeMillis() - start < 2000 ) {
-      if( CLOUD.size() > 1 && Paxos._commonKnowledge ) {
+      if( CLOUD.size() > 1 && Paxos._commonKnowledge )
         break;
-        }
-      try { Thread.sleep(100); } catch( InterruptedException ignore ) { 
-    	  System.out.println("The error is: " + ignore);
-      }
+      try { Thread.sleep(100); } catch( InterruptedException ignore ) { }
     }
   }
 
@@ -1792,15 +1732,11 @@ final public class H2O {
   // replication.
 
   public static Value putIfMatch( Key key, Value val, Value old ) {
-    if( old != null ) { // Have an old value?
-      key = old._key;
-      } // Use prior key
+    if( old != null ) // Have an old value?
+      key = old._key; // Use prior key
     if( val != null ) {
       assert val._key.equals(key);
-      }
-      if( val._key != key ) {
-      	val._key = key;
-      	} // Attempt to uniquify keys
+      if( val._key != key ) val._key = key; // Attempt to uniquify keys
     }
 
     // Insert into the K/V store
@@ -1810,15 +1746,10 @@ final public class H2O {
     // If the K/V mapping is going away, remove the old guy.
     // If the K/V mapping is changing, let the store cleaner just overwrite.
     // If the K/V mapping is new, let the store cleaner just create
-    if( old != null && val == null ){
-    	 old.removePersist();
-    	 } // Remove the old guy
+    if( old != null && val == null ) old.removePersist(); // Remove the old guy
     if( val != null ) {
-      Cleaner.dirty_store();
-      } // Start storing the new guy
-      if( old==null ) {
-      	Scope.track_internal(key);
-      	} // New Key - start tracking
+      Cleaner.dirty_store(); // Start storing the new guy
+      if( old==null ) Scope.track_internal(key); // New Key - start tracking
     }
     return old; // Return success
   }
@@ -1826,9 +1757,7 @@ final public class H2O {
   // Get the value from the store
   public static void raw_remove(Key key) {
     Value v = STORE.remove(key);
-    if( v != null ){
-    	 v.removePersist();
-    }
+    if( v != null ) v.removePersist();
   }
   public static void raw_clear() { STORE.clear(); }
   public static boolean containsKey( Key key ) { return STORE.get(key) != null; }
@@ -1845,21 +1774,17 @@ final public class H2O {
     for( int i=2; i<kvs.length; i += 2 ) {
       // In the raw backing array, Keys and Values alternate in slots
       Object ov = kvs[i+1];
-      if( !(ov instanceof Value) ) {
-      	continue; 
-      	}// Ignore tombstones and Primes and null's
+      if( !(ov instanceof Value) ) continue; // Ignore tombstones and Primes and null's
       Value val = (Value)ov;
       if( val.isNull() ) { Value.STORE_get(val._key); continue; } // Another variant of NULL
       int t = val.type();
-      while( t >= cnts.length ){
-    	  cnts = Arrays.copyOf(cnts,cnts.length<<1);
-    	  cnts[t]++;
+      while( t >= cnts.length ) cnts = Arrays.copyOf(cnts,cnts.length<<1);
+      cnts[t]++;
     }
     StringBuilder sb = new StringBuilder();
     for( int t=0; t<cnts.length; t++ )
-      if( cnts[t] != 0 ) {
-        sb.append(String.format("-%30s %5d\n",TypeMap.CLAZZES[t],cnts[t]));}
-        }
+      if( cnts[t] != 0 )
+        sb.append(String.format("-%30s %5d\n",TypeMap.CLAZZES[t],cnts[t]));
     return sb.toString();
   }
 
@@ -1913,213 +1838,213 @@ final public class H2O {
   }
 
   // --------------------------------------------------------------------------
+  public static void main( String[] args ) {
+   H2O.configureLogging();
+   extManager.registerCoreExtensions();
 
-  H2O.configureLogging();
-  extManager.registerCoreExtensions();
+   long time0 = System.currentTimeMillis();
 
-  long time0 = System.currentTimeMillis();
+   if (checkUnsupportedJava())
+     throw new RuntimeException("Unsupported Java version");
 
-  if (checkUnsupportedJava())
-    throw new RuntimeException("Unsupported Java version");
+    // Record system start-time.
+    if( !START_TIME_MILLIS.compareAndSet(0L, System.currentTimeMillis()) )
+      return;                   // Already started
 
-   // Record system start-time.
-   if( !START_TIME_MILLIS.compareAndSet(0L, System.currentTimeMillis()) )
-     return;                   // Already started
+    // Copy all ai.h2o.* system properties to the tail of the command line,
+    // effectively overwriting the earlier args.
+    ArrayList<String> args2 = new ArrayList<>(Arrays.asList(args));
+    for( Object p : System.getProperties().keySet() ) {
+      String s = (String)p;
+      if( s.startsWith("ai.h2o.") ) {
+        args2.add("-" + s.substring(7));
+        // hack: Junits expect properties, throw out dummy prop for ga_opt_out
+        if (!s.substring(7).equals("ga_opt_out") && !System.getProperty(s).isEmpty())
+          args2.add(System.getProperty(s));
+      }
+    }
 
-   // Copy all ai.h2o.* system properties to the tail of the command line,
-   // effectively overwriting the earlier args.
-   ArrayList<String> args2 = new ArrayList<>(Arrays.asList(args));
-   for( Object p : System.getProperties().keySet() ) {
-     String s = (String)p;
-     if( s.startsWith("ai.h2o.") ) {
-       args2.add("-" + s.substring(7));
-       // hack: Junits expect properties, throw out dummy prop for ga_opt_out
-       if (!s.substring(7).equals("ga_opt_out") && !System.getProperty(s).isEmpty())
-         args2.add(System.getProperty(s));
-     }
-   }
+    // Parse args
+    String[] arguments = args2.toArray(args);
+    parseArguments(arguments);
 
-   // Parse args
-   String[] arguments = args2.toArray(args);
-   parseArguments(arguments);
+    // Get ice path before loading Log or Persist class
+    long time1 = System.currentTimeMillis();
+    String ice = DEFAULT_ICE_ROOT();
+    if( ARGS.ice_root != null ) ice = ARGS.ice_root.replace("\\", "/");
+    try {
+      ICE_ROOT = new URI(ice);
+    } catch(URISyntaxException ex) {
+      throw new RuntimeException("Invalid ice_root: " + ice + ", " + ex.getMessage());
+    }
 
-   // Get ice path before loading Log or Persist class
-   long time1 = System.currentTimeMillis();
-   String ice = DEFAULT_ICE_ROOT();
-   if( ARGS.ice_root != null ) ice = ARGS.ice_root.replace("\\", "/");
-   try {
-     ICE_ROOT = new URI(ice);
-   } catch(URISyntaxException ex) {
-     throw new RuntimeException("Invalid ice_root: " + ice + ", " + ex.getMessage());
-   }
+    // Always print version, whether asked-for or not!
+    long time2 = System.currentTimeMillis();
+    printAndLogVersion(arguments);
+    if( ARGS.version ) {
+      Log.flushStdout();
+      exit(0);
+    }
 
-   // Always print version, whether asked-for or not!
-   long time2 = System.currentTimeMillis();
-   printAndLogVersion(arguments);
-   if( ARGS.version ) {
-     Log.flushStdout();
-     exit(0);
-   }
+    // Print help & exit
+    if (ARGS.help) {
+      printHelp();
+      exit(0);
+    }
 
-   // Print help & exit
-   if (ARGS.help) {
-     printHelp();
-     exit(0);
-   }
+    // Validate arguments
+    validateArguments();
 
-   // Validate arguments
-   validateArguments();
+    Log.info("X-h2o-cluster-id: " + H2O.CLUSTER_ID);
+    Log.info("User name: '" + H2O.ARGS.user_name + "'");
 
-   Log.info("X-h2o-cluster-id: " + H2O.CLUSTER_ID);
-   Log.info("User name: '" + H2O.ARGS.user_name + "'");
+    // Register with GA or not
+    long time3 = System.currentTimeMillis();
+    List<String> gaidList;  // fetching this list takes ~100ms
+    if((new File(".h2o_no_collect")).exists()
+            || (new File(System.getProperty("user.home")+File.separator+".h2o_no_collect")).exists()
+            || ARGS.ga_opt_out
+            || (gaidList = JarHash.getResourcesList("gaid")).contains("CRAN")
+            || H2O.ABV.isDevVersion()) {
+      GA = null;
+      Log.info("Opted out of sending usage metrics.");
+    } else {
+      try {
+        GA = new GoogleAnalytics("UA-56665317-1", "H2O", ABV.projectVersion());
+        DefaultRequest defReq = GA.getDefaultRequest();
+        String gaid = null;
+        if (gaidList.size() > 0) {
+          if (gaidList.size() > 1) Log.debug("More than once resource seen in gaid dir.");
+          for (String str : gaidList) {
+            if (str.matches("........-....-....-....-............")
+                && !str.equals("XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX")) {
+              gaid = str;
+              break;
+            }
+          }
+        }
+        if (gaid == null) { // No UUID, create one
+          gaid = defReq.clientId();
+          gaid = gaid.replaceFirst("........-","ANONYMOU-");
+        }
+        defReq.customDimension(CLIENT_ID_GA_CUST_DIM, gaid);
+        GA.setDefaultRequest(defReq);
+      } catch(Throwable t) {
+        Log.POST(11, t.toString());
+        StackTraceElement[] stes = t.getStackTrace();
+        for (StackTraceElement ste : stes)
+          Log.POST(11, ste.toString());
+      }
+    }
+    // Epic Hunt for the correct self InetAddress
+    long time4 = System.currentTimeMillis();
+    Log.info("IPv6 stack selected: " + IS_IPV6);
+    SELF_ADDRESS = NetworkInit.findInetAddressForSelf();
+    // Right now the global preference is to use IPv4 stack
+    // To select IPv6 stack user has to explicitly pass JVM flags
+    // to enable IPv6 preference.
+    if (!IS_IPV6 && SELF_ADDRESS instanceof Inet6Address) {
+      Log.err("IPv4 network stack specified but IPv6 address found: " + SELF_ADDRESS + "\n"
+              + "Please specify JVM flags -Djava.net.preferIPv6Addresses=true and -Djava.net.preferIPv4Addresses=false to select IPv6 stack");
+      H2O.exit(-1);
+    }
+    if (IS_IPV6 && SELF_ADDRESS instanceof Inet4Address) {
+      Log.err("IPv6 network stack specified but IPv4 address found: " + SELF_ADDRESS);
+      H2O.exit(-1);
+    }
 
-   // Register with GA or not
-   long time3 = System.currentTimeMillis();
-   List<String> gaidList;  // fetching this list takes ~100ms
-   if((new File(".h2o_no_collect")).exists()
-           || (new File(System.getProperty("user.home")+File.separator+".h2o_no_collect")).exists()
-           || ARGS.ga_opt_out
-           || (gaidList = JarHash.getResourcesList("gaid")).contains("CRAN")
-           || H2O.ABV.isDevVersion()) {
-     GA = null;
-     Log.info("Opted out of sending usage metrics.");
-   } else {
-     try {
-       GA = new GoogleAnalytics("UA-56665317-1", "H2O", ABV.projectVersion());
-       DefaultRequest defReq = GA.getDefaultRequest();
-       String gaid = null;
-       if (gaidList.size() > 0) {
-         if (gaidList.size() > 1) Log.debug("More than once resource seen in gaid dir.");
-         for (String str : gaidList) {
-           if (str.matches("........-....-....-....-............")
-               && !str.equals("XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX")) {
-             gaid = str;
-             break;
-           }
-         }
-       }
-       if (gaid == null) { // No UUID, create one
-         gaid = defReq.clientId();
-         gaid = gaid.replaceFirst("........-","ANONYMOU-");
-       }
-       defReq.customDimension(CLIENT_ID_GA_CUST_DIM, gaid);
-       GA.setDefaultRequest(defReq);
-     } catch(Throwable t) {
-       Log.POST(11, t.toString());
-       StackTraceElement[] stes = t.getStackTrace();
-       for (StackTraceElement ste : stes)
-         Log.POST(11, ste.toString());
-     }
-   }
-   // Epic Hunt for the correct self InetAddress
-   long time4 = System.currentTimeMillis();
-   Log.info("IPv6 stack selected: " + IS_IPV6);
-   SELF_ADDRESS = NetworkInit.findInetAddressForSelf();
-   // Right now the global preference is to use IPv4 stack
-   // To select IPv6 stack user has to explicitly pass JVM flags
-   // to enable IPv6 preference.
-   if (!IS_IPV6 && SELF_ADDRESS instanceof Inet6Address) {
-     Log.err("IPv4 network stack specified but IPv6 address found: " + SELF_ADDRESS + "\n"
-             + "Please specify JVM flags -Djava.net.preferIPv6Addresses=true and -Djava.net.preferIPv4Addresses=false to select IPv6 stack");
-     H2O.exit(-1);
-   }
-   if (IS_IPV6 && SELF_ADDRESS instanceof Inet4Address) {
-     Log.err("IPv6 network stack specified but IPv4 address found: " + SELF_ADDRESS);
-     H2O.exit(-1);
-   }
+    // Start the local node.  Needed before starting logging.
+    long time5 = System.currentTimeMillis();
+    startLocalNode();
 
-   // Start the local node.  Needed before starting logging.
-   long time5 = System.currentTimeMillis();
-   startLocalNode();
+    // Allow core extensions to perform initialization that requires the network.
+    long time6 = System.currentTimeMillis();
+    for (AbstractH2OExtension ext: extManager.getCoreExtensions()) {
+      ext.onLocalNodeStarted();
+    }
 
-   // Allow core extensions to perform initialization that requires the network.
-   long time6 = System.currentTimeMillis();
-   for (AbstractH2OExtension ext: extManager.getCoreExtensions()) {
-     ext.onLocalNodeStarted();
-   }
+    try {
+      String logDir = Log.getLogDir();
+      Log.info("Log dir: '" + logDir + "'");
+    }
+    catch (Exception e) {
+      Log.info("Log dir: (Log4j configuration inherited)");
+    }
 
-   try {
-     String logDir = Log.getLogDir();
-     Log.info("Log dir: '" + logDir + "'");
-   }
-   catch (Exception e) {
-     Log.info("Log dir: (Log4j configuration inherited)");
-   }
+    Log.info("Cur dir: '" + System.getProperty("user.dir") + "'");
 
-   Log.info("Cur dir: '" + System.getProperty("user.dir") + "'");
+    //Print extra debug info now that logs are setup
+    long time7 = System.currentTimeMillis();
+    RuntimeMXBean rtBean = ManagementFactory.getRuntimeMXBean();
+    Log.debug("H2O launch parameters: "+ARGS.toString());
+    Log.debug("Boot class path: "+ rtBean.getBootClassPath());
+    Log.debug("Java class path: "+ rtBean.getClassPath());
+    Log.debug("Java library path: "+ rtBean.getLibraryPath());
 
-   //Print extra debug info now that logs are setup
-   long time7 = System.currentTimeMillis();
-   RuntimeMXBean rtBean = ManagementFactory.getRuntimeMXBean();
-   Log.debug("H2O launch parameters: "+ARGS.toString());
-   Log.debug("Boot class path: "+ rtBean.getBootClassPath());
-   Log.debug("Java class path: "+ rtBean.getClassPath());
-   Log.debug("Java library path: "+ rtBean.getLibraryPath());
+    // Load up from disk and initialize the persistence layer
+    long time8 = System.currentTimeMillis();
+    initializePersistence();
 
-   // Load up from disk and initialize the persistence layer
-   long time8 = System.currentTimeMillis();
-   initializePersistence();
+    // Initialize NPS
+    {
+      String flow_dir;
 
-   // Initialize NPS
-   {
-     String flow_dir;
+      if (ARGS.flow_dir != null) {
+        flow_dir = ARGS.flow_dir;
+      }
+      else {
+        flow_dir = DEFAULT_FLOW_DIR();
+      }
 
-     if (ARGS.flow_dir != null) {
-       flow_dir = ARGS.flow_dir;
-     }
-     else {
-       flow_dir = DEFAULT_FLOW_DIR();
-     }
+      if (flow_dir != null) {
+        flow_dir = flow_dir.replace("\\", "/");
+        Log.info("Flow dir: '" + flow_dir + "'");
+      }
+      else {
+        Log.info("Flow dir is undefined; saving flows not available");
+      }
 
-     if (flow_dir != null) {
-       flow_dir = flow_dir.replace("\\", "/");
-       Log.info("Flow dir: '" + flow_dir + "'");
-     }
-     else {
-       Log.info("Flow dir is undefined; saving flows not available");
-     }
+      NPS = new NodePersistentStorage(flow_dir);
+    }
 
-     NPS = new NodePersistentStorage(flow_dir);
-   }
+    // Start network services, including heartbeats
+    long time9 = System.currentTimeMillis();
+    startNetworkServices();   // start server services
+    Log.trace("Network services started");
 
-   // Start network services, including heartbeats
-   long time9 = System.currentTimeMillis();
-   startNetworkServices();   // start server services
-   Log.trace("Network services started");
+    // The "Cloud of size N formed" message printed out by doHeartbeat is the trigger
+    // for users of H2O to know that it's OK to start sending REST API requests.
+    long time10 = System.currentTimeMillis();
+    Paxos.doHeartbeat(SELF);
+    assert SELF._heartbeat._cloud_hash != 0 || ARGS.client;
 
-   // The "Cloud of size N formed" message printed out by doHeartbeat is the trigger
-   // for users of H2O to know that it's OK to start sending REST API requests.
-   long time10 = System.currentTimeMillis();
-   Paxos.doHeartbeat(SELF);
-   assert SELF._heartbeat._cloud_hash != 0 || ARGS.client;
+    // Start the heartbeat thread, to publish the Clouds' existence to other
+    // Clouds. This will typically trigger a round of Paxos voting so we can
+    // join an existing Cloud.
+    new HeartBeatThread().start();
 
-   // Start the heartbeat thread, to publish the Clouds' existence to other
-   // Clouds. This will typically trigger a round of Paxos voting so we can
-   // join an existing Cloud.
-   new HeartBeatThread().start();
+    long time11 = System.currentTimeMillis();
+    if (GA != null)
+      startGAStartupReport();
 
-   long time11 = System.currentTimeMillis();
-   if (GA != null)
-     startGAStartupReport();
+    // Log registered parsers
+    Log.info("Registered parsers: " + Arrays.toString(ParserService.INSTANCE.getAllProviderNames(true)));
 
-   // Log registered parsers
-   Log.info("Registered parsers: " + Arrays.toString(ParserService.INSTANCE.getAllProviderNames(true)));
-
-   long time12 = System.currentTimeMillis();
-   Log.debug("Timing within H2O.main():");
-   Log.debug("    Args parsing & validation: " + (time1 - time0) + "ms");
-   Log.debug("    Get ICE root: " + (time2 - time1) + "ms");
-   Log.debug("    Print log version: " + (time3 - time2) + "ms");
-   Log.debug("    Register GA: " + (time4 - time3) + "ms");
-   Log.debug("    Detect network address: " + (time5 - time4) + "ms");
-   Log.debug("    Start local node: " + (time6 - time5) + "ms");
-   Log.debug("    Extensions onLocalNodeStarted(): " + (time7 - time6) + "ms");
-   Log.debug("    RuntimeMxBean: " + (time8 - time7) + "ms");
-   Log.debug("    Initialize persistence layer: " + (time9 - time8) + "ms");
-   Log.debug("    Start network services: " + (time10 - time9) + "ms");
-   Log.debug("    Cloud up: " + (time11 - time10) + "ms");
-   Log.debug("    Start GA: " + (time12 - time11) + "ms");
-}
+    long time12 = System.currentTimeMillis();
+    Log.debug("Timing within H2O.main():");
+    Log.debug("    Args parsing & validation: " + (time1 - time0) + "ms");
+    Log.debug("    Get ICE root: " + (time2 - time1) + "ms");
+    Log.debug("    Print log version: " + (time3 - time2) + "ms");
+    Log.debug("    Register GA: " + (time4 - time3) + "ms");
+    Log.debug("    Detect network address: " + (time5 - time4) + "ms");
+    Log.debug("    Start local node: " + (time6 - time5) + "ms");
+    Log.debug("    Extensions onLocalNodeStarted(): " + (time7 - time6) + "ms");
+    Log.debug("    RuntimeMxBean: " + (time8 - time7) + "ms");
+    Log.debug("    Initialize persistence layer: " + (time9 - time8) + "ms");
+    Log.debug("    Start network services: " + (time10 - time9) + "ms");
+    Log.debug("    Cloud up: " + (time11 - time10) + "ms");
+    Log.debug("    Start GA: " + (time12 - time11) + "ms");
+  }
 
   /** Find PID of the current process, use -1 if we can't find the value. */
   private static long getCurrentPID() {
@@ -2158,10 +2083,7 @@ final public class H2O {
       try {
         Thread.sleep (sleepMillis);
       }
-      catch (Exception ignore) {
-    	  System.out.println("The error is: " + ignore);  
-      };
-      }
+      catch (Exception ignore) {};
       GAUtils.logStartup();
     }
   }
@@ -2227,7 +2149,6 @@ final public class H2O {
     H2ONode oldClient = CLIENTS_MAP.put(client.getIpPortString(), client);
     if(oldClient == null){
       Log.info("New client discovered at " + client);
-      }
     }
     return oldClient;
   }

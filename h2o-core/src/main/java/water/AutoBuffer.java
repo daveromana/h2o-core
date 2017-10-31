@@ -38,6 +38,7 @@ import water.util.TwoDimTable;
  *  @author <a href="mailto:cliffc@h2o.ai"></a>
  */
 public final class AutoBuffer {
+	
 
   // Maximum size of an array we allow to allocate (the value is designed
   // to mimic the behavior of OpenJDK libraries)
@@ -379,7 +380,7 @@ public final class AutoBuffer {
         	  throw oome;
           }
           System.out.println("OOM DBB - Sleeping & retrying");
-          try { Thread.sleep(100); } catch( InterruptedException ignore ) {System.out.println("The error is: " + ignore); }
+          try { Thread.sleep(100); } catch( InterruptedException ignore ) { }
         }
       }
     }
@@ -492,7 +493,7 @@ public final class AutoBuffer {
             assert x == 0xcd : "Handshake; writer expected a 0xcd from reader but got "+x;
           }
         } catch( IOException ioe ) {
-          try { _chan.close(); } catch( IOException ignore ) {System.out.println("The error is: " + ignore);} // Silently close
+          try { _chan.close(); } catch( IOException ignore ) {} // Silently close
           _chan = null;         // No channel now, since i/o error
           throw ioe;            // Rethrow after close
         } finally {
@@ -542,7 +543,7 @@ public final class AutoBuffer {
     final Channel chan = _chan;       // Read before closing
     assert _h2o != null || chan != null;  // Byte-array backed should not be closed
     if( chan != null ) {                  // Channel assumed sick from prior IOException
-      try { chan.close(); } catch( IOException ignore ) {System.out.println("The error is: " + ignore);} // Silently close
+      try { chan.close(); } catch( IOException ignore ) {} // Silently close
       _chan = null;                       // No channel now!
       if( !_read && SocketChannelUtils.isSocketChannel(chan)) {
     	  _h2o.freeTCPSocket((ByteChannel) chan); // Recycle writable TCP channel

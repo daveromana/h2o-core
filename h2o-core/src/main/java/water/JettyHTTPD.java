@@ -139,7 +139,7 @@ public class JettyHTTPD extends AbstractHTTPD {
       startRequestLifecycle();
       while (!_acceptRequests) {
         try { Thread.sleep(100); }
-        catch (Exception ignore) {System.out.println("The error is: " + ignore);}
+        catch (Exception ignore) {}
       }
       setCommonResponseHttpHeaders(response);
     }
@@ -173,10 +173,9 @@ public class JettyHTTPD extends AbstractHTTPD {
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
       if (isLoginTarget(target)) {
-        if (isPageRequest(request)) {
+        if (isPageRequest(request))
           sendLoginForm(request, response);
-          }
-        else {
+        else
           sendResponseError(response, HttpServletResponse.SC_UNAUTHORIZED, "Access denied. Please login.");
         baseRequest.setHandled(true);
       } else {
@@ -189,9 +188,8 @@ public class JettyHTTPD extends AbstractHTTPD {
       try {
         byte[] bytes;
         try (InputStream resource = water.init.JarHash.getResource2("/login.html")) {
-          if (resource == null) {
+          if (resource == null)
             throw new IllegalStateException("Login form not found");
-            }
           ByteArrayOutputStream baos = new ByteArrayOutputStream();
           water.util.FileUtils.copyStream(resource, baos, 2048);
           bytes = baos.toByteArray();
@@ -221,9 +219,7 @@ public class JettyHTTPD extends AbstractHTTPD {
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
 
-      if (!H2O.ARGS.ldap_login && !H2O.ARGS.kerberos_login && !H2O.ARGS.pam_login) {
-    	  return;
-      }
+      if (!H2O.ARGS.ldap_login && !H2O.ARGS.kerberos_login && !H2O.ARGS.pam_login) return;
 
       String loginName = request.getUserPrincipal().getName();
       if (!loginName.equals(H2O.ARGS.user_name)) {
@@ -293,15 +289,12 @@ public class JettyHTTPD extends AbstractHTTPD {
       H2OError error = new H2OError(e, uri);
 
       // some special cases for which we return 400 because it's likely a problem with the client request:
-      if (e instanceof IllegalArgumentException) {
+      if (e instanceof IllegalArgumentException)
         error._http_status = HttpResponseStatus.BAD_REQUEST.getCode();
-        }
-      else if (e instanceof FileNotFoundException) {
+      else if (e instanceof FileNotFoundException)
         error._http_status = HttpResponseStatus.BAD_REQUEST.getCode();
-        }
-      else if (e instanceof MalformedURLException) {
+      else if (e instanceof MalformedURLException)
         error._http_status = HttpResponseStatus.BAD_REQUEST.getCode();
-        }
       setResponseStatus(response, error._http_status);
 
       Log.warn("Caught exception: " + error.toString());
@@ -356,23 +349,18 @@ public class JettyHTTPD extends AbstractHTTPD {
     while (true) {
       int sz = readBufOrLine(in,mem);
       sb.append(new String(mem,0,sz));
-      if (sz < mem.length) {
+      if (sz < mem.length)
         break;
-        }
-      if (mem[sz-1]=='\n') {
+      if (mem[sz-1]=='\n')
         break;
-        }
     }
-    if (sb.length()==0) {
+    if (sb.length()==0)
       return null;
-      }
     String line = sb.toString();
-    if (line.endsWith("\r\n")) {
+    if (line.endsWith("\r\n"))
       line = line.substring(0,line.length()-2);
-      }
-    else if (line.endsWith("\n")) {
+    else if (line.endsWith("\n"))
       line = line.substring(0,line.length()-1);
-      }
     return line;
   }
 
@@ -383,9 +371,8 @@ public class JettyHTTPD extends AbstractHTTPD {
     while (true) {
       byte b;
       byte b2;
-      if (sz==mem.length) {
+      if (sz==mem.length)
         break;
-        }
       try {
         in.read(bb,0,1);
         b = bb[0];
@@ -393,12 +380,10 @@ public class JettyHTTPD extends AbstractHTTPD {
       } catch (EOFException e) {
         break;
       }
-      if (b == '\n') {
+      if (b == '\n')
         break;
-        }
-      if (sz==mem.length) {
+      if (sz==mem.length)
         break;
-        }
       if (b == '\r') {
         try {
           in.read(bb,0,1);
@@ -407,9 +392,8 @@ public class JettyHTTPD extends AbstractHTTPD {
         } catch (EOFException e) {
           break;
         }
-        if (b2 == '\n') {
+        if (b2 == '\n')
           break;
-          }
       }
     }
     return sz;
@@ -441,15 +425,13 @@ public class JettyHTTPD extends AbstractHTTPD {
     @Override public int read() throws IOException { throw new UnsupportedOperationException(); }
     @Override public int read(byte[] b) throws IOException { return read(b, 0, b.length); }
     @Override public int read(byte[] b, int off, int len) throws IOException {
-      if(_lookAheadLen == -1) {
+      if(_lookAheadLen == -1)
         return -1;
-        }
       int readLen = readInternal(b, off, len);
       if (readLen != -1) {
         int pos = findBoundary(b, off, readLen);
         if (pos != -1) {
           _lookAheadLen = -1;
-          }
           return pos - off;
         }
       }
@@ -485,12 +467,8 @@ public class JettyHTTPD extends AbstractHTTPD {
           bidx = -1;
         }
         if (_boundary[idx] == b[i]) {
-          if (idx == 0) {
-        	  bidx = i;
-          }
-          if (++idx == _boundary.length) {
-        	  return bidx; // boundary found
-          }
+          if (idx == 0) bidx = i;
+          if (++idx == _boundary.length) return bidx; // boundary found
         }
       }
       if (bidx != -1) { // it seems that there is boundary but we did not match all boundary length
@@ -502,7 +480,7 @@ public class JettyHTTPD extends AbstractHTTPD {
           return -1;
         }
         for (int i = 0; i < _boundary.length - idx; i++)
-          if (_boundary[i+idx] != _lookAheadBuf[i]) {
+          if (_boundary[i+idx] != _lookAheadBuf[i])
             return -1; // There is not boundary => preserve lookahead buffer
         // Boundary found => do not care about lookAheadBuffer since all remaining data are ignored
       }
