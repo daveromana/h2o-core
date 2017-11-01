@@ -47,8 +47,12 @@ public class ScoreKeeper extends Iced {
    * @param m model for which we should keep score
    */
   public ScoreKeeper(Model m) {
-    if (null == m) throw new H2OIllegalArgumentException("model", "ScoreKeeper(Model model)", null);
-    if (null == m._output) throw new H2OIllegalArgumentException("model._output", "ScoreKeeper(Model model)", null);
+    if (null == m) {
+    	throw new H2OIllegalArgumentException("model", "ScoreKeeper(Model model)", null);
+    }
+    if (null == m._output) {
+    	throw new H2OIllegalArgumentException("model._output", "ScoreKeeper(Model model)", null);
+    }
 
 
     if (null != m._output._cross_validation_metrics) {
@@ -65,7 +69,9 @@ public class ScoreKeeper extends Iced {
   }
 
   public void fillFrom(ModelMetrics m) {
-    if (m == null) return;
+    if (m == null) {
+    	return;
+    }
     _mse = m._MSE;
     _rmse = m.rmse();
     if (m instanceof ModelMetricsRegression) {
@@ -100,9 +106,13 @@ public class ScoreKeeper extends Iced {
 
   /** Based on the given array of ScoreKeeper and stopping criteria should we stop early? */
   public static boolean stopEarly(ScoreKeeper[] sk, int k, boolean classification, StoppingMetric criterion, double rel_improvement, String what, boolean verbose) {
-    if (k == 0) return false;
+    if (k == 0) {
+    	return false;
+    }
     int len = sk.length - 1; //how many "full"/"conservative" scoring events we have (skip the first)
-    if (len < 2*k) return false; //need at least k for SMA and another k to tell whether the model got better or not
+    if (len < 2*k) {
+    	return false; //need at least k for SMA and another k to tell whether the model got better or not
+    }
 
     if (criterion==StoppingMetric.AUTO) {
       criterion = classification ? StoppingMetric.logloss : StoppingMetric.deviance;
@@ -176,26 +186,37 @@ public class ScoreKeeper extends Iced {
         movingAvg[i] += val;
       }
       movingAvg[i]/=k;
-      if (Double.isNaN(movingAvg[i])) return false;
-      if (i==0)
+      if (Double.isNaN(movingAvg[i])) {
+    	  return false;
+      }
+      if (i==0) {
         lastBeforeK = movingAvg[i];
+      }
       else
         bestInLastK = moreIsBetter ? Math.max(movingAvg[i], bestInLastK) : Math.min(movingAvg[i], bestInLastK);
     }
     // zero-crossing could be for residual deviance or r^2 -> mark it not yet converged, avoid division by 0 or weird relative improvements math below
-    if (Math.signum(ArrayUtils.maxValue(movingAvg)) != Math.signum(ArrayUtils.minValue(movingAvg))) return false;
-    if (Math.signum(bestInLastK) != Math.signum(lastBeforeK)) return false;
+    if (Math.signum(ArrayUtils.maxValue(movingAvg)) != Math.signum(ArrayUtils.minValue(movingAvg))) {
+    	return false;
+    }
+    if (Math.signum(bestInLastK) != Math.signum(lastBeforeK)) {
+    	return false;
+    }
     assert(lastBeforeK != Double.MAX_VALUE);
     assert(bestInLastK != Double.MAX_VALUE);
-    if (verbose)
+    if (verbose) {
       Log.info("Windowed averages (window size " + k + ") of " + what + " " + (k+1) + " " + criterion.toString() + " metrics: " + Arrays.toString(movingAvg));
+    }
 
     double ratio = bestInLastK / lastBeforeK;
-    if (Double.isNaN(ratio)) return false;
+    if (Double.isNaN(ratio)) {
+    	return false;
+    }
     boolean improved = moreIsBetter ? ratio > 1+rel_improvement : ratio < 1-rel_improvement;
 
-    if (verbose)
+    if (verbose) {
       Log.info("Checking convergence with " + criterion.toString() + " metric: " + lastBeforeK + " --> " + bestInLastK + (improved ? " (still improving)." : " (converged)."));
+    }
     return !improved;
   } // stopEarly
 
@@ -205,16 +226,27 @@ public class ScoreKeeper extends Iced {
    * @return true if they are equal (up to 1e-6 absolute and relative error, or both contain NaN for the same values)
    */
   @Override public boolean equals(Object that) {
-    if (! (that instanceof ScoreKeeper)) return false;
+    if (! (that instanceof ScoreKeeper)) {
+    	return false;
+    }
     ScoreKeeper o = (ScoreKeeper)that;
-    if (_hitratio == null && ((ScoreKeeper) that)._hitratio != null) return false;
-    if (_hitratio != null && ((ScoreKeeper) that)._hitratio == null) return false;
+    if (_hitratio == null && ((ScoreKeeper) that)._hitratio != null) {
+    	return false;
+    }
+    if (_hitratio != null && ((ScoreKeeper) that)._hitratio == null) {
+    	return false;
+    }
     if (_hitratio != null && ((ScoreKeeper) that)._hitratio != null) {
-      if (_hitratio.length != ((ScoreKeeper) that)._hitratio.length) return false;
+      if (_hitratio.length != ((ScoreKeeper) that)._hitratio.length) {
+    	  return false;
+      }
       for (int i=0; i<_hitratio.length; ++i) {
-        if (!MathUtils.compare(_hitratio[i], ((ScoreKeeper) that)._hitratio[i], 1e-6, 1e-6)) return false;
+        if (!MathUtils.compare(_hitratio[i], ((ScoreKeeper) that)._hitratio[i], 1e-6, 1e-6)) {
+        	return false;
+        }
       }
     }
+  }
     return MathUtils.compare(_mean_residual_deviance, o._mean_residual_deviance, 1e-6, 1e-6)
             && MathUtils.compare(_mse, o._mse, 1e-6, 1e-6)
             && MathUtils.compare(_mae, o._mae, 1e-6, 1e-6)

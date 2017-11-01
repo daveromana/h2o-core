@@ -148,12 +148,16 @@ public class MathUtils {
     public double variance(int i){return variance()[i];}
     public double[] variance() {
 //      if(sparse()) throw new UnsupportedOperationException("Can not do single pass sparse variance computation");
-      if (_var != null) return _var;
+      if (_var != null) {
+    	  return _var;
+      }
       return _var = variance(MemoryManager.malloc8d(_mean.length));
     }
     public double sigma(int i){return sigma()[i];}
     public double[] sigma() {
-      if(_sd != null) return _sd;
+      if(_sd != null) {
+    	  return _sd;
+      }
       double[] res = variance().clone();
       for (int i = 0; i < res.length; ++i)
         res[i] = Math.sqrt(res[i]);
@@ -199,7 +203,9 @@ public class MathUtils {
   /** Fast approximate log for values greater than 1, otherwise exact
    *  @return log(x) with up to 0.1% relative error */
   public static double approxLog(double x){
-    if (x > 1) return ((Double.doubleToLongBits(x) >> 32) - 1072632447d) / 1512775d;
+    if (x > 1) {
+    	return ((Double.doubleToLongBits(x) >> 32) - 1072632447d) / 1512775d;
+    }
     else return Math.log(x);
   }
   /** Fast calculation of log base 2 for integers.
@@ -299,7 +305,9 @@ public class MathUtils {
   }
 
   public static boolean equalsWithinOneSmallUlp(double a, double b) {
-    if (Double.isNaN(a) && Double.isNaN(b)) return true;
+    if (Double.isNaN(a) && Double.isNaN(b)) {
+    	return true;
+    }
     double ulp_a = Math.ulp(a);
     double ulp_b = Math.ulp(b);
     double small_ulp = Math.min(ulp_a, ulp_b);
@@ -486,7 +494,9 @@ public class MathUtils {
   };
 
   public static double roundToNDigits(double d, int n) {
-    if(d == 0)return d;
+    if(d == 0) {
+    	return d;
+    }
     int log = (int)Math.log10(d);
     int exp = n;
     exp -= log;
@@ -515,7 +525,9 @@ public class MathUtils {
   }
 
   public static double sign(double d) {
-    if(d == 0)return 0;
+    if(d == 0) {
+    	return 0;
+    }
     return d < 0?-1:1;
   }
 
@@ -523,15 +535,19 @@ public class MathUtils {
 
     public static void initCheck(Frame input, int width, int height, int depth) {
       ConcurrencyUtils.setNumberOfThreads(1);
-      if (width < 1 || height < 1 || depth < 1)
+      if (width < 1 || height < 1 || depth < 1) {
         throw new H2OIllegalArgumentException("dimensions must be >= 1");
-      if (width*height*depth != input.numCols())
+      }
+      if (width*height*depth != input.numCols()) {
         throw new H2OIllegalArgumentException("dimensions HxWxD must match the # columns of the frame");
+      }
       for (Vec v : input.vecs()) {
-        if (v.naCnt() > 0)
+        if (v.naCnt() > 0) {
           throw new H2OIllegalArgumentException("DCT can not be computed on rows with missing values");
-        if (!v.isNumeric())
+        }
+        if (!v.isNumeric()) {
           throw new H2OIllegalArgumentException("DCT can only be computed on numeric columns");
+        }
       }
     }
 
@@ -555,8 +571,9 @@ public class MathUtils {
               a[i] = cs[i].atd(row);
 
             // compute DCT for each row
-            if (!inverse)
+            if (!inverse) {
               new DoubleDCT_1D(N).forward(a, true);
+            }
             else
               new DoubleDCT_1D(N).inverse(a, true);
 
@@ -590,8 +607,9 @@ public class MathUtils {
                 a[i][j] = cs[i * width + j].atd(row);
 
             // compute 2D DCT
-            if (!inverse)
+            if (!inverse) {
               new DoubleDCT_2D(height, width).forward(a, true);
+            }
             else
               new DoubleDCT_2D(height, width).inverse(a, true);
 
@@ -630,8 +648,9 @@ public class MathUtils {
                   a[i][j][k] = cs[i*(width*depth) + j*depth + k].atd(row);
 
             // compute 3D DCT
-            if (!inverse)
+            if (!inverse) {
               new DoubleDCT_3D(height, width, depth).forward(a, true);
+            }
             else
               new DoubleDCT_3D(height, width, depth).inverse(a, true);
 
@@ -660,8 +679,12 @@ public class MathUtils {
   }
 
   public static double y_log_y(double y, double mu) {
-    if(y == 0)return 0;
-    if(mu < Double.MIN_NORMAL) mu = Double.MIN_NORMAL;
+    if(y == 0) {
+    	return 0;
+    }
+    if(mu < Double.MIN_NORMAL) {
+    	mu = Double.MIN_NORMAL;
+    }
     return y * Math.log(y / mu);
   }
 

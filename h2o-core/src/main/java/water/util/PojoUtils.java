@@ -98,7 +98,9 @@ public class PojoUtils {
    * @param only_fields Array of origin or destination field names to include; ones not in this list will be skipped
    */
   public static void copyProperties(Object dest, Object origin, FieldNaming field_naming, String[] skip_fields, String[] only_fields) {
-    if (null == dest || null == origin) return;
+    if (null == dest || null == origin) {
+    	return;
+    }
 
     Field[] dest_fields = Weaver.getWovenFields(dest  .getClass());
     Field[] orig_fields = Weaver.getWovenFields(origin.getClass());
@@ -108,11 +110,14 @@ public class PojoUtils {
 
       String dest_name = field_naming.toDest(origin_name);
 
-      if (skip_fields != null && (ArrayUtils.contains(skip_fields, origin_name) || ArrayUtils.contains(skip_fields, dest_name)))
-        continue;
+      if (skip_fields != null && (ArrayUtils.contains(skip_fields, origin_name) || ArrayUtils.contains(skip_fields, dest_name))) {
+    	   continue; 
+      }
+      
 
-      if (only_fields != null && ! (ArrayUtils.contains(only_fields, origin_name) || ArrayUtils.contains(only_fields, dest_name)))
+      if (only_fields != null && ! (ArrayUtils.contains(only_fields, origin_name) || ArrayUtils.contains(only_fields, dest_name))) {
         continue;
+      }
 
       try {
         Field dest_field = null;
@@ -340,14 +345,18 @@ public class PojoUtils {
    * <b>NOTE: modifies the scheme tree in place.</b>
    */
   public static void filterFields(Object o, String includes, String excludes) {
-    if (null == o)
+    if (null == o) {
       return;
+    }
 
-    if (null == excludes || "".equals(excludes))
+    if (null == excludes || "".equals(excludes)) {
       return;
+    }
 
-    if (null != includes) // not yet implemented
+    if (null != includes) {// not yet implemented
       throw new H2OIllegalArgumentException("_include_fields", "filterFields", includes);
+    }
+    
 
     String[] exclude_paths = excludes.split(",");
     for (String path : exclude_paths) {
@@ -357,7 +366,9 @@ public class PojoUtils {
       if (-1 == slash || slash == path.length()) { // NOTE: handles trailing slash
         // we've hit the end: null the field, if it exists
         Field f = ReflectionUtils.findNamedField(o, path);
-        if (null == f) throw new H2OIllegalArgumentException("_exclude_fields", "filterFields", path);
+        if (null == f) {
+        	throw new H2OIllegalArgumentException("_exclude_fields", "filterFields", path);
+        }
 
         try {
           f.set(o, null);
@@ -371,7 +382,9 @@ public class PojoUtils {
         String rest = path.substring(slash + 1);
 
         Field f = ReflectionUtils.findNamedField(o, first);
-        if (null == f) throw new H2OIllegalArgumentException("_exclude_fields", "filterFields", path);
+        if (null == f) {
+        	throw new H2OIllegalArgumentException("_exclude_fields", "filterFields", path);
+        }
 
         if (f.getType().isArray() && Object.class.isAssignableFrom(f.getType().getComponentType())) {
           // recurse into the children with the "rest" of the path
@@ -416,14 +429,16 @@ public class PojoUtils {
     switch (objectNamingConvention) {
       case CONSISTENT: destFieldName = fieldName; break;
       case DEST_HAS_UNDERSCORES:
-        if (fieldName.startsWith("_"))
+        if (fieldName.startsWith("_")) {
           destFieldName = fieldName;
+        }
         else
           destFieldName = "_" + fieldName;
         break;
       case ORIGIN_HAS_UNDERSCORES:
-        if (fieldName.startsWith("_"))
+        if (fieldName.startsWith("_")) {
           destFieldName = fieldName.substring(1);
+        }
         else
           throw new IllegalArgumentException("Wrong combination of options!");
         break;
@@ -458,14 +473,18 @@ public class PojoUtils {
       // If our target is an integer type, cast.
       if (f.getType().isPrimitive() && f.getType() != value.getClass()) {
         // Log.debug("type conversion");
-        if (f.getType() == int.class && (value.getClass() == Double.class || value.getClass() == Float.class))
+        if (f.getType() == int.class && (value.getClass() == Double.class || value.getClass() == Float.class)) {
           f.set(o, ((Double) value).intValue());
-        else if (f.getType() == long.class && (value.getClass() == Double.class || value.getClass() == Float.class))
+        }
+        else if (f.getType() == long.class && (value.getClass() == Double.class || value.getClass() == Float.class)) {
           f.set(o, ((Double) value).longValue());
-        else if (f.getType() == int.class && value.getClass() == Integer.class)
+        }
+        else if (f.getType() == int.class && value.getClass() == Integer.class) {
           f.set(o, ((Integer) value).intValue());
-        else if (f.getType() == long.class && (value.getClass() == Long.class || value.getClass() == Integer.class))
+        }
+        else if (f.getType() == long.class && (value.getClass() == Long.class || value.getClass() == Integer.class)) {
           f.set(o, ((Long) value).longValue());
+        }
         else {
           // Double -> double, Integer -> int will work:
           f.set(o, value);
@@ -553,7 +572,9 @@ public class PojoUtils {
    * or field cannot be read.
    */
   public static Object getFieldValue(Object o, String name, FieldNaming fieldNaming) {
-    if (o == null) throw new IllegalArgumentException("Cannot get the field from null object!");
+    if (o == null) {
+    	throw new IllegalArgumentException("Cannot get the field from null object!");
+    }
     String destName = fieldNaming.toDest(name);
     try {
       Field f = PojoUtils.getFieldEvenInherited(o, destName); // failing with fields declared in superclasses
@@ -590,8 +611,9 @@ public class PojoUtils {
           f.setAccessible(true);
 
           // In some cases, the target object has children already (e.g., defaults), while in other cases it doesn't.
-          if (null == f.get(o))
+          if (null == f.get(o)) {
             f.set(o, f.getType().newInstance());
+          }
           fillFromMap(f.get(o), (Map<String, Object>) value);
         } catch (NoSuchFieldException e) {
           throw new IllegalArgumentException("Field not found: '" + key + "' on object " + o);
@@ -633,25 +655,50 @@ public class PojoUtils {
    * Helper for Arrays.equals().
    */
   public static boolean arraysEquals(Object a, Object b) {
-    if (a == null || ! a.getClass().isArray())
+    if (a == null || ! a.getClass().isArray()) {
       throw new H2OIllegalArgumentException("a", "arraysEquals", a);
-    if (b == null || ! b.getClass().isArray())
+    }
+    if (b == null || ! b.getClass().isArray()) {
       throw new H2OIllegalArgumentException("b", "arraysEquals", b);
-    if (a.getClass().getComponentType() != b.getClass().getComponentType())
+    }
+    if (a.getClass().getComponentType() != b.getClass().getComponentType()) {
       throw new H2OIllegalArgumentException("Can't compare arrays of different types: " + a.getClass().getComponentType() + " and: " + b.getClass().getComponentType());
+    }
 
-    if (a.getClass().getComponentType() == boolean.class) return Arrays.equals((boolean[])a, (boolean[])b);
-    if (a.getClass().getComponentType() == Boolean.class) return Arrays.equals((Boolean[])a, (Boolean[])b);
+    if (a.getClass().getComponentType() == boolean.class) {
+    	return Arrays.equals((boolean[])a, (boolean[])b);
+    }
+    if (a.getClass().getComponentType() == Boolean.class) {
+    	return Arrays.equals((Boolean[])a, (Boolean[])b);
+    }
 
-    if (a.getClass().getComponentType() == char.class) return Arrays.equals((char[])a, (char[])b);
-    if (a.getClass().getComponentType() == short.class) return Arrays.equals((short[])a, (short[])b);
-    if (a.getClass().getComponentType() == Short.class) return Arrays.equals((Short[])a, (Short[])b);
-    if (a.getClass().getComponentType() == int.class)     return Arrays.equals((int[])a, (int[])b);
-    if (a.getClass().getComponentType() == Integer.class) return Arrays.equals((Integer[])a, (Integer[])b);
-    if (a.getClass().getComponentType() == float.class)   return Arrays.equals((float[])a, (float[])b);
-    if (a.getClass().getComponentType() == Float.class)   return Arrays.equals((Float[])a, (Float[])b);
-    if (a.getClass().getComponentType() == double.class)  return Arrays.equals((double[])a, (double[])b);
-    if (a.getClass().getComponentType() == Double.class)  return Arrays.equals((Double[])a, (Double[])b);
+    if (a.getClass().getComponentType() == char.class) {
+    	return Arrays.equals((char[])a, (char[])b);
+    }
+    if (a.getClass().getComponentType() == short.class) {
+    	return Arrays.equals((short[])a, (short[])b);
+    }
+    if (a.getClass().getComponentType() == Short.class) {
+    	return Arrays.equals((Short[])a, (Short[])b);
+    }
+    if (a.getClass().getComponentType() == int.class)    {
+    	return Arrays.equals((int[])a, (int[])b);
+    }
+    if (a.getClass().getComponentType() == Integer.class) {
+    	return Arrays.equals((Integer[])a, (Integer[])b);
+    }
+    if (a.getClass().getComponentType() == float.class)  {
+    	return Arrays.equals((float[])a, (float[])b);
+    }
+    if (a.getClass().getComponentType() == Float.class)  {
+    	return Arrays.equals((Float[])a, (Float[])b);
+    }
+    if (a.getClass().getComponentType() == double.class) {
+    	return Arrays.equals((double[])a, (double[])b);
+    }
+    if (a.getClass().getComponentType() == Double.class) {
+    	return Arrays.equals((Double[])a, (Double[])b);
+    }
     return Arrays.deepEquals((Object[])a, (Object[])b);
   }
 

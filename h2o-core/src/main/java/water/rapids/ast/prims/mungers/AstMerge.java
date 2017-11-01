@@ -82,7 +82,9 @@ public class AstMerge extends AstPrimitive {
           riteTmp.add(idx);
         }
       }
-      if (leftTmp.size() == 0) throw new IllegalArgumentException("No join columns specified and there are no common names");
+      if (leftTmp.size() == 0) {
+    	  throw new IllegalArgumentException("No join columns specified and there are no common names");
+      }
       byLeft = new int[leftTmp.size()];
       byRite = new int[riteTmp.size()];
       for (int i=0; i < byLeft.length; i++)
@@ -92,21 +94,25 @@ public class AstMerge extends AstPrimitive {
       }
     }
 
-    if (byLeft.length != byRite.length)
+    if (byLeft.length != byRite.length) {
       throw new IllegalArgumentException("byLeft and byRight are not the same length");
+    }
     int ncols = byLeft.length;  // Number of join columns dealt with so far
     l.moveFirst(byLeft);
     r.moveFirst(byRite);
     for (int i = 0; i < ncols; i++) {
         Vec lv = l.vecs()[i];
         Vec rv = r.vecs()[i];
-        if (lv.get_type() != rv.get_type())
+        if (lv.get_type() != rv.get_type()) {
           throw new IllegalArgumentException("Merging columns must be the same type, column " + l._names[ncols] +
               " found types " + lv.get_type_str() + " and " + rv.get_type_str());
-        if (lv.isString())
+        }
+        if (lv.isString()) {
           throw new IllegalArgumentException("Cannot merge Strings; flip toCategoricalVec first");
-        if (lv.isNumeric() && !lv.isInt())
+        }
+        if (lv.isNumeric() && !lv.isInt()) {
           throw new IllegalArgumentException("Equality tests on doubles rarely work, please round to integers only before merging");
+        }
     }
 
     // GC now to sync nodes and get them to use young gen for the working memory. This helps get stable
@@ -123,8 +129,9 @@ public class AstMerge extends AstPrimitive {
     if (method.equals("radix")) {
       // Build categorical mappings, to rapidly convert categoricals from the left to the right
       // With the sortingMerge approach there is no variance here: always map left to right
-      if (allRite)
+      if (allRite) {
         throw new IllegalArgumentException("all.y=TRUE not yet implemented for method='radix'");
+      }
       int[][] id_maps = new int[ncols][];
       for (int i = 0; i < ncols; i++) {
         Vec lv = l.vec(i);
@@ -160,8 +167,9 @@ public class AstMerge extends AstPrimitive {
     int[][] id_maps = new int[ncols][];
     for (int i = 0; i < ncols; i++) {
       Vec lv = walked.vecs()[i];
-      if (lv.isCategorical())
+      if (lv.isCategorical()) {
         id_maps[i] = CategoricalWrappedVec.computeMap(hashed.vecs()[i].domain(), lv.domain());
+      }
     }
 
     // Build the hashed version of the hashed frame.  Hash and equality are
@@ -179,8 +187,9 @@ public class AstMerge extends AstPrimitive {
         MergeSet.MERGE_SETS.remove(uniq);
       }
     }.doAllNodes();
-    if (method.equals("auto") && (rows == null || rows.size() > MAX_HASH_SIZE))  // Blew out hash size; switch to a sorting join.  Matt: even with 0, rows was size 3 hence added ||
+    if (method.equals("auto") && (rows == null || rows.size() > MAX_HASH_SIZE)) { // Blew out hash size; switch to a sorting join.  Matt: even with 0, rows was size 3 hence added ||
       return sortingMerge(l, r, allLeft, allRite, ncols, id_maps);
+    }
 
     // All of the walked set, and no dup handling on the right - which means no
     // need to replicate rows of the walked dataset.  Simple 1-pass over the
@@ -258,7 +267,9 @@ public class AstMerge extends AstPrimitive {
       // here).  NAs count as a zero for hashing.
       long l, hash = 0;
       for (int i = 0; i < _keys.length; i++) {
-        if (chks[i].isNA(row)) l = 0;
+        if (chks[i].isNA(row)) {
+        	l = 0;
+        }
         else {
           l = chks[i].at8(row);
           l = (cat_maps == null || cat_maps[i] == null) ? l : cat_maps[i][(int) l];
@@ -278,7 +289,9 @@ public class AstMerge extends AstPrimitive {
 
     @Override
     public boolean equals(Object o) {
-      if (!(o instanceof Row)) return false;
+      if (!(o instanceof Row)) {
+    	  return false;
+      }
       Row r = (Row) o;
       return _hash == r._hash && Arrays.equals(_keys, r._keys);
     }
@@ -289,8 +302,9 @@ public class AstMerge extends AstPrimitive {
           _dups = new long[]{_row, row};
           _dupIdx = 2;
         } else {
-          if (_dupIdx == _dups.length)
+          if (_dupIdx == _dups.length) {
             _dups = Arrays.copyOf(_dups, _dups.length << 1);
+          }
           _dups[_dupIdx++] = row;
         }
       }
@@ -329,7 +343,9 @@ public class AstMerge extends AstPrimitive {
     @Override
     public void map(Chunk chks[]) {
       final IcedHashMap<Row, String> rows = MERGE_SETS.get(_uniq)._rows; // Shared per-node HashMap
-      if (rows == null) return; // Missing: Aborted due to exceeding size
+      if (rows == null) {
+    	  return; // Missing: Aborted due to exceeding size
+      }
       final int len = chks[0]._len;
       Row row = new Row(_ncols);
       for (int i = 0; i < len; i++)                    // For all rows
@@ -343,8 +359,9 @@ public class AstMerge extends AstPrimitive {
     }
 
     private boolean add(IcedHashMap<Row, String> rows, Row row) {
-      if (rows.putIfAbsent(row, "") == null)
+      if (rows.putIfAbsent(row, "") == null) {
         return true;            // Added!
+      }
       // dup handling: keys are identical
       if (_allRite) {          // Collect the dups?
         _dup = true;            // MergeSet has dups.
@@ -360,7 +377,9 @@ public class AstMerge extends AstPrimitive {
     @Override
     public void reduce(MergeSet ms) {
       final IcedHashMap<Row, String> rows = _rows; // Shared per-node hashset
-      if (rows == ms._rows) return;
+      if (rows == ms._rows) {
+    	  return;
+      }
       if (rows == null || ms._rows == null) {
         abort();
         return;
@@ -428,9 +447,12 @@ public class AstMerge extends AstPrimitive {
 
   private int[] check(AstRoot ast) {
     double[] n;
-    if (ast instanceof AstNumList) n = ((AstNumList) ast).expand();
-    else if (ast instanceof AstNum)
+    if (ast instanceof AstNumList) {
+    	n = ((AstNumList) ast).expand();
+    }
+    else if (ast instanceof AstNum) {
       n = new double[]{((AstNum) ast).getNum()};  // this is the number of breaks wanted...
+    }
     else throw new IllegalArgumentException("Requires a number-list, but found a " + ast.getClass());
     int[] ni = new int[n.length];
     for (int i = 0; i < ni.length; ++i)
@@ -464,7 +486,9 @@ public class AstMerge extends AstPrimitive {
             for (; c < nchks.length; ++c) nchks[c].addNA();
           } // else no hashed and no _allLeft... skip (row is dropped)
         } else {
-          if (hashed._dups != null) for (long absrow : hashed._dups) addRow(nchks, chks, vecs, i, absrow, bStr);
+          if (hashed._dups != null) {
+        	  for (long absrow : hashed._dups) addRow(nchks, chks, vecs, i, absrow, bStr);
+          }
           else addRow(nchks, chks, vecs, i, hashed._row, bStr);
         }
       }

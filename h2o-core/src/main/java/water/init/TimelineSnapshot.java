@@ -46,11 +46,13 @@ public final class TimelineSnapshot implements
       // fairly consistent)
       _events[i] = new Event(i, 0);
       if (_events[i].isEmpty()) {
-        if (!_events[i].next())
+        if (!_events[i].next()) {
           _events[i] = null;
+        }
       }
-      if (_events[i] != null)
+      if (_events[i] != null) {
         processEvent(_events[i]);
+      }
       assert (_events[i] == null) || (_events[i]._eventIdx < TimeLine.MAX_EVENTS);
     }
 
@@ -65,8 +67,9 @@ public final class TimelineSnapshot implements
       // fairly consistent)
       _events[i] = new Event(i, 0);
       if (_events[i].isEmpty()) {
-        if (!_events[i].next())
+        if (!_events[i].next()) {
           _events[i] = null;
+        }
       }
       assert (_events[i] == null) || (_events[i]._eventIdx < TimeLine.MAX_EVENTS);
     }
@@ -113,8 +116,9 @@ public final class TimelineSnapshot implements
         InetAddress inet = addrPack();
         if( !inet.isMulticastAddress() ) { // Is multicast?
           h2o = H2ONode.intern(inet,portPack());
-          if( isSend() && h2o == recoH2O() ) // Another multicast indicator: sending to self
+          if( isSend() && h2o == recoH2O() ) { // Another multicast indicator: sending to self
             h2o = null;                      // Flag as multicast
+          }
         }
       }
       _packh2o = h2o;
@@ -179,15 +183,17 @@ public final class TimelineSnapshot implements
      */
     final boolean match(Event ev) {
       // check we're matching send and receive
-      if (send_recv() == ev.send_recv())
+      if (send_recv() == ev.send_recv()) {
         return false;
+      }
       // compare the packet payload matches
       long myl0 =    dataLo();
       long evl0 = ev.dataLo();
       int my_udp_type = (int) (myl0 & 0xff); // first byte is udp type
       int ev_udp_type = (int) (evl0 & 0xff); // first byte is udp type
-      if (my_udp_type != ev_udp_type)
+      if (my_udp_type != ev_udp_type) {
         return false;
+      }
       UDP.udp e = UDP.getUdp(my_udp_type);
       switch (e) {
         case rebooted:
@@ -203,8 +209,10 @@ public final class TimelineSnapshot implements
         case heartbeat:
           // compare 3 ctrl bytes + 4 bytes task #
           //  if ((myl0 & 0xFFFFFFFFFFFFFFl) != (evl0 & 0xFFFFFFFFFFFFFFl))
-          if( (int)(myl0>>24) != (int)(evl0>>24))
-            return false;
+          if( (int)(myl0>>24) != (int)(evl0>>24)) {
+        	   return false;
+          }
+           
           break;
         case i_o:                 // Shows up as I/O-completing recorded packets
           return false;
@@ -215,8 +223,12 @@ public final class TimelineSnapshot implements
       // Check that port numbers are compatible.  Really check that the
       // H2ONode's are compatible.  The port#'s got flipped during recording to
       // allow this check (and a null _packh2o is a multicast).
-      if(    _packh2o!=null &&    _packh2o.index()!=ev._nodeId ) return false;
-      if( ev._packh2o!=null && ev._packh2o.index()!=   _nodeId ) return false;
+      if(    _packh2o!=null &&    _packh2o.index()!=ev._nodeId ) {
+    	  return false;
+      }
+      if( ev._packh2o!=null && ev._packh2o.index()!=   _nodeId ) {
+    	  return false;
+      }
       return true;
     }
 
@@ -230,11 +242,13 @@ public final class TimelineSnapshot implements
 
     boolean prev(int minIdx) {
       int min = Math.max(minIdx, -1);
-      if (_eventIdx <= minIdx)
+      if (_eventIdx <= minIdx) {
         return false;
+      }
       while (--_eventIdx > min)
-        if (!isEmpty())
+        if (!isEmpty()) {
           return computeH2O(true);
+        }
       return computeH2O(false);
     }
 
@@ -253,11 +267,13 @@ public final class TimelineSnapshot implements
 
     boolean next(int maxIdx) {
       int max = Math.min(maxIdx, TimeLine.length());
-      if (_eventIdx >= max)
+      if (_eventIdx >= max) {
         return false;
+      }
       while (++_eventIdx < max)
-        if (!isEmpty())
+        if (!isEmpty()) {
           return computeH2O(true);
+        }
       return computeH2O(false);
     }
 
@@ -288,11 +304,19 @@ public final class TimelineSnapshot implements
      * @return
      */
     public final int compareTo(Event ev) {
-      if( ev == null ) return -1;
-      if( ev == this ) return  0;
-      if( ev.equals(this) ) return 0;
+      if( ev == null ) {
+    	  return -1;
+      }
+      if( ev == this ) {
+    	  return  0;
+      }
+      if( ev.equals(this) ) {
+    	  return 0;
+      }
       int res = ev.send_recv() - send_recv(); // recvs should go before sends
-      if( res != 0 ) return res;
+      if( res != 0 ) {
+    	  return res;
+      }
       if (isSend()) {
         // compare by the time of receivers
         long myMinMs = Long.MAX_VALUE;
@@ -300,19 +324,27 @@ public final class TimelineSnapshot implements
         ArrayList<Event> myRecvs = _sends.get(this);
         ArrayList<Event> evRecvs = _sends.get(ev  );
         for (Event e : myRecvs)
-          if (e.ms() < myMinMs)
+          if (e.ms() < myMinMs) {
             myMinMs = e.ms();
+          }
         for (Event e : evRecvs)
-          if (e.ms() < evMinMs)
+          if (e.ms() < evMinMs) {
             evMinMs = e.ms();
+          }
         res = (int) (myMinMs - evMinMs);
-        if( myMinMs == Long.MAX_VALUE && evMinMs != Long.MAX_VALUE ) res = -1;
-        if( myMinMs != Long.MAX_VALUE && evMinMs == Long.MAX_VALUE ) res =  1;
+        if( myMinMs == Long.MAX_VALUE && evMinMs != Long.MAX_VALUE ) {
+        	res = -1;
+        }
+        if( myMinMs != Long.MAX_VALUE && evMinMs == Long.MAX_VALUE ) {
+        	res =  1;
+        }
       }
-      if (res == 0)
+      if (res == 0) {
         res = (int) (ms() - ev.ms());
-      if( res == 0 )
+      }
+      if( res == 0 ) {
         res = (int) (ns() - ev.ns());
+      }
       return res;
     }
   }
@@ -331,8 +363,9 @@ public final class TimelineSnapshot implements
       ArrayList<Event> recvs = _sends.get(senderCnd);
       if (recvs.isEmpty() || senderCnd.packH2O()==null ) {
         for (Event e : recvs)
-          if (e._nodeId == recvCnd._nodeId)
+          if (e._nodeId == recvCnd._nodeId) {
             return false;
+          }
         return true;
       }
     }
@@ -430,18 +463,21 @@ public final class TimelineSnapshot implements
    */
   @Override
   public TimelineSnapshot.Event next() {
-    if (!hasNext())
+    if (!hasNext()) {
       throw new NoSuchElementException();
+    }
     int selectedIdx = -1;
 
     for (int i = 0; i < _events.length; ++i) {
-      if (_events[i] == null || _events[i]._blocked)
+      if (_events[i] == null || _events[i]._blocked) {
         continue;
+      }
       if (_events[i].isRecv()) { // check edge dependency
         Event send = _edges.get(_events[i]);
         if ((send != null) && (_events[send._nodeId] != null)
-          && send._eventIdx >= _events[send._nodeId]._eventIdx)
+          && send._eventIdx >= _events[send._nodeId]._eventIdx) {
           continue;
+        }
       }
       selectedIdx = ((selectedIdx == -1) || _events[i]
         .compareTo(_events[selectedIdx]) < 0) ? i : selectedIdx;
@@ -456,8 +492,9 @@ public final class TimelineSnapshot implements
       long selectedMs = (_events[selectedIdx] != null) ? _events[selectedIdx]
         .ms() : Long.MAX_VALUE;
       for (int i = 1; i < _events.length; ++i) {
-        if (_events[i] == null)
+        if (_events[i] == null) {
           continue;
+        }
 
         if ((_events[i].ms() < selectedMs) && (_events[i].ns() < selectedNs)) {
           selectedIdx = i;
@@ -472,8 +509,9 @@ public final class TimelineSnapshot implements
       .isEmpty());
     Event res = _events[selectedIdx];
     _events[selectedIdx] = _events[selectedIdx].nextEvent();
-    if (_events[selectedIdx] != null && !_processed)
+    if (_events[selectedIdx] != null && !_processed) {
       processEvent(_events[selectedIdx]);
+    }
     // DEBUG
 //    if (_processed)
 //      if (res.isRecv())

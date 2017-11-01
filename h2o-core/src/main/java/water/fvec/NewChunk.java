@@ -108,7 +108,9 @@ public class NewChunk extends Chunk {
       if (_vals1 != null) {
     	  _vals1 = Arrays.copyOf(_vals1, len);
       }
-      else if (_vals4 != null) _vals4 = Arrays.copyOf(_vals4, len);
+      else if (_vals4 != null) {
+    	  _vals4 = Arrays.copyOf(_vals4, len);
+      }
       _len = len;
     }
   }
@@ -163,7 +165,9 @@ public class NewChunk extends Chunk {
         if (old == 0) {
         	++_nzs;
         }
-        else if(l == 0) --_nzs;
+        else if(l == 0) {
+        	--_nzs;
+        }
       }
     }
     public long get(int id) {
@@ -223,8 +227,12 @@ public class NewChunk extends Chunk {
       if(_vals1 != null) {
     	  _vals1 = Arrays.copyOf(_vals1,len);
       }
-      else if(_vals4 != null) _vals4 = Arrays.copyOf(_vals4,len);
-      else if(_vals8 != null) _vals8 = Arrays.copyOf(_vals8,len);
+      else if(_vals4 != null) {
+    	  _vals4 = Arrays.copyOf(_vals4,len);
+      }
+      else if(_vals8 != null) {
+    	  _vals8 = Arrays.copyOf(_vals8,len);
+      }
     }
   }
 
@@ -302,7 +310,9 @@ public class NewChunk extends Chunk {
     _vec = vec; _cidx = cidx;
     _ms = new Mantissas(4);
     _xs = new Exponents(4);
-    if(sparse) _id = new int[4];
+    if(sparse) {
+    	_id = new int[4];
+    }
 
   }
 
@@ -412,8 +422,9 @@ public class NewChunk extends Chunk {
       if(j >= 0) {
         add2Chunk_impl(c,j);
         }
-      else if(isSparseNA())
+      else if(isSparseNA()) {
         c.addNA();
+      }
       else
         c.addNum(0,0);
     }
@@ -443,11 +454,12 @@ public class NewChunk extends Chunk {
           }
         }
       } else {
-        if( _ms != null && _sparseLen > 0) // Longs and categoricals?
+        if( _ms != null && _sparseLen > 0) { // Longs and categoricals?
           for(int i = 0; i< _sparseLen; i++ )
             if( isNA2(i) ) {
             	nas++;
             }
+        }
             else {
               if( isCategorical2(i)   ) {
             	  es++;
@@ -618,7 +630,9 @@ public class NewChunk extends Chunk {
         assert _sparseLen <= _len;
         return;
       }
-      if(_id != null)_id[_sparseLen] = _len;
+      if(_id != null) {
+    	  _id[_sparseLen] = _len;
+      }
       _ds[_sparseLen] = d;
       _sparseLen++;
     }
@@ -917,7 +931,11 @@ public class NewChunk extends Chunk {
       // Check for sparseness
       if(_id == null){
         int nzs = 0; // assume one non-null for the element currently being stored
-        for( int i:_is) if( i != -1 ) ++nzs;
+        for( int i:_is) {
+        	if( i != -1 ) {
+        		++nzs;
+        	}
+        }
         if( (nzs+1)*_sparseRatio < _len) {
           set_sparse(nzs, Compress.ZERO);
           }
@@ -1213,8 +1231,9 @@ public class NewChunk extends Chunk {
     } else if(_sparseRatio*(_len - _naCnt) < _len){
       set_sparse(_len - _naCnt, Compress.NA);
       na_sparse = true;
-    } else if (_id != null)
+    } else if (_id != null) {
       cancel_sparse();
+    }
     
     // If the data is UUIDs there's not much compression going on
     if( _ds != null && _ms != null ) {
@@ -1382,8 +1401,9 @@ public class NewChunk extends Chunk {
         return new CXFChunk(bufD(isFloat?4:8,na_sparse));
       }
       if( Integer.MIN_VALUE <= min && max <= Integer.MAX_VALUE ) {
-        if(_len < 65535 && (Short.MIN_VALUE < min && max < Short.MAX_VALUE))
+        if(_len < 65535 && (Short.MIN_VALUE < min && max < Short.MAX_VALUE)) {
           return new CXIChunk(bufS(_len,2,2, na_sparse));
+        }
         else
           return new CXIChunk(bufS(_len, 4,4, na_sparse));
       }
@@ -1424,7 +1444,9 @@ public class NewChunk extends Chunk {
     if(xmin == 0 &&  0<=lemin && lemax <= 255 && ((_naCnt + _catCnt)==0) ) {
       return new C1NChunk( bufX(0,0,C1NChunk._OFF,0));
       }
-    if( lemin < Integer.MIN_VALUE ) return new C8Chunk( bufX(0,0,0,3));
+    if( lemin < Integer.MIN_VALUE ) {
+    	return new C8Chunk( bufX(0,0,0,3));
+    }
     if( leRange < 255 ) {    // Span fits in a byte?
       if(0 <= min && max < 255 ) { // Span fits in an unbiased byte?
         return new C1Chunk( bufX(0,0,C1Chunk._OFF,0));
@@ -1458,7 +1480,9 @@ public class NewChunk extends Chunk {
     res[4] = (byte)id_sz;
     res[5] = (byte)val_sz;
     res[6] = na_sparse?(byte)1:0;
-    if(na_sparse)res[6] = (byte)1;
+    if(na_sparse) {
+    	res[6] = (byte)1;
+    }
     for(int i = 0; i < _sparseLen; ++i){
       if(id_sz == 2) {
     	  UnsafeUtils.set2(res,CXIChunk._OFF+i*elem_size+0,(short)_id[i]);
@@ -1484,7 +1508,9 @@ public class NewChunk extends Chunk {
     res[4] = (byte)4;
     res[5] = (byte)valsz;
     res[6] = na_sparse?(byte)1:0;
-    if(na_sparse)res[6] = (byte)1;
+    if(na_sparse) {
+    	res[6] = (byte)1;
+    }
     for(int i = 0; i < _sparseLen; ++i){
       UnsafeUtils.set4(res,CXIChunk._OFF+i*elem_size+0,_id[i]);
       if(valsz == 4){
@@ -1594,7 +1620,9 @@ public class NewChunk extends Chunk {
       if(isNA2(i)) {
     	  chk.write(i,CBSChunk._NA);
       }
-      else if(_ms.get(i) == 1) chk.write(i, (byte)1);
+      else if(_ms.get(i) == 1) {
+    	  chk.write(i, (byte)1);
+      }
       else assert _ms.get(i) == 0;
     }
     return chk;
@@ -1617,7 +1645,9 @@ public class NewChunk extends Chunk {
     }
     _ms.set(i,l);
     _xs.set(i,0);
-    if(_missing != null)_missing.clear(i);
+    if(_missing != null) {
+    	_missing.clear(i);
+    }
     _naCnt = -1;
     return true;
   }

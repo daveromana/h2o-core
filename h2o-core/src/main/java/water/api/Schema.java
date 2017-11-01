@@ -449,15 +449,18 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
 	      // Result
 	      E[] a = null;
 	      // Handle simple case with null-array
-	      if (s.equals("null") || s.length() == 0) return null;
+	      if (s.equals("null") || s.length() == 0) {
+	    	  return null;
+	      }
 	      // Splitted values
 	      String[] splits; // "".split(",") => {""} so handle the empty case explicitly
 	      if (s.startsWith("[") && s.endsWith("]") ) { // It looks like an array
 	        read(s, 0, '[', fclz);
 	        read(s, s.length() - 1, ']', fclz);
 	        String inside = s.substring(1, s.length() - 1).trim();
-	        if (inside.length() == 0)
+	        if (inside.length() == 0) {
 	          splits = new String[]{};
+	        }
 	        else
 	          splits = splitArgs(inside);
 	      } else { // Lets try to parse single value as an array!
@@ -505,15 +508,20 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
 	      return gson.fromJson(s, fclz);
 	    }
 
-	    if (fclz.equals(Key.class))
+	    if (fclz.equals(Key.class)) {
 	      if ((s == null || s.length() == 0) && required) throw new H2OKeyNotFoundArgumentException(field_name, s);
+	    }
 	      else if (!required && (s == null || s.length() == 0)) return null;
 	      else
 	        return Key.make(s.startsWith("\"") ? s.substring(1, s.length() - 1) : s); // If the key name is in an array we need to trim surrounding quotes.
 
 	    if (KeyV3.class.isAssignableFrom(fclz)) {
-	      if ((s == null || s.length() == 0) && required) throw new H2OKeyNotFoundArgumentException(field_name, s);
-	      if (!required && (s == null || s.length() == 0)) return null;
+	      if ((s == null || s.length() == 0) && required) {
+	    	  throw new H2OKeyNotFoundArgumentException(field_name, s);
+	      }
+	      if (!required && (s == null || s.length() == 0)) {
+	    	  return null;
+	      }
 
 	      return KeyV3.make(fclz, Key.make(s.startsWith("\"") ? s.substring(1, s.length() - 1) : s)); // If the key name is in an array we need to trim surrounding quotes.
 	    }
@@ -524,23 +532,39 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
 
 	    // TODO: these can be refactored into a single case using the facilities in Schema:
 	    if (FrameV3.class.isAssignableFrom(fclz)) {
-	      if ((s == null || s.length() == 0) && required) throw new H2OKeyNotFoundArgumentException(field_name, s);
-	      else if (!required && (s == null || s.length() == 0)) return null;
+	      if ((s == null || s.length() == 0) && required) {
+	    	  throw new H2OKeyNotFoundArgumentException(field_name, s);
+	      }
+	      else if (!required && (s == null || s.length() == 0)) {
+	    	  return null;
+	      }
 	      else {
 	        Value v = DKV.get(s);
-	        if (null == v) return null; // not required
-	        if (!v.isFrame()) throw H2OIllegalArgumentException.wrongKeyType(field_name, s, "Frame", v.get().getClass());
+	        if (null == v) {
+	        	return null; // not required
+	        }
+	        if (!v.isFrame()) {
+	        	throw H2OIllegalArgumentException.wrongKeyType(field_name, s, "Frame", v.get().getClass());
+	        }
 	        return new FrameV3((Frame) v.get()); // TODO: version!
 	      }
 	    }
 
 	    if (JobV3.class.isAssignableFrom(fclz)) {
-	      if ((s == null || s.length() == 0) && required) throw new H2OKeyNotFoundArgumentException(s);
-	      else if (!required && (s == null || s.length() == 0)) return null;
+	      if ((s == null || s.length() == 0) && required) {
+	    	  throw new H2OKeyNotFoundArgumentException(s);
+	      }
+	      else if (!required && (s == null || s.length() == 0)) {
+	    	  return null;
+	      }
 	      else {
 	        Value v = DKV.get(s);
-	        if (null == v) return null; // not required
-	        if (!v.isJob()) throw H2OIllegalArgumentException.wrongKeyType(field_name, s, "Job", v.get().getClass());
+	        if (null == v) {
+	        	return null; // not required
+	        }
+	        if (!v.isJob()) {
+	        	throw H2OIllegalArgumentException.wrongKeyType(field_name, s, "Job", v.get().getClass());
+	        }
 	        return new JobV3().fillFromImpl((Job) v.get()); // TODO: version!
 	      }
 	    }
@@ -551,8 +575,9 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
 	      return new FrameV3.ColSpecifierV3(s);
 	    }
 
-	    if (ModelSchemaV3.class.isAssignableFrom(fclz))
+	    if (ModelSchemaV3.class.isAssignableFrom(fclz)) {
 	      throw H2O.fail("Can't yet take ModelSchemaV3 as input.");
+	    }
 	    /*
 	      if( (s==null || s.length()==0) && required ) throw new IllegalArgumentException("Missing key");
 	      else if (!required && (s == null || s.length() == 0)) return null;
@@ -705,8 +730,9 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
 	            );
 	          }
 	        }
-	        if (first)
+	        if (first) {
 	          builder.paragraph("(none)");
+	        }
 	      }
 
 	      if (include_output_fields) {
@@ -730,8 +756,9 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
 	                (field_meta.is_mutually_exclusive_with == null ? "[]" : Arrays.toString(field_meta.is_mutually_exclusive_with)));
 	          }
 	        }
-	        if (first)
+	        if (first) {
 	          builder.paragraph("(none)");
+	        }
 	      }
 
 	      // TODO: render examples and other stuff, if it's passed in

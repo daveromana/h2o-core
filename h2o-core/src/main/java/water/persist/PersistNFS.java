@@ -63,7 +63,9 @@ public final class PersistNFS extends Persist {
         ab.close();
         return b;
       } finally {
-        if (s != null) s.close();
+        if (s != null) {
+        	s.close();
+        }
       }
     } catch ( IOException e ) { // Broken disk / short-file???
       Log.debug("[h2o] Problem ignored: "+e.toString());
@@ -74,7 +76,9 @@ public final class PersistNFS extends Persist {
   @Override
   public void store(Value v) {
     // Only the home node does persistence on NFS
-    if (!v._key.home()) return;
+    if (!v._key.home()) {
+    	return;
+    }
     // A perhaps useless cutout: the upper layers should test this first.
     if (v.isPersisted()) return;
     try {
