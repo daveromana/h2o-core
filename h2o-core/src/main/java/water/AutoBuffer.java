@@ -128,7 +128,9 @@ public final class AutoBuffer {
     }
     _size = _bb.position();
     _bb.flip();                 // Set limit=amount read, and position==0
-    if( addr == null ) throw new RuntimeException("Unhandled socket type: " + sad);
+    if( addr == null ) {
+    	throw new RuntimeException("Unhandled socket type: " + sad);
+    }
     // Read Inet from socket, port from the stream, figure out H2ONode
     _h2o = H2ONode.intern(addr, getPort());
     _firstPage = true;
@@ -197,7 +199,9 @@ public final class AutoBuffer {
     _chan = fc;                 // Write to read/write
     _h2o = null;                // File Channels never have an _h2o
     _read = read;               // Mostly assert reading vs writing
-    if( read ) _bb.flip();
+    if( read ) {
+    	_bb.flip();
+    }
     _time_start_ms = System.currentTimeMillis();
     _persist = persist;         // One of Value.ICE, NFS, S3, HDFS
   }
@@ -261,7 +265,9 @@ public final class AutoBuffer {
     _firstPage = true;
     _persist = 0;
 
-    if( persist ) put1(0x1C).put1(0xED).putStr(H2O.ABV.projectVersion()).putAStr(TypeMap.CLAZZES);
+    if( persist ) {
+    	put1(0x1C).put1(0xED).putStr(H2O.ABV.projectVersion()).putAStr(TypeMap.CLAZZES);
+    }
     else put1(0);
   }
 
@@ -278,12 +284,17 @@ public final class AutoBuffer {
     _bb.flip();
     _is = is;
     int b = get1U();
-    if( b==0 ) return;          // No persistence info
+    if( b==0 ) {
+    	return;          // No persistence info
+    }
     int magic = get1U();
-    if( b!=0x1C || magic != 0xED ) throw new IllegalArgumentException("Missing magic number 0x1CED at stream start");
+    if( b!=0x1C || magic != 0xED ) {
+    	throw new IllegalArgumentException("Missing magic number 0x1CED at stream start");
+    }
     String version = getStr();
-    if( !version.equals(H2O.ABV.projectVersion()) )
+    if( !version.equals(H2O.ABV.projectVersion()) ) {
       throw new IllegalArgumentException("Found version "+version+", but running version "+H2O.ABV.projectVersion());
+      }
     String[] typeMap = getAStr();
     _typeMap = new short[typeMap.length];
     for( int i=0; i<typeMap.length; i++ )
@@ -296,8 +307,12 @@ public final class AutoBuffer {
     sb.append("[AB ").append(_read ? "read " : "write ");
     sb.append(_firstPage?"first ":"2nd ").append(_h2o);
     sb.append(" ").append(Value.nameOfPersist(_persist));
-    if( _bb != null ) sb.append(" 0 <= ").append(_bb.position()).append(" <= ").append(_bb.limit());
-    if( _bb != null ) sb.append(" <= ").append(_bb.capacity());
+    if( _bb != null ) {
+    	sb.append(" 0 <= ").append(_bb.position()).append(" <= ").append(_bb.limit());
+    }
+    if( _bb != null ) {
+    	sb.append(" <= ").append(_bb.capacity());
+    }
     return sb.append("]").toString();
   }
 
@@ -320,16 +335,24 @@ public final class AutoBuffer {
 
     BBPool( int sz) { _size=sz; }
     private ByteBuffer stats( ByteBuffer bb ) {
-      if( !DEBUG ) return bb;
-      if( ((_made+_cached)&255)!=255 ) return bb; // Filter printing to 1 in 256
+      if( !DEBUG ) {
+    	  return bb;
+      }
+      if( ((_made+_cached)&255)!=255 ) {
+    	  return bb; // Filter printing to 1 in 256
+      }
       long now = System.currentTimeMillis();
-      if( now < HWM ) return bb;
+      if( now < HWM ) {
+    	  return bb;
+      }
       HWM = now+1000;
       water.util.SB sb = new water.util.SB();
       sb.p("BB").p(this==BBP_BIG?1:0).p(" made=").p(_made).p(" -freed=").p(_freed).p(", cache hit=").p(_cached).p(" ratio=").p(_numer/_denom).p(", goal=").p(_goal).p(" cache size=").p(_bbs.size()).nl();
       for( int i=0; i<H2O.MAX_PRIORITY; i++ ) {
         int x = H2O.getWrkQueueSize(i);
-        if( x > 0 ) sb.p('Q').p(i).p('=').p(x).p(' ');
+        if( x > 0 ) {
+        	sb.p('Q').p(i).p('=').p(x).p(' ');
+        }
       }
       Log.warn(sb.nl().toString());
       return bb;
@@ -342,7 +365,9 @@ public final class AutoBuffer {
           int sz = _bbs.size();
           if( sz > 0 ) { bb = _bbs.remove(sz-1); _cached++; _numer++; }
         }
-        if( bb != null ) return stats(bb);
+        if( bb != null ) {
+        	return stats(bb);
+        }
         // Cache empty; go get one from C/Native memory
         try {
           bb = ByteBuffer.allocateDirect(_size).order(ByteOrder.nativeOrder());
@@ -350,7 +375,9 @@ public final class AutoBuffer {
           return stats(bb);
         } catch( OutOfMemoryError oome ) {
           // java.lang.OutOfMemoryError: Direct buffer memory
-          if( !"Direct buffer memory".equals(oome.getMessage()) ) throw oome;
+          if( !"Direct buffer memory".equals(oome.getMessage()) ) {
+        	  throw oome;
+          }
           System.out.println("OOM DBB - Sleeping & retrying");
           try { Thread.sleep(100); } catch( InterruptedException ignore ) { }
         }
@@ -369,8 +396,9 @@ public final class AutoBuffer {
         long now = System.nanoTime();
         if( now-_lastGoal > 1000000000L ) { // Once/sec, drop goal by 10%
           _lastGoal = now;
-          if( ratio > 110 )     // If ratio is really high, lower goal
+          if( ratio > 110 ) {    // If ratio is really high, lower goal
             _goal=Math.max(4*H2O.NUMCPUS,(long)(_goal*0.99));
+            }
           // Once/sec, lower numer/denom... means more recent activity outweighs really old stuff
           long denom = (long) (0.99 * _denom); // Proposed reduction
           if( denom > 10 ) {                   // Keep a little precision
@@ -381,8 +409,9 @@ public final class AutoBuffer {
       }
     }
     static int FREE( ByteBuffer bb ) {
-      if(bb.isDirect())
+      if(bb.isDirect()) {
         (bb.capacity()==BBP_BIG._size ? BBP_BIG : BBP_SML).free(bb);
+        }
       return 0;                 // Flow coding
     }
   }
@@ -391,8 +420,9 @@ public final class AutoBuffer {
   public static int TCP_BUF_SIZ = BBP_BIG._size;
 
   private int bbFree() {
-    if(_bb != null && _bb.isDirect())
+    if(_bb != null && _bb.isDirect()) {
       BBPool.FREE(_bb);
+      }
     _bb = null;
     return 0;                   // Flow-coding
   }
@@ -415,19 +445,25 @@ public final class AutoBuffer {
   // writer does a close().
   public final int close() {
     //if( _size > 2048 ) System.out.println("Z="+_zeros+" / "+_size+", A="+_arys);
-    if( isClosed() ) return 0;            // Already closed
+    if( isClosed() ) {
+    	return 0;            // Already closed
+    }
     assert _h2o != null || _chan != null || _is != null; // Byte-array backed should not be closed
 
     try {
       if( _chan == null ) {     // No channel?
         if( _read ) {
-          if( _is != null ) _is.close();
+          if( _is != null ) {
+        	  _is.close();
+          }
           return 0;
         } else {                // Write
           // For small-packet write, send via UDP.  Since nothing is sent until
           // now, this close() call trivially orders - since the reader will not
           // even start (much less close()) until this packet is sent.
-          if( _bb.position() < MTU) return udpSend();
+          if( _bb.position() < MTU) {
+        	  return udpSend();
+          }
           // oops - Big Write, switch to TCP and finish out there
         }
       }
@@ -463,7 +499,9 @@ public final class AutoBuffer {
         }
 
       } else {                      // FileChannel
-        if( !_read ) sendPartial(); // Finish partial file-system writes
+        if( !_read ) {
+        	sendPartial(); // Finish partial file-system writes
+        }
         _chan.close();
         _chan = null;           // Closed file channel
       }
@@ -496,13 +534,17 @@ public final class AutoBuffer {
   // close the channel and let the other side to deal with it and figure out
   // the task has been cancelled (still sending ack ack back).
   void drainClose() {
-    if( isClosed() ) return;              // Already closed
+    if( isClosed() ) {
+    	return;              // Already closed
+    }
     final Channel chan = _chan;       // Read before closing
     assert _h2o != null || chan != null;  // Byte-array backed should not be closed
     if( chan != null ) {                  // Channel assumed sick from prior IOException
       try { chan.close(); } catch( IOException ignore ) {} // Silently close
       _chan = null;                       // No channel now!
-      if( !_read && SocketChannelUtils.isSocketChannel(chan)) _h2o.freeTCPSocket((ByteChannel) chan); // Recycle writable TCP channel
+      if( !_read && SocketChannelUtils.isSocketChannel(chan)) {
+    	  _h2o.freeTCPSocket((ByteChannel) chan); // Recycle writable TCP channel
+      }
     }
     restorePriority();          // And if we raised priority, lower it back
     bbFree();
@@ -550,7 +592,9 @@ public final class AutoBuffer {
   }
 
   private void restorePriority() {
-    if( _oldPrior == -1 ) return;
+    if( _oldPrior == -1 ) {
+    	return;
+    }
     Thread.currentThread().setPriority(_oldPrior);
     _oldPrior = -1;
   }
@@ -567,8 +611,9 @@ public final class AutoBuffer {
     if( _h2o==H2O.SELF ) {      // SELF-send is the multi-cast signal
       water.init.NetworkInit.multicast(_bb, _msg_priority);
     } else {                    // Else single-cast send
-      if(H2O.ARGS.useUDP)       // Send via UDP directly
+      if(H2O.ARGS.useUDP)   {    // Send via UDP directly
         water.init.NetworkInit.CLOUD_DGRAM.send(_bb, _h2o._key);
+        }
       else                      // Send via bulk TCP
         _h2o.sendMessage(_bb, _msg_priority);
     }
@@ -601,46 +646,54 @@ public final class AutoBuffer {
    * - Also, set position just past this limit for future reading. */
   private ByteBuffer getSz(int sz) {
     assert _firstPage : "getSz() is only valid for early UDP bytes";
-    if( sz > _bb.limit() ) getImpl(sz);
+    if( sz > _bb.limit() ) {
+    	getImpl(sz);
+    }
     _bb.position(sz);
     return _bb;
   }
 
   private ByteBuffer getImpl( int sz ) {
-    assert _read : "Reading from a buffer in write mode";
-    _bb.compact();            // Move remaining unread bytes to start of buffer; prep for reading
-    // Its got to fit or we asked for too much
-    assert _bb.position()+sz <= _bb.capacity() : "("+_bb.position()+"+"+sz+" <= "+_bb.capacity()+")";
-    long ns = System.nanoTime();
-    while( _bb.position() < sz ) { // Read until we got enuf
-      try {
-        int res = readAnInt(); // Read more
-        // Readers are supposed to be strongly typed and read the exact expected bytes.
-        // However, if a TCP connection fails mid-read we'll get a short-read.
-        // This is indistinguishable from a mis-alignment between the writer and reader!
-        if( res <= 0 )
-          throw new AutoBufferException(new EOFException("Reading "+sz+" bytes, AB="+this));
-        if( _is != null ) _bb.position(_bb.position()+res); // Advance BB for Streams manually
-        _size += res;            // What we read
-      } catch( IOException e ) { // Dunno how to handle so crash-n-burn
-        // Linux/Ubuntu message for a reset-channel
-        if( e.getMessage().equals("An existing connection was forcibly closed by the remote host") )
-          throw new AutoBufferException(e);
-        // Windows message for a reset-channel
-        if( e.getMessage().equals("An established connection was aborted by the software in your host machine") )
-          throw new AutoBufferException(e);
-        throw Log.throwErr(e);
-      }
-    }
-    _time_io_ns += (System.nanoTime()-ns);
-    _bb.flip();                 // Prep for handing out bytes
-    //for( int i=0; i < _bb.limit(); i++ ) if( _bb.get(i)==0 ) _zeros++;
-    _firstPage = false;         // First page of data is gone gone gone
-    return _bb;
-  }
-
+	    assert _read : "Reading from a buffer in write mode";
+	    _bb.compact();            // Move remaining unread bytes to start of buffer; prep for reading
+	    // Its got to fit or we asked for too much
+	    assert _bb.position()+sz <= _bb.capacity() : "("+_bb.position()+"+"+sz+" <= "+_bb.capacity()+")";
+	    long ns = System.nanoTime();
+	    while( _bb.position() < sz ) { // Read until we got enuf
+	      try {
+	        int res = readAnInt(); // Read more
+	        // Readers are supposed to be strongly typed and read the exact expected bytes.
+	        // However, if a TCP connection fails mid-read we'll get a short-read.
+	        // This is indistinguishable from a mis-alignment between the writer and reader!
+	        if( res <= 0 ) {
+	          throw new AutoBufferException(new EOFException("Reading "+sz+" bytes, AB="+this));
+	          }
+	        if( _is != null ) {
+	        	_bb.position(_bb.position()+res); // Advance BB for Streams manually
+	        }
+	        _size += res;            // What we read
+	      } catch( IOException e ) { // Dunno how to handle so crash-n-burn
+	        // Linux/Ubuntu message for a reset-channel
+	        if( e.getMessage().equals("An existing connection was forcibly closed by the remote host") ) {
+	          throw new AutoBufferException(e);
+	          }
+	        // Windows message for a reset-channel
+	        if( e.getMessage().equals("An established connection was aborted by the software in your host machine") ) {
+	          throw new AutoBufferException(e);
+	          }
+	        throw Log.throwErr(e);
+	      }
+	    }
+	    _time_io_ns += (System.nanoTime()-ns);
+	    _bb.flip();                 // Prep for handing out bytes
+	    //for( int i=0; i < _bb.limit(); i++ ) if( _bb.get(i)==0 ) _zeros++;
+	    _firstPage = false;         // First page of data is gone gone gone
+	    return _bb;
+	  }
   private int readAnInt() throws IOException {
-    if (_is == null) return ((ReadableByteChannel) _chan).read(_bb);
+    if (_is == null) {
+    	return ((ReadableByteChannel) _chan).read(_bb);
+    	}
 
     final byte[] array = _bb.array();
     final int position = _bb.position();
@@ -656,8 +709,9 @@ public final class AutoBuffer {
   private ByteBuffer putSp( int sz ) {
     assert !_read;
     if (sz > _bb.remaining()) {
-      if ((_h2o == null && _chan == null) || (_bb.hasArray() && _bb.capacity() < BBP_BIG._size))
+      if ((_h2o == null && _chan == null) || (_bb.hasArray() && _bb.capacity() < BBP_BIG._size)) {
         expandByteBuffer(sz);
+        }
       else
         sendPartial();
       assert sz <= _bb.remaining();
@@ -670,19 +724,22 @@ public final class AutoBuffer {
   private ByteBuffer sendPartial() {
     // Doing I/O with the full ByteBuffer - ship partial results
     _size += _bb.position();
-    if( _chan == null )
+    if( _chan == null ) {
       TimeLine.record_send(this, true);
+      }
 
     _bb.flip(); // Prep for writing.
     try {
-      if( _chan == null )
-        tcpOpen(); // This is a big operation.  Open a TCP socket as-needed.
+      if( _chan == null ) {
+        tcpOpen();
+        } // This is a big operation.  Open a TCP socket as-needed.
       //for( int i=0; i < _bb.limit(); i++ ) if( _bb.get(i)==0 ) _zeros++;
       long ns = System.nanoTime();
       while( _bb.hasRemaining() ) {
         ((WritableByteChannel) _chan).write(_bb);
-        if( RANDOM_TCP_DROP != null && SocketChannelUtils.isSocketChannel(_chan) && RANDOM_TCP_DROP.nextInt(100) == 0 )
+        if( RANDOM_TCP_DROP != null && SocketChannelUtils.isSocketChannel(_chan) && RANDOM_TCP_DROP.nextInt(100) == 0 ) {
           throw new IOException("Random TCP Write Fail");
+          }
       }
       _time_io_ns += (System.nanoTime()-ns);
     } catch( IOException e ) {  // Some kind of TCP fail?
@@ -765,7 +822,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused")  public AutoBuffer put8d(double d) { putSp(8).putDouble(d); return this; }
 
   public AutoBuffer put(Freezable f) {
-    if( f == null ) return putInt(TypeMap.NULL);
+    if( f == null ) {
+    	return putInt(TypeMap.NULL);
+    }
     assert f.frozenType() > 0 : "No TypeMap for "+f.getClass().getName();
     putInt(f.frozenType());
     return f.write(this);
@@ -773,21 +832,31 @@ public final class AutoBuffer {
 
   public <T extends Freezable> T get() {
     int id = getInt();
-    if( id == TypeMap.NULL ) return null;
-    if( _is!=null ) id = _typeMap[id];
+    if( id == TypeMap.NULL ) {
+    	return null;
+    }
+    if( _is!=null ) {
+    	id = _typeMap[id];
+    }
     return (T)TypeMap.newFreezable(id).read(this);
   }
   public <T extends Freezable> T get(Class<T> tc) {
     int id = getInt();
-    if( id == TypeMap.NULL ) return null;
-    if( _is!=null ) id = _typeMap[id];
+    if( id == TypeMap.NULL ) {
+    	return null;
+    }
+    if( _is!=null ) {
+    	id = _typeMap[id];
+    }
     assert tc.isInstance(TypeMap.theFreezable(id)):tc.getName() + " != " + TypeMap.theFreezable(id).getClass().getName() + ", id = " + id;
     return (T)TypeMap.newFreezable(id).read(this);
   }
 
   // Write Key's target IFF the Key is not null; target can be null.
   public AutoBuffer putKey(Key k) {
-    if( k==null ) return this;    // Key is null ==> write nothing
+    if( k==null ) {
+    	return this;    // Key is null ==> write nothing
+    }
     Keyed kd = DKV.getGet(k);
     put(kd);
     return kd == null ? this : kd.writeAll_impl(this);
@@ -797,7 +866,9 @@ public final class AutoBuffer {
   }
   public Keyed getKey(Futures fs) { 
     Keyed kd = get(Keyed.class);
-    if( kd == null ) return null;
+    if( kd == null ) {
+    	return null;
+    }
     DKV.put(kd,fs);
     return kd.readAll_impl(this,fs);
   }
@@ -808,15 +879,23 @@ public final class AutoBuffer {
   // optimized for small integers (including -1 which is often used as a "array
   // is null" flag when passing the array length).
   public AutoBuffer putInt(int x) {
-    if( 0 <= (x+1)&& (x+1) <= 253 ) return put1(x+1);
-    if( Short.MIN_VALUE <= x && x <= Short.MAX_VALUE ) return put1(255).put2((short)x);
+    if( 0 <= (x+1)&& (x+1) <= 253 ) {
+    	return put1(x+1);
+    }
+    if( Short.MIN_VALUE <= x && x <= Short.MAX_VALUE ) {
+    	return put1(255).put2((short)x);
+    }
     return put1(254).put4(x);
   }
   // Get a (compressed) integer.  See above for the compression strategy and reasoning.
   int getInt( ) {
     int x = get1U();
-    if( x <= 253 ) return x-1;
-    if( x==255 ) return (short)get2();
+    if( x <= 253 ) {
+    	return x-1;
+    }
+    if( x==255 ) {
+    	return (short)get2();
+    }
     assert x==254;
     return get4();
   }
@@ -829,8 +908,15 @@ public final class AutoBuffer {
   //    If # of non-nulls is > 0, putInt( # of trailing nulls)
   long putZA( Object[] A ) {
     if( A==null ) { putInt(-1); return 0; }
-    int x=0; for( ; x<A.length; x++ ) if( A[x  ]!=null ) break;
-    int y=A.length; for( ; y>x; y-- ) if( A[y-1]!=null ) break;
+    int x=0; for( ; x<A.length; x++ ) 
+    	if( A[x  ]!=null ) {
+    	break;
+    	}
+    int y=A.length; 
+    for( ; y>x; y-- )
+    	if( A[y-1]!=null ) {
+    		break;
+    	}
     putInt(x);                  // Leading zeros to skip
     putInt(y-x);                // Mixed non-zero guts in middle
     if( y > x )                 // If any trailing nulls
@@ -843,7 +929,9 @@ public final class AutoBuffer {
   // If there are non-zeros, caller has to read the trailing zero-length.
   long getZA( ) {
     int x=getInt();             // Length of leading zeros
-    if( x == -1 ) return -1;    // or a null
+    if( x == -1 ) {
+    	return -1;    // or a null
+    }
     int nz=getInt();            // Non-zero in the middle
     return ((long)x<<32)|(long)nz; // Return both ints
   }
@@ -853,7 +941,9 @@ public final class AutoBuffer {
   public AutoBuffer putAEnum(Enum[] enums) {
     //_arys++;
     long xy = putZA(enums);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putEnum(enums[i]);
@@ -864,7 +954,9 @@ public final class AutoBuffer {
   public <E extends Enum> E[] getAEnum(E[] values) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -877,7 +969,9 @@ public final class AutoBuffer {
   public AutoBuffer putA(Freezable[] fs) {
     //_arys++;
     long xy = putZA(fs);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) put(fs[i]);
@@ -886,7 +980,9 @@ public final class AutoBuffer {
   public AutoBuffer putAA(Freezable[][] fs) {
     //_arys++;
     long xy = putZA(fs);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putA(fs[i]);
@@ -895,7 +991,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused") public AutoBuffer putAAA(Freezable[][][] fs) {
     //_arys++;
     long xy = putZA(fs);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putAA(fs[i]);
@@ -905,7 +1003,9 @@ public final class AutoBuffer {
   public <T extends Freezable> T[] getA(Class<T> tc) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -916,7 +1016,9 @@ public final class AutoBuffer {
   public <T extends Freezable> T[][] getAA(Class<T> tc) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -942,7 +1044,9 @@ public final class AutoBuffer {
   public AutoBuffer putAStr(String[] fs)    {
     //_arys++;
     long xy = putZA(fs);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putStr(fs[i]);
@@ -951,7 +1055,9 @@ public final class AutoBuffer {
   public String[] getAStr() {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -972,7 +1078,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused")  public String[][] getAAStr() {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1024,7 +1132,9 @@ public final class AutoBuffer {
 
   public boolean[] getAZ() {
     int len = getInt();
-    if (len == -1) return null;
+    if (len == -1) {
+    	return null;
+    }
     boolean[] r = new boolean[len];
     for (int i=0;i<len;++i) r[i] = getZ();
     return r;
@@ -1042,7 +1152,9 @@ public final class AutoBuffer {
       int more = Math.min(_bb.remaining(), len - sofar);
       _bb.get(buf, sofar, more);
       sofar += more;
-      if( sofar < len ) getSp(Math.min(_bb.capacity(), len-sofar));
+      if( sofar < len ) {
+    	  getSp(Math.min(_bb.capacity(), len-sofar));
+      }
     }
     return buf;
   }
@@ -1058,7 +1170,9 @@ public final class AutoBuffer {
       as.get(buf, sofar, more);
       sofar += more;
       _bb.position(_bb.position() + as.position()*2);
-      if( sofar < len ) getSp(Math.min(_bb.capacity()-1, (len-sofar)*2));
+      if( sofar < len ) {
+    	  getSp(Math.min(_bb.capacity()-1, (len-sofar)*2));
+      }
     }
     return buf;
   }
@@ -1074,7 +1188,9 @@ public final class AutoBuffer {
       as.get(buf, sofar, more);
       sofar += more;
       _bb.position(_bb.position() + as.position()*4);
-      if( sofar < len ) getSp(Math.min(_bb.capacity()-3, (len-sofar)*4));
+      if( sofar < len ) {
+    	  getSp(Math.min(_bb.capacity()-3, (len-sofar)*4));
+      }
     }
     return buf;
   }
@@ -1089,7 +1205,9 @@ public final class AutoBuffer {
       as.get(buf, sofar, more);
       sofar += more;
       _bb.position(_bb.position() + as.position()*4);
-      if( sofar < len ) getSp(Math.min(_bb.capacity()-3, (len-sofar)*4));
+      if( sofar < len ) {
+    	  getSp(Math.min(_bb.capacity()-3, (len-sofar)*4));
+      }
     }
     return buf;
   }
@@ -1116,7 +1234,9 @@ public final class AutoBuffer {
       as.get(buf, sofar, more);
       sofar += more;
       _bb.position(_bb.position() + as.position()*8);
-      if( sofar < x+y ) getSp(Math.min(_bb.capacity()-7, (x+y-sofar)*8));
+      if( sofar < x+y ) {
+    	  getSp(Math.min(_bb.capacity()-7, (x+y-sofar)*8));
+      }
     }
     return buf;
   }
@@ -1131,7 +1251,9 @@ public final class AutoBuffer {
       as.get(buf, sofar, more);
       sofar += more;
       _bb.position(_bb.position() + as.position()*8);
-      if( sofar < len ) getSp(Math.min(_bb.capacity()-7, (len-sofar)*8));
+      if( sofar < len ) {
+    	  getSp(Math.min(_bb.capacity()-7, (len-sofar)*8));
+      }
     }
     return buf;
   }
@@ -1139,7 +1261,9 @@ public final class AutoBuffer {
   public byte[][] getAA1( ) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1151,7 +1275,9 @@ public final class AutoBuffer {
   public short[][] getAA2( ) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1162,7 +1288,9 @@ public final class AutoBuffer {
   public int[][] getAA4( ) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1173,7 +1301,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused")  public float[][] getAA4f( ) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1184,7 +1314,9 @@ public final class AutoBuffer {
   public long[][] getAA8( ) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1195,7 +1327,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused")  public double[][] getAA8d( ) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1206,7 +1340,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused")  public int[][][] getAAA4( ) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1217,7 +1353,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused")  public long[][][] getAAA8( ) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1228,7 +1366,9 @@ public final class AutoBuffer {
   public double[][][] getAAA8d( ) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1248,7 +1388,9 @@ public final class AutoBuffer {
   }
 
   public AutoBuffer putAZ( boolean[] ary ) {
-    if( ary == null ) return putInt(-1);
+    if( ary == null ) {
+    	return putInt(-1);
+    }
     putInt(ary.length);
     for (boolean anAry : ary) putZ(anAry);
     return this;
@@ -1256,18 +1398,24 @@ public final class AutoBuffer {
 
   public AutoBuffer putA1( byte[] ary ) {
     //_arys++;
-    if( ary == null ) return putInt(-1);
+    if( ary == null ) {
+    	return putInt(-1);
+    }
     putInt(ary.length);
     return putA1(ary,ary.length);
   }
   public AutoBuffer putA1( byte[] ary, int length ) { return putA1(ary,0,length); }
   public AutoBuffer putA1( byte[] ary, int sofar, int length ) {
-    if (length - sofar > _bb.remaining()) expandByteBuffer(length-sofar);
+    if (length - sofar > _bb.remaining()) {
+    	expandByteBuffer(length-sofar);
+    }
     while( sofar < length ) {
       int len = Math.min(length - sofar, _bb.remaining());
       _bb.put(ary, sofar, len);
       sofar += len;
-      if( sofar < length ) sendPartial();
+      if( sofar < length ) {
+    	  sendPartial();
+      }
     }
     return this;
   }
@@ -1275,7 +1423,9 @@ public final class AutoBuffer {
     //_arys++;
     if( ary == null ) return putInt(-1);
     putInt(ary.length);
-    if (ary.length*2 > _bb.remaining()) expandByteBuffer(ary.length*2);
+    if (ary.length*2 > _bb.remaining()) {
+    	expandByteBuffer(ary.length*2);
+    }
     int sofar = 0;
     while( sofar < ary.length ) {
       ShortBuffer sb = _bb.asShortBuffer();
@@ -1283,13 +1433,17 @@ public final class AutoBuffer {
       sb.put(ary, sofar, len);
       sofar += len;
       _bb.position(_bb.position() + sb.position()*2);
-      if( sofar < ary.length ) sendPartial();
+      if( sofar < ary.length ) {
+    	  sendPartial();
+      }
     }
     return this;
   }
   public AutoBuffer putA4( int[] ary ) {
     //_arys++;
-    if( ary == null ) return putInt(-1);
+    if( ary == null ) {
+    	return putInt(-1);
+    }
     putInt(ary.length);
     // Note: based on Brandon commit this should improve performance during parse (7d950d622ee3037555ecbab0e39404f8f0917652)
     if (ary.length*4 > _bb.remaining()) {
@@ -1302,22 +1456,34 @@ public final class AutoBuffer {
       ib.put(ary, sofar, len);
       sofar += len;
       _bb.position(_bb.position() + ib.position()*4);
-      if( sofar < ary.length ) sendPartial();
+      if( sofar < ary.length ) {
+    	  sendPartial();
+      }
     }
     return this;
   }
   public AutoBuffer putA8( long[] ary ) {
     //_arys++;
-    if( ary == null ) return putInt(-1);
+    if( ary == null ) {
+    	return putInt(-1);
+    }
     // Trim leading & trailing zeros.  Pass along the length of leading &
     // trailing zero sections, and the non-zero section in the middle.
-    int x=0; for( ; x<ary.length; x++ ) if( ary[x  ]!=0 ) break;
-    int y=ary.length; for( ; y>x; y-- ) if( ary[y-1]!=0 ) break;
+    int x=0; for( ; x<ary.length; x++ ) 
+    	if( ary[x  ]!=0 ) {
+    	break;
+    	}
+    int y=ary.length; 
+    for( ; y>x; y-- ) 
+    	if( ary[y-1]!=0 ) {
+    		break;
+    	}
     int nzlen = y-x;
     putInt(x);
     putInt(nzlen);
-    if( nzlen > 0 )             // If any trailing nulls
-      putInt(ary.length-y);     // Trailing zeros
+    if( nzlen > 0 ) {            // If any trailing nulls
+      putInt(ary.length-y);  
+      }   // Trailing zeros
 
     // Size trim the NZ section: pass as bytes or shorts if possible.
     long min=Long.MAX_VALUE, max=Long.MIN_VALUE;
@@ -1337,22 +1503,30 @@ public final class AutoBuffer {
 
     put1(8);                    // Ship as full longs
     int sofar = x;
-    if ((y-sofar)*8 > _bb.remaining()) expandByteBuffer(ary.length*8);
+    if ((y-sofar)*8 > _bb.remaining()) {
+    	expandByteBuffer(ary.length*8);
+    }
     while( sofar < y ) {
       LongBuffer lb = _bb.asLongBuffer();
       int len = Math.min(y - sofar, lb.remaining());
       lb.put(ary, sofar, len);
       sofar += len;
       _bb.position(_bb.position() + lb.position() * 8);
-      if( sofar < y ) sendPartial();
+      if( sofar < y ) {
+    	  sendPartial();
+      }
     }
     return this;
   }
   public AutoBuffer putA4f( float[] ary ) {
     //_arys++;
-    if( ary == null ) return putInt(-1);
+    if( ary == null ) {
+    	return putInt(-1);
+    }
     putInt(ary.length);
-    if (ary.length*4 > _bb.remaining()) expandByteBuffer(ary.length*4);
+    if (ary.length*4 > _bb.remaining()) {
+    	expandByteBuffer(ary.length*4);
+    }
     int sofar = 0;
     while( sofar < ary.length ) {
       FloatBuffer fb = _bb.asFloatBuffer();
@@ -1360,15 +1534,21 @@ public final class AutoBuffer {
       fb.put(ary, sofar, len);
       sofar += len;
       _bb.position(_bb.position() + fb.position()*4);
-      if( sofar < ary.length ) sendPartial();
+      if( sofar < ary.length ) {
+    	  sendPartial();
+      }
     }
     return this;
   }
   public AutoBuffer putA8d( double[] ary ) {
     //_arys++;
-    if( ary == null ) return putInt(-1);
+    if( ary == null ) {
+    	return putInt(-1);
+    }
     putInt(ary.length);
-    if (ary.length*8 > _bb.remaining()) expandByteBuffer(ary.length*8);
+    if (ary.length*8 > _bb.remaining()) {
+    	expandByteBuffer(ary.length*8);
+    }
     int sofar = 0;
     while( sofar < ary.length ) {
       DoubleBuffer db = _bb.asDoubleBuffer();
@@ -1376,7 +1556,9 @@ public final class AutoBuffer {
       db.put(ary, sofar, len);
       sofar += len;
       _bb.position(_bb.position() + db.position()*8);
-      if( sofar < ary.length ) sendPartial();
+      if( sofar < ary.length ) {
+    	  sendPartial();
+      }
     }
     return this;
   }
@@ -1384,7 +1566,9 @@ public final class AutoBuffer {
   public AutoBuffer putAA1( byte[][] ary ) {
     //_arys++;
     long xy = putZA(ary);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putA1(ary[i]);
@@ -1393,7 +1577,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused")  AutoBuffer putAA2( short[][] ary ) {
     //_arys++;
     long xy = putZA(ary);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putA2(ary[i]);
@@ -1402,7 +1588,9 @@ public final class AutoBuffer {
   public AutoBuffer putAA4( int[][] ary ) {
     //_arys++;
     long xy = putZA(ary);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putA4(ary[i]);
@@ -1412,7 +1600,9 @@ public final class AutoBuffer {
   public AutoBuffer putAA4f( float[][] ary ) {
     //_arys++;
     long xy = putZA(ary);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putA4f(ary[i]);
@@ -1421,7 +1611,9 @@ public final class AutoBuffer {
   public AutoBuffer putAA8( long[][] ary ) {
     //_arys++;
     long xy = putZA(ary);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putA8(ary[i]);
@@ -1430,7 +1622,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused")  public AutoBuffer putAA8d( double[][] ary ) {
     //_arys++;
     long xy = putZA(ary);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putA8d(ary[i]);
@@ -1439,7 +1633,9 @@ public final class AutoBuffer {
   public AutoBuffer putAAA4( int[][][] ary ) {
     //_arys++;
     long xy = putZA(ary);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putAA4(ary[i]);
@@ -1448,7 +1644,9 @@ public final class AutoBuffer {
   public AutoBuffer putAAA8( long[][][] ary ) {
     //_arys++;
     long xy = putZA(ary);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putAA8(ary[i]);
@@ -1457,7 +1655,9 @@ public final class AutoBuffer {
   public AutoBuffer putAAA8d( double[][][] ary ) {
     //_arys++;
     long xy = putZA(ary);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putAA8d(ary[i]);
@@ -1465,7 +1665,9 @@ public final class AutoBuffer {
   }
   // Put a String as bytes (not chars!)
   public AutoBuffer putStr( String s ) {
-    if( s==null ) return putInt(-1);
+    if( s==null ) {
+    	return putInt(-1);
+    }
     return putA1(StringUtils.bytesOf(s));
   }
 
@@ -1500,8 +1702,12 @@ public final class AutoBuffer {
   }
 
   static String nameOfClass(byte[] bytes) {
-    if (bytes == null) return "(null)";
-    if (bytes.length < 11) return "(no name)";
+    if (bytes == null) {
+    	return "(null)";
+    }
+    if (bytes.length < 11) {
+    	return "(no name)";
+    }
 
     int nameSize = Math.min(40, Math.max(3, bytes[7]));
     return new String(bytes, 8, Math.min(nameSize, bytes.length - 8));
@@ -1511,14 +1717,18 @@ public final class AutoBuffer {
   // Note: These are heck-a-lot more expensive than their Freezable equivalents.
 
   @SuppressWarnings("unused") public AutoBuffer putSer( Object obj ) {
-    if (obj == null) return putA1(null);
+    if (obj == null) {
+    	return putA1(null);
+    }
     return putA1(javaSerializeWritePojo(obj));
   }
 
   @SuppressWarnings("unused") public AutoBuffer putASer(Object[] fs) {
     //_arys++;
     long xy = putZA(fs);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putSer(fs[i]);
@@ -1528,7 +1738,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused") public AutoBuffer putAASer(Object[][] fs) {
     //_arys++;
     long xy = putZA(fs);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putASer(fs[i]);
@@ -1538,7 +1750,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused") public AutoBuffer putAAASer(Object[][][] fs) {
     //_arys++;
     long xy = putZA(fs);
-    if( xy == -1 ) return this;
+    if( xy == -1 ) {
+    	return this;
+    }
     int x=(int)(xy>>32);
     int y=(int)xy;
     for( int i=x; i<x+y; i++ ) putAASer(fs[i]);
@@ -1557,7 +1771,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused") public <T> T[] getASer(Class<T> tc) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1569,7 +1785,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused") public <T> T[][] getAASer(Class<T> tc) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1581,7 +1799,9 @@ public final class AutoBuffer {
   @SuppressWarnings("unused") public <T> T[][][] getAAASer(Class<T> tc) {
     //_arys++;
     long xy = getZA();
-    if( xy == -1 ) return null;
+    if( xy == -1 ) {
+    	return null;
+    }
     int x=(int)(xy>>32);         // Leading nulls
     int y=(int)xy;               // Middle non-zeros
     int z = y==0 ? 0 : getInt(); // Trailing nulls
@@ -1629,19 +1849,27 @@ public final class AutoBuffer {
   public AutoBuffer putJSONName( String s ) { return put1('"').putJStr(s).put1('"'); }
   public AutoBuffer putJSONStr ( String s ) { return s==null ? putJNULL() : putJSONName(s); }
   public AutoBuffer putJSONAStr(String[] ss) {
-    if( ss == null ) return putJNULL();
+    if( ss == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<ss.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONStr(ss[i]);
     }
     return put1(']');
   }
   private AutoBuffer putJSONAAStr( String[][] sss) {
-    if( sss == null ) return putJNULL();
+    if( sss == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<sss.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONAStr(sss[i]);
     }
     return put1(']');
@@ -1660,29 +1888,41 @@ public final class AutoBuffer {
 
   public AutoBuffer putJSON(Freezable ice) { return ice == null ? putJNULL() : ice.writeJSON(this); }
   public AutoBuffer putJSONA( Freezable fs[]  ) {
-    if( fs == null ) return putJNULL();
+    if( fs == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<fs.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSON(fs[i]);
     }
     return put1(']');
   }
   public AutoBuffer putJSONAA( Freezable fs[][]) {
-    if( fs == null ) return putJNULL();
+    if( fs == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<fs.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONA(fs[i]);
     }
     return put1(']');
   }
 
   public AutoBuffer putJSONAAA( Freezable fs[][][]) {
-    if( fs == null ) return putJNULL();
+    if( fs == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<fs.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONAA(fs[i]);
     }
     return put1(']');
@@ -1697,10 +1937,14 @@ public final class AutoBuffer {
   @SuppressWarnings("unused")  public AutoBuffer putJSONZ( String name, boolean value ) { return putJSONStr(name).put1(':').putJStr("" + value); }
 
   private AutoBuffer putJSONAZ(boolean [] b) {
-    if (b == null) return putJNULL();
+    if (b == null) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i = 0; i < b.length; ++i) {
-      if (i > 0) put1(',');
+      if (i > 0) {
+    	  put1(',');
+      }
       putJStr(""+b[i]);
     }
     return put1(']');
@@ -1715,19 +1959,27 @@ public final class AutoBuffer {
 
   public AutoBuffer putJSON1( byte b ) { return putJInt(b); }
   public AutoBuffer putJSONA1( byte ary[] ) {
-    if( ary == null ) return putJNULL();
+    if( ary == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<ary.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSON1(ary[i]);
     }
     return put1(']');
   }
   private AutoBuffer putJSONAA1(byte ary[][]) {
-    if( ary == null ) return putJNULL();
+    if( ary == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<ary.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONA1(ary[i]);
     }
     return put1(']');
@@ -1740,10 +1992,14 @@ public final class AutoBuffer {
     return putJSONStr(name).put1(':').putJSONAEnum(enums);
   }
   public AutoBuffer putJSONAEnum( Enum[] enums ) {
-    if( enums == null ) return putJNULL();
+    if( enums == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<enums.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONEnum(enums[i]);
     }
     return put1(']');
@@ -1756,10 +2012,14 @@ public final class AutoBuffer {
   AutoBuffer putJSON2( String name, short c ) { return putJSONStr(name).put1(':').putJSON2(c); }
   public AutoBuffer putJSONA2( String name, short ary[] ) { return putJSONStr(name).put1(':').putJSONA2(ary); }
   AutoBuffer putJSONA2( short ary[] ) {
-    if( ary == null ) return putJNULL();
+    if( ary == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<ary.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSON2(ary[i]);
     }
     return put1(']');
@@ -1767,28 +2027,40 @@ public final class AutoBuffer {
 
   AutoBuffer putJSON8 ( long l ) { return putJStr(Long.toString(l)); }
   AutoBuffer putJSONA8( long ary[] ) {
-    if( ary == null ) return putJNULL();
+    if( ary == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<ary.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSON8(ary[i]);
     }
     return put1(']');
   }
   AutoBuffer putJSONAA8( long ary[][] ) {
-    if( ary == null ) return putJNULL();
+    if( ary == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<ary.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONA8(ary[i]);
     }
     return put1(']');
   }
   AutoBuffer putJSONAAA8( long ary[][][] ) {
-    if( ary == null ) return putJNULL();
+    if( ary == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<ary.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONAA8(ary[i]);
     }
     return put1(']');
@@ -1807,30 +2079,42 @@ public final class AutoBuffer {
 
   public AutoBuffer putJSON4(int i) { return putJStr(Integer.toString(i)); }
   AutoBuffer putJSONA4( int[] a) {
-    if( a == null ) return putJNULL();
+    if( a == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<a.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSON4(a[i]);
     }
     return put1(']');
   }
 
   AutoBuffer putJSONAA4( int[][] a ) {
-    if( a == null ) return putJNULL();
+    if( a == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<a.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONA4(a[i]);
     }
     return put1(']');
   }
 
   AutoBuffer putJSONAAA4( int[][][] a ) {
-    if( a == null ) return putJNULL();
+    if( a == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<a.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONAA4(a[i]);
     }
     return put1(']');
@@ -1844,10 +2128,14 @@ public final class AutoBuffer {
   AutoBuffer putJSON4f ( float f ) { return f==Float.POSITIVE_INFINITY?putJSONStr(JSON_POS_INF):(f==Float.NEGATIVE_INFINITY?putJSONStr(JSON_NEG_INF):(Float.isNaN(f)?putJSONStr(JSON_NAN):putJStr(Float .toString(f)))); }
   public AutoBuffer putJSON4f ( String name, float f ) { return putJSONStr(name).put1(':').putJSON4f(f); }
   AutoBuffer putJSONA4f( float[] a ) {
-    if( a == null ) return putJNULL();
+    if( a == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<a.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSON4f(a[i]);
     }
     return put1(']');
@@ -1858,17 +2146,24 @@ public final class AutoBuffer {
   }
   AutoBuffer putJSONAA4f(String name, float[][] a) {
     putJSONStr(name).put1(':');
-    if( a == null ) return putJNULL();
+    if( a == null ) {
+    	
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<a.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONA4f(a[i]);
     }
     return put1(']');
   }
 
   AutoBuffer putJSON8d( double d ) {
-    if (TwoDimTable.isEmpty(d)) return putJNULL();
+    if (TwoDimTable.isEmpty(d)) {
+    	return putJNULL();
+    }
     return d==Double.POSITIVE_INFINITY?putJSONStr(JSON_POS_INF):(d==Double.NEGATIVE_INFINITY?putJSONStr(JSON_NEG_INF):(Double.isNaN(d)?putJSONStr(JSON_NAN):putJStr(Double.toString(d))));
   }
   public AutoBuffer putJSON8d( String name, double d ) { return putJSONStr(name).put1(':').putJSON8d(d); }
@@ -1881,29 +2176,41 @@ public final class AutoBuffer {
   public AutoBuffer putJSONAAA8d( String name, double[][][] a) { return putJSONStr(name).put1(':').putJSONAAA8d(a); }
 
   public AutoBuffer putJSONA8d( double[] a ) {
-    if( a == null ) return putJNULL();
+    if( a == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<a.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSON8d(a[i]);
     }
     return put1(']');
   }
 
   public AutoBuffer putJSONAA8d( double[][] a ) {
-    if( a == null ) return putJNULL();
+    if( a == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<a.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONA8d(a[i]);
     }
     return put1(']');
   }
   AutoBuffer putJSONAAA8d( double ary[][][] ) {
-    if( ary == null ) return putJNULL();
+    if( ary == null ) {
+    	return putJNULL();
+    }
     put1('[');
     for( int i=0; i<ary.length; i++ ) {
-      if( i>0 ) put1(',');
+      if( i>0 ) {
+    	  put1(',');
+      }
       putJSONAA8d(ary[i]);
     }
     return put1(']');
