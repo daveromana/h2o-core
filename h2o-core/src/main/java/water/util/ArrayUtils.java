@@ -133,8 +133,12 @@ public class ArrayUtils {
     double res = Double.NEGATIVE_INFINITY;
     int last = x.length -(skipLast?1:0);
     for(int i = 0; i < last; ++i) {
-      if(x[i] > res) res = x[i];
-      if(-x[i] > res) res = -x[i];
+      if(x[i] > res) {
+    	  res = x[i];
+      }
+      if(-x[i] > res) {
+    	  res = -x[i];
+      }
     }
     return res;
   }
@@ -159,7 +163,9 @@ public class ArrayUtils {
     return a;
   }
   public static long[] add(long[] a, long[] b) {
-    if( b==null ) return a;
+    if( b==null ) {
+    	return a;
+    }
     for(int i = 0; i < a.length; i++ ) a[i] += b[i];
     return a;
   }
@@ -172,7 +178,9 @@ public class ArrayUtils {
     return a;
   }
   public static float[] add(float[] a, float[] b) {
-    if( b==null ) return a;
+    if( b==null ) {
+    	return a;
+    }
     for(int i = 0; i < a.length; i++ ) a[i] += b[i];
     return a;
   }
@@ -185,7 +193,9 @@ public class ArrayUtils {
     return a;
   }
   public static boolean[] or(boolean[] a, boolean[] b) {
-    if (b==null)return a;
+    if (b==null) {
+    	return a;
+    }
     for (int i = 0; i < a.length; i++) a[i] |= b[i];
     return a;
   }
@@ -206,13 +216,16 @@ public class ArrayUtils {
   public static <T extends Iced> T[] deepClone(T [] ary){
     T [] res = ary.clone();
     for(int j = 0; j < res.length; ++j)
-      if(res[j] != null)
+      if(res[j] != null) {
         res[j] = (T)res[j].clone();
+        }
     return res;
   }
 
   public static double[] add(double[] a, double[] b) {
-    if( a==null ) return b;
+    if( a==null ) {
+    	return b;
+    }
     for(int i = 0; i < a.length; i++ ) a[i] += b[i];
     return a;
   }
@@ -222,14 +235,18 @@ public class ArrayUtils {
   }
 
   public static double[] wadd(double[] a, double[] b, double w) {
-    if( a==null ) return b;
+    if( a==null ) {
+    	return b;
+    }
     for(int i = 0; i < a.length; i++ )
       a[i] += w*b[i];
     return a;
   }
 
   public static double[] wadd(double[] a, double[] b, double [] c, double w) {
-    if( a==null ) return b;
+    if( a==null ) {
+    	return b;
+    }
     for(int i = 0; i < a.length; i++ )
       c[i] = a[i] + w*b[i];
     return c;
@@ -242,7 +259,9 @@ public class ArrayUtils {
     return a;
   }
   public static double[][] add(double[][] a, double[][] b) {
-    if (a == null) return b;
+    if (a == null) {
+    	return b;
+    }
     for(int i = 0; i < a.length; i++ ) a[i] = add(a[i], b[i]);
     return a;
   }
@@ -314,7 +333,9 @@ public class ArrayUtils {
     return nums;
   }
   public static double[][] mult(double[][] ary, double n) {
-    if(ary == null) return null;
+    if(ary == null) {
+    	return null;
+    }
     for (double[] row : ary) mult(row, n);
     return ary;
   }
@@ -325,19 +346,25 @@ public class ArrayUtils {
   }
 
   public static double[] invert(double[] ary) {
-    if(ary == null) return null;
+    if(ary == null) {
+    	return null;
+    }
     for(int i=0;i<ary.length;i++) ary[i] = 1. / ary[i];
     return ary;
   }
 
   public static double[] multArrVec(double[][] ary, double[] nums) {
-    if(ary == null) return null;
+    if(ary == null) {
+    	return null;
+    }
     double[] res = new double[ary.length];
     return multArrVec(ary, nums, res);
   }
 
   public static double[] multArrVec(double[][] ary, double[] nums, double[] res) {
-    if(ary == null || nums == null) return null;
+    if(ary == null || nums == null) {
+    	return null;
+    }
     assert ary[0].length == nums.length : "Inner dimensions must match: Got " + ary[0].length + " != " + nums.length;
     for(int i = 0; i < ary.length; i++)
       res[i] = innerProduct(ary[i], nums);
@@ -345,7 +372,9 @@ public class ArrayUtils {
   }
 
   public static double[] multVecArr(double[] nums, double[][] ary) {
-    if(ary == null || nums == null) return null;
+    if(ary == null || nums == null) {
+    	return null;
+    }
     assert nums.length == ary.length : "Inner dimensions must match: Got " + nums.length + " != " + ary.length;
     double[] res = new double[ary[0].length];
     for(int j = 0; j < ary[0].length; j++) {
@@ -360,7 +389,9 @@ public class ArrayUtils {
   with no memory allocation for results.  We assume the memory is already allocated.
    */
   public static double[][] multArrArr(double[][] ary1, double[][] ary2, double[][] res) {
-    if(ary1 == null || ary2 == null) return null;
+    if(ary1 == null || ary2 == null) {
+    	return null;
+    }
     // Inner dimensions must match
     assert ary1[0].length == ary2.length : "Inner dimensions must match: Got " + ary1[0].length + " != " + ary2.length;
 
@@ -379,7 +410,9 @@ public class ArrayUtils {
   with memory allocation for results
    */
   public static double[][] multArrArr(double[][] ary1, double[][] ary2) {
-    if(ary1 == null || ary2 == null) return null;
+    if(ary1 == null || ary2 == null) {
+    	return null;
+    }
     double[][] res = new double[ary1.length][ary2[0].length];
 
     return multArrArr(ary1, ary2, res);
@@ -398,7 +431,9 @@ public class ArrayUtils {
   public static <T> T[] cloneOrNull(T[] ary){return ary == null?null:ary.clone();}
 
   public static <T> T[][] transpose(T[][] ary) {
-    if(ary == null|| ary.length == 0) return ary;
+    if(ary == null|| ary.length == 0) {
+    	return ary;
+    }
     T [][] res  = Arrays.copyOf(ary,ary[0].length);
     for(int i = 0; i < res.length; ++i)
       res[i] = Arrays.copyOf(ary[0],ary.length);
@@ -430,7 +465,9 @@ public class ArrayUtils {
    * @return A symmetric positive semi-definite Gram matrix
    */
   public static double[][] formGram(double[][] x, boolean transpose) {
-    if (x == null) return null;
+    if (x == null) {
+    	return null;
+    }
     int dim_in = transpose ? x[0].length : x.length;
     int dim_out = transpose ? x.length : x[0].length;
     double[][] xgram = new double[dim_out][dim_out];
@@ -466,7 +503,9 @@ public class ArrayUtils {
   public static double[][] formGram(double[][] x) { return formGram(x, false); }
 
   public static double[] permute(double[] vec, int[] idx) {
-    if(vec == null) return null;
+    if(vec == null) {
+    	return null;
+    }
     assert vec.length == idx.length : "Length of vector must match permutation vector length: Got " + vec.length + " != " + idx.length;
     double[] res = new double[vec.length];
 
@@ -475,7 +514,9 @@ public class ArrayUtils {
     return res;
   }
   public static double[][] permuteCols(double[][] ary, int[] idx) {
-    if(ary == null) return null;
+    if(ary == null) {
+    	return null;
+    }
     assert ary[0].length == idx.length : "Number of columns must match permutation vector length: Got " + ary[0].length + " != " + idx.length;
     double[][] res = new double[ary.length][ary[0].length];
 
@@ -486,7 +527,9 @@ public class ArrayUtils {
     return res;
   }
   public static double[][] permuteRows(double[][] ary, int[] idx) {
-    if(ary == null) return null;
+    if(ary == null) {
+    	return null;
+    }
     assert ary.length == idx.length : "Number of rows must match permutation vector length: Got " + ary.length + " != " + idx.length;
     double[][] res = new double[ary.length][ary[0].length];
     for(int i = 0; i < ary.length; i++)
@@ -507,13 +550,17 @@ public class ArrayUtils {
   }
 
   public static String arrayToString(int[] ary) {
-    if (ary == null || ary.length==0 ) return "";
+    if (ary == null || ary.length==0 ) {
+    	return "";
+    }
     int m = ary.length - 1;
 
     StringBuilder sb = new StringBuilder();
     for (int i = 0; ; i++) {
       sb.append(ary[i]);
-      if (i == m) return sb.toString();
+      if (i == m) {
+    	  return sb.toString();
+      }
       sb.append(", ");
     }
   }
@@ -551,13 +598,18 @@ public class ArrayUtils {
   }
 
   public static boolean contains(String[] names, String name) {
-    if (null == names) return false;
+    if (null == names) {
+    	return false;
+    }
     for (String n : names) if (n.equals(name)) return true;
     return false;
   }
 
   static public boolean contains(int[] a, int d) {
-    for (int anA : a) if (anA == d) return true;
+    for (int anA : a) 
+    	if (anA == d) {
+    		return true;
+    	}
     return false;
   }
 
@@ -577,7 +629,9 @@ public class ArrayUtils {
         result = i;
         maxCount = 1;
       } else if( from[i] == from[result] ) {
-        if( rand.nextInt(++maxCount) == 0 ) result = i;
+        if( rand.nextInt(++maxCount) == 0 ) {
+        	result = i;
+        }
       }
     }
     return result;
@@ -592,7 +646,9 @@ public class ArrayUtils {
         result = i;
         maxCount = 1;
       } else if( from[i] == from[result] ) {
-        if( rand.nextInt(++maxCount) == 0 ) result = i;
+        if( rand.nextInt(++maxCount) == 0 ) {
+        	result = i;
+        }
       }
     }
     return result;
@@ -607,7 +663,9 @@ public class ArrayUtils {
         result = i;
         maxCount = 1;
       } else if( from[i] == from[result] ) {
-        if( rand.nextInt(++maxCount) == 0 ) result = i;
+        if( rand.nextInt(++maxCount) == 0 ) {
+        	result = i;
+        }
       }
     }
     return result;
@@ -616,25 +674,33 @@ public class ArrayUtils {
   public static int maxIndex(int[] from) {
     int result = 0;
     for (int i = 1; i<from.length; ++i)
-      if (from[i]>from[result]) result = i;
+      if (from[i]>from[result]) {
+    	  result = i;
+      }
     return result;
   }
   public static int maxIndex(long[] from) {
     int result = 0;
     for (int i = 1; i<from.length; ++i)
-      if (from[i]>from[result]) result = i;
+      if (from[i]>from[result]) {
+    	  result = i;
+      }
     return result;
   }
   public static int maxIndex(long[] from, int off) {
     int result = off;
     for (int i = off+1; i<from.length; ++i)
-      if (from[i]>from[result]) result = i;
+      if (from[i]>from[result]) {
+    	  result = i;
+      }
     return result;
   }
   public static int maxIndex(float[] from) {
     int result = 0;
     for (int i = 1; i<from.length; ++i)
-      if (from[i]>from[result]) result = i;
+      if (from[i]>from[result]) {
+    	  result = i;
+      }
     return result;
   }
   public static int maxIndex(double[] from) {
@@ -646,19 +712,25 @@ public class ArrayUtils {
   public static int minIndex(int[] from) {
     int result = 0;
     for (int i = 1; i<from.length; ++i)
-      if (from[i]<from[result]) result = i;
+      if (from[i]<from[result]) {
+    	  result = i;
+      }
     return result;
   }
   public static int minIndex(float[] from) {
     int result = 0;
     for (int i = 1; i<from.length; ++i)
-      if (from[i]<from[result]) result = i;
+      if (from[i]<from[result]) {
+    	  result = i;
+      }
     return result;
   }
   public static int minIndex(double[] from) {
     int result = 0;
     for (int i = 1; i<from.length; ++i)
-      if (from[i]<from[result]) result = i;
+      if (from[i]<from[result]) {
+    	  result = i;
+      }
     return result;
   }
   public static double maxValue(double[] ary) {
@@ -667,7 +739,9 @@ public class ArrayUtils {
   public static double maxValue(double[] ary, int from, int to) {
     double result = ary[from];
     for (int i = from+1; i<to; ++i)
-      if (ary[i]>result) result = ary[i];
+      if (ary[i]>result) {
+    	  result = ary[i];
+      }
     return result;
   }
   public static float maxValue(float[] ary) {
@@ -676,49 +750,65 @@ public class ArrayUtils {
   public static float maxValue(float[] ary, int from, int to) {
     float result = ary[from];
     for (int i = from+1; i<to; ++i)
-      if (ary[i]>result) result = ary[i];
+      if (ary[i]>result) {
+    	  result = ary[i];
+      }
     return result;
   }
   public static float minValue(float[] from) {
     float result = from[0];
     for (int i = 1; i<from.length; ++i)
-      if (from[i]<result) result = from[i];
+      if (from[i]<result) {
+    	  result = from[i];
+      }
     return result;
   }
   public static double minValue(double[] ary, int from, int to) {
     double result = ary[from];
     for (int i = from+1; i<to; ++i)
-      if (ary[i]<result) result = ary[i];
+      if (ary[i]<result) {
+    	  result = ary[i];
+      }
     return result;
   }
   public static double minValue(double[] from) {
     double result = from[0];
     for (int i = 1; i<from.length; ++i)
-      if (from[i]<result) result = from[i];
+      if (from[i]<result) {
+    	  result = from[i];
+      }
     return result;
   }
   public static long maxValue(long[] from) {
     long result = from[0];
     for (int i = 1; i<from.length; ++i)
-      if (from[i]>result) result = from[i];
+      if (from[i]>result) {
+    	  result = from[i];
+      }
     return result;
   }
   public static long maxValue(int[] from) {
     int result = from[0];
     for (int i = 1; i<from.length; ++i)
-      if (from[i]>result) result = from[i];
+      if (from[i]>result) {
+    	  result = from[i];
+      }
     return result;
   }
   public static long minValue(long[] from) {
     long result = from[0];
     for (int i = 1; i<from.length; ++i)
-      if (from[i]<result) result = from[i];
+      if (from[i]<result) {
+    	  result = from[i];
+      }
     return result;
   }
   public static long minValue(int[] from) {
     int result = from[0];
     for (int i = 1; i<from.length; ++i)
-      if (from[i]<result) result = from[i];
+      if (from[i]<result) {
+    	  result = from[i];
+      }
     return result;
   }
 
@@ -728,26 +818,35 @@ public class ArrayUtils {
   // Find an element with linear search & return it's index, or -1
   public static <T> int find(T[] ts, T elem, int off) {
     for (int i = off; i < ts.length; i++)
-      if (elem == ts[i] || elem.equals(ts[i]))
+      if (elem == ts[i] || elem.equals(ts[i])) {
         return i;
+        }
     return -1;
   }
   public static int find(long[] ls, long elem) {
     for(int i=0; i<ls.length; ++i )
-      if( elem==ls[i] ) return i;
+      if( elem==ls[i] ) {
+    	  return i;
+      }
     return -1;
   }
   public static int find(int[] ls, int elem) {
     for(int i=0; i<ls.length; ++i )
-      if( elem==ls[i] ) return i;
+      if( elem==ls[i] ) {
+    	  return i;
+      }
     return -1;
   }
   // behaves like Arrays.binarySearch, but is slower -> Just good for tiny arrays (length<20)
   public static int linearSearch(double[] vals, double v) {
     final int N=vals.length;
     for (int i=0; i<N; ++i) {
-      if (vals[i]==v) return i;
-      if (vals[i]>v) return -i-1;
+      if (vals[i]==v) {
+    	  return i;
+      }
+      if (vals[i]>v) {
+    	  return -i-1;
+      }
     }
     return -1;
   }
@@ -769,7 +868,9 @@ public class ArrayUtils {
       for( int c = 0; c < line.length; ++c ) {
         double d = line[c];
         String dStr = dformat.format(d);
-        if( dStr.indexOf('.') == -1 ) dStr += ".0";
+        if( dStr.indexOf('.') == -1 ) {
+        	dStr += ".0";
+        }
         ilengths[c] = Math.max(ilengths[c], dStr.indexOf('.'));
         int prefix = (d >= 0 ? 1 : 2);
         max_width = Math.max(dStr.length() + prefix, max_width);
@@ -779,11 +880,15 @@ public class ArrayUtils {
       for( int c = 0; c < line.length; ++c ) {
         double d = line[c];
         String dStr = dformat.format(d);
-        if( dStr.indexOf('.') == -1 ) dStr += ".0";
+        if( dStr.indexOf('.') == -1 ) {
+        	dStr += ".0";
+        }
         for( int x = dStr.indexOf('.'); x < ilengths[c] + 1; ++x )
           sb.append(' ');
         sb.append(dStr);
-        if( dStr.indexOf('.') == -1 ) sb.append('.');
+        if( dStr.indexOf('.') == -1 ) {
+        	sb.append('.');
+        }
         for( int i = dStr.length() - Math.max(0, dStr.indexOf('.')); i <= 5; ++i )
           sb.append('0');
       }
@@ -823,14 +928,19 @@ public class ArrayUtils {
    * @return result
    */
   public static int[] shuffleArray(int[] a, int n, int result[], long seed, int startIndex) {
-    if (n<=0) return result;
+    if (n<=0) {
+    	return result;
+    }
     Random random = getRNG(seed);
-    if (result == null || result.length != n)
+    if (result == null || result.length != n) {
       result = new int[n];
+    }
     result[0] = a[startIndex];
     for (int i = 1; i < n; i++) {
       int j = random.nextInt(i+1);
-      if (j!=i) result[i] = result[j];
+      if (j!=i) {
+    	  result[i] = result[j];
+      }
       result[j] = a[startIndex+i];
     }
     for (int i = 0; i < n; ++i)
@@ -849,7 +959,9 @@ public class ArrayUtils {
   // Generate a n by m array of random numbers drawn from the standard normal distribution
   public static double[][] gaussianArray(int n, int m) { return gaussianArray(n, m, System.currentTimeMillis()); }
   public static double[][] gaussianArray(int n, int m, long seed) {
-    if(n <= 0 || m <= 0) return null;
+    if(n <= 0 || m <= 0) {
+    	return null;
+    }
     double[][] result = new double[n][m];
     Random random = getRNG(seed);
 
@@ -862,7 +974,9 @@ public class ArrayUtils {
   public static double[] gaussianVector(int n) { return gaussianVector(n, System.currentTimeMillis()); }
   public static double[] gaussianVector(int n, long seed) { return gaussianVector(n, getRNG(seed)); }
   public static double[] gaussianVector(int n, Random random) {
-    if(n <= 0) return null;
+    if(n <= 0) {
+    	return null;
+    }
     double[] result = new double[n];  // ToDo: Get rid of this new action.
 
     for(int i = 0; i < n; i++)
@@ -872,8 +986,9 @@ public class ArrayUtils {
 
   /** Remove the array allocation in this one */
   public static double[] gaussianVector(long seed, double[] vseed) {
-    if (vseed == null)
+    if (vseed == null) {
       return null;
+    }
 
     Random random = getRNG(seed);
     int arraySize = vseed.length;
@@ -892,7 +1007,9 @@ public class ArrayUtils {
 
   public static boolean isInt(String... ary) {
     for(String s:ary) {
-      if (s == null || s.isEmpty()) return false;
+      if (s == null || s.isEmpty()) {
+    	  return false;
+      }
       int i = s.charAt(0) == '-' ? 1 : 0;
       for (; i < s.length(); i++) if (!Character.isDigit(s.charAt(i))) return false;
     }
@@ -934,14 +1051,19 @@ public class ArrayUtils {
    * // TODO: add tests
    */
   public static String[] domainUnion(String[] a, String[] b) {
-    if (a == null) return b;
-    if (b == null) return a;
+    if (a == null) {
+    	return b;
+    }
+    if (b == null) {
+    	return a;
+    }
     int cIinA = numInts(a);
     int cIinB = numInts(b);
     // Trivial case - all strings or ints, sorted
     if (cIinA==0 && cIinB==0   // only strings
-        || cIinA==a.length && cIinB==b.length ) // only integers
+        || cIinA==a.length && cIinB==b.length ) { // only integers
       return union(a, b, cIinA==0);
+    }
     // Be little bit clever here: sort string representing numbers first and append
     // a,b were sorted by Array.sort() but can contain some numbers.
     // So sort numbers in numeric way, and then string in lexicographical order
@@ -965,8 +1087,12 @@ public class ArrayUtils {
    * precondition a!=null &amp;&amp; b!=null
    */
   public static String[] union(String[] a, String[] b, boolean lexo) {
-    if (a == null) return b;
-    if (b == null) return a;
+    if (a == null) {
+    	return b;
+    }
+    if (b == null) {
+    	return a;
+    }
     return union(a, b, 0, a.length, 0, b.length, lexo);
   }
   public static String[] union(String[] a, String[] b, int aoff, int alen, int boff, int blen, boolean lexo) {
@@ -975,12 +1101,22 @@ public class ArrayUtils {
     int ia = aoff, ib = boff, i = 0;
     while (ia < aoff+alen && ib < boff+blen) {
       int c = lexo ? a[ia].compareTo(b[ib]) : Integer.valueOf(a[ia]).compareTo(Integer.valueOf(b[ib]));
-      if ( c < 0) r[i++] = a[ia++];
+      if ( c < 0) {
+    	  r[i++] = a[ia++];
+      }
       else if (c == 0) { r[i++] = a[ia++]; ib++; }
       else r[i++] = b[ib++];
     }
-    if (ia < aoff+alen) while (ia<aoff+alen) r[i++] = a[ia++];
-    if (ib < boff+blen) while (ib<boff+blen) r[i++] = b[ib++];
+    if (ia < aoff+alen) {
+    	while (ia<aoff+alen) {
+    		r[i++] = a[ia++];
+    	}
+    }
+    if (ib < boff+blen) {
+    	while (ib<boff+blen) {
+    		r[i++] = b[ib++];
+    	}
+    }
     return Arrays.copyOf(r, i);
   }
   /** Returns a union of given sorted arrays. */
@@ -990,12 +1126,22 @@ public class ArrayUtils {
     int ia = 0, ib = 0, i = 0;
     while (ia < a.length && ib < b.length) {
       int c = a[ia]-b[ib];
-      if ( c < 0) r[i++] = a[ia++];
+      if ( c < 0) {
+    	  r[i++] = a[ia++];
+      }
       else if (c == 0) { r[i++] = a[ia++]; ib++; }
       else r[i++] = b[ib++];
     }
-    if (ia < a.length) while (ia<a.length) r[i++] = a[ia++];
-    if (ib < b.length) while (ib<b.length) r[i++] = b[ib++];
+    if (ia < a.length) {
+    	while (ia<a.length) {
+    		r[i++] = a[ia++];
+    	}
+    }
+    if (ib < b.length) {
+    	while (ib<b.length) {
+    		r[i++] = b[ib++];
+    	}
+    }
     return Arrays.copyOf(r, i);
   }
 
@@ -1017,21 +1163,24 @@ public class ArrayUtils {
 
   public static boolean hasNaNsOrInfs(double [] ary){
     for(double d:ary)
-      if(Double.isNaN(d) || Double.isInfinite(d))
+      if(Double.isNaN(d) || Double.isInfinite(d)) {
         return true;
+        }
     return false;
   }
   public static boolean hasNaNs(double [] ary){
     for(double d:ary)
-      if(Double.isNaN(d))
+      if(Double.isNaN(d)) {
         return true;
+        }
     return false;
   }
 
   public static boolean hasNaNsOrInfs(float [] ary){
     for(float d:ary)
-      if(Double.isNaN(d) || Double.isInfinite(d))
+      if(Double.isNaN(d) || Double.isInfinite(d)) {
         return true;
+      }
     return false;
   }
   /** Generates sequence (start, stop) of integers: (start, start+1, ...., stop-1) */
@@ -1045,33 +1194,53 @@ public class ArrayUtils {
 
   // warning: Non-Symmetric! Returns all elements in a that are not in b (but NOT the other way around)
   static public int[] difference(int a[], int b[]) {
-    if (a == null) return new int[]{};
-    if (b == null) return a.clone();
+    if (a == null) {
+    	return new int[]{};
+    }
+    if (b == null) {
+    	return a.clone();
+    }
     int[] r = new int[a.length];
     int cnt = 0;
     for (int x : a) {
-      if (!contains(b, x)) r[cnt++] = x;
+      if (!contains(b, x)) {
+    	  r[cnt++] = x;
+      }
     }
     return Arrays.copyOf(r, cnt);
   }
 
   // warning: Non-Symmetric! Returns all elements in a that are not in b (but NOT the other way around)
   static public String[] difference(String a[], String b[]) {
-    if (a == null) return new String[]{};
-    if (b == null) return a.clone();
+    if (a == null) {
+    	return new String[]{};
+    }
+    if (b == null) {
+    	return a.clone();
+    }
     String[] r = new String[a.length];
     int cnt = 0;
     for (String s : a) {
-      if (!contains(b, s)) r[cnt++] = s;
+      if (!contains(b, s)) {
+    	  r[cnt++] = s;
+      }
     }
     return Arrays.copyOf(r, cnt);
   }
 
   static public double[][] append( double[][] a, double[][] b ) {
-    if( a==null ) return b;
-    if( b==null ) return a;
-    if( a.length==0 ) return b;
-    if( b.length==0 ) return a;
+    if( a==null ) {
+    	return b;
+    }
+    if( b==null ) {
+    	return a;
+    }
+    if( a.length==0 ) {
+    	return b;
+    }
+    if( b.length==0 ) {
+    	return a;
+    }
     assert a[0].length==b[0].length;
     double[][] c = Arrays.copyOf(a,a.length+b.length);
     System.arraycopy(b,0,c,a.length,b.length);
@@ -1079,49 +1248,89 @@ public class ArrayUtils {
   }
 
   static public byte[] append( byte[] a, byte[] b ) {
-    if( a==null ) return b;
-    if( b==null ) return a;
-    if( a.length==0 ) return b;
-    if( b.length==0 ) return a;
+    if( a==null ) {
+    	return b;
+    }
+    if( b==null ) {
+    	return a;
+    }
+    if( a.length==0 ) {
+    	return b;
+    }
+    if( b.length==0 ) {
+    	return a;
+    }
     byte[] c = Arrays.copyOf(a,a.length+b.length);
     System.arraycopy(b,0,c,a.length,b.length);
     return c;
   }
 
   static public int[] append( int[] a, int[] b ) {
-    if( a==null ) return b;
-    if( b==null ) return a;
-    if( a.length==0 ) return b;
-    if( b.length==0 ) return a;
+    if( a==null ) {
+    	return b;
+    }
+    if( b==null ) {
+    	return a;
+    }
+    if( a.length==0 ) {
+    	return b;
+    }
+    if( b.length==0 ) {
+    	return a;
+    }
     int[] c = Arrays.copyOf(a,a.length+b.length);
     System.arraycopy(b,0,c,a.length,b.length);
     return c;
   }
 
   static public long[] append( long[] a, long[] b ) {
-    if( a==null ) return b;
-    if( b==null ) return a;
-    if( a.length==0 ) return b;
-    if( b.length==0 ) return a;
+    if( a==null ) {
+    	return b;
+    }
+    if( b==null ) {
+    	return a;
+    }
+    if( a.length==0 ) {
+    	return b;
+    }
+    if( b.length==0 ) {
+    	return a;
+    }
     long[] c = Arrays.copyOf(a,a.length+b.length);
     System.arraycopy(b,0,c,a.length,b.length);
     return c;
   }
 
   static public double[] append( double[] a, double[] b ) {
-    if( a==null ) return b;
-    if( b==null ) return a;
-    if( a.length==0 ) return b;
-    if( b.length==0 ) return a;
+    if( a==null ) {
+    	return b;
+    }
+    if( b==null ) {
+    	return a;
+    }
+    if( a.length==0 ) {
+    	return b;
+    }
+    if( b.length==0 ) {
+    	return a;
+    }
     double[] c = Arrays.copyOf(a,a.length+b.length);
     System.arraycopy(b,0,c,a.length,b.length);
     return c;
   }
   static public String[] append( String[] a, String[] b ) {
-    if( a==null ) return b;
-    if( b==null ) return a;
-    if( a.length==0 ) return b;
-    if( b.length==0 ) return a;
+    if( a==null ) {
+    	return b;
+    }
+    if( b==null ) {
+    	return a;
+    }
+    if( a.length==0 ) {
+    	return b;
+    }
+    if( b.length==0 ) {
+    	return a;
+    }
     String[] c = Arrays.copyOf(a,a.length+b.length);
     System.arraycopy(b,0,c,a.length,b.length);
     return c;
@@ -1129,27 +1338,35 @@ public class ArrayUtils {
 
   // Java7+  @SafeVarargs
   public static <T> T[] append(T[] a, T... b) {
-    if( a==null ) return b;
+    if( a==null ) {
+    	return b;
+    }
     T[] tmp = Arrays.copyOf(a,a.length+b.length);
     System.arraycopy(b,0,tmp,a.length,b.length);
     return tmp;
   }
   public static int[] append(int[] a, int b) {
-    if( a==null || a.length == 0) return  new int[]{b};
+    if( a==null || a.length == 0) {
+    	return  new int[]{b};
+    }
     int[] tmp = Arrays.copyOf(a,a.length+1);
     tmp[a.length] = b;
     return tmp;
   }
 
   static public String[] prepend(String[] ary, String s) {
-    if (ary==null) return new String[] { s };
+    if (ary==null) {
+    	return new String[] { s };
+    }
     String[] nary = new String[ary.length+1];
     nary[0] = s;
     System.arraycopy(ary,0,nary,1,ary.length);
     return nary;
   }
   static public <T> T[] copyAndFillOf(T[] original, int newLength, T padding) {
-    if(newLength < 0) throw new NegativeArraySizeException("The array size is negative.");
+    if(newLength < 0) {
+    	throw new NegativeArraySizeException("The array size is negative.");
+    }
     T[] newArray = Arrays.copyOf(original, newLength);
     if(original.length < newLength) {
       System.arraycopy(original, 0, newArray, 0, original.length);
@@ -1161,7 +1378,9 @@ public class ArrayUtils {
   }
 
   static public double[] copyAndFillOf(double[] original, int newLength, double padding) {
-    if(newLength < 0) throw new NegativeArraySizeException("The array size is negative.");
+    if(newLength < 0) {
+    	throw new NegativeArraySizeException("The array size is negative.");
+    }
     double[] newArray = new double[newLength];
     if(original.length < newLength) {
       System.arraycopy(original, 0, newArray, 0, original.length);
@@ -1171,7 +1390,9 @@ public class ArrayUtils {
     return newArray;
   }
   static public long[] copyAndFillOf(long[] original, int newLength, long padding) {
-    if(newLength < 0) throw new NegativeArraySizeException("The array size is negative.");
+    if(newLength < 0) {
+    	throw new NegativeArraySizeException("The array size is negative.");
+    }
     long[] newArray = new long[newLength];
     if(original.length < newLength) {
       System.arraycopy(original, 0, newArray, 0, original.length);
@@ -1181,7 +1402,9 @@ public class ArrayUtils {
     return newArray;
   }
   static public int[] copyAndFillOf(int[] original, int newLength, int padding) {
-    if(newLength < 0) throw new NegativeArraySizeException("The array size is negative.");
+    if(newLength < 0) {
+    	throw new NegativeArraySizeException("The array size is negative.");
+    }
     int[] newArray = new int[newLength];
     if(original.length < newLength) {
       System.arraycopy(original, 0, newArray, 0, original.length);
@@ -1201,9 +1424,15 @@ public class ArrayUtils {
     int [] c = MemoryManager.malloc4(a.length + b.length);
     int i = 0, j = 0;
     for(int k = 0; k < c.length; ++k){
-      if(i == a.length) c[k] = b[j++];
-      else if(j == b.length)c[k] = a[i++];
-      else if(b[j] < a[i]) c[k] = b[j++];
+      if(i == a.length) {
+    	  c[k] = b[j++];
+      }
+      else if(j == b.length) {
+    	  c[k] = a[i++];
+      }
+      else if(b[j] < a[i]) {
+    	  c[k] = b[j++];
+      }
       else c[k] = a[i++];
     }
     return c;
@@ -1212,9 +1441,15 @@ public class ArrayUtils {
     double [] c = MemoryManager.malloc8d(a.length + b.length);
     int i = 0, j = 0;
     for(int k = 0; k < c.length; ++k){
-      if(i == a.length) c[k] = b[j++];
-      else if(j == b.length)c[k] = a[i++];
-      else if(b[j] < a[i]) c[k] = b[j++];
+      if(i == a.length) {
+    	  c[k] = b[j++];
+      }
+      else if(j == b.length) {
+    	  c[k] = a[i++];
+      }
+      else if(b[j] < a[i]) {
+    	  c[k] = b[j++];
+      }
       else c[k] = a[i++];
     }
     return c;
@@ -1335,8 +1570,12 @@ public class ArrayUtils {
    * @return flattened array, if input was null return null, if input was empty return null
    */
   public static <T> T[] flat(T[][] arr) {
-    if (arr == null) return null;
-    if (arr.length == 0) return null;
+    if (arr == null) {
+    	return null;
+    }
+    if (arr.length == 0) {
+    	return null;
+    }
     int tlen = 0;
     for (T[] t : arr) tlen += t.length;
     T[] result = Arrays.copyOf(arr[0], tlen);
@@ -1360,8 +1599,12 @@ public class ArrayUtils {
   }
 
   public static double[] flat(double[][] arr) {
-    if (arr == null) return null;
-    if (arr.length == 0) return null;
+    if (arr == null) {
+    	return null;
+    }
+    if (arr.length == 0) {
+    	return null;
+    }
     int tlen = 0;
     for (double[] t : arr) tlen += t.length;
     double[] result = Arrays.copyOf(arr[0], tlen);
@@ -1374,7 +1617,9 @@ public class ArrayUtils {
   }
 
   public static Object[][] zip(Object[] a, Object[] b) {
-    if (a.length != b.length) throw new IllegalArgumentException("Cannot zip arrays of different lengths!");
+    if (a.length != b.length) {
+    	throw new IllegalArgumentException("Cannot zip arrays of different lengths!");
+    }
     Object[][] result = new Object[a.length][2];
     for (int i = 0; i < a.length; i++) {
       result[i][0] = a[i];
@@ -1426,7 +1671,9 @@ public class ArrayUtils {
   }
 
   public static String [] remove(String [] ary, String s) {
-    if(s == null)return ary;
+    if(s == null) {
+    	return ary;
+    }
     int cnt = 0;
     int idx = find(ary,s);
     while(idx > 0) {
@@ -1437,8 +1684,9 @@ public class ArrayUtils {
     String [] res = new String[ary.length-cnt];
     int j = 0;
     for(String x:ary)
-      if(!x.equals(s))
+      if(!x.equals(s)) {
         res[j++] = x;
+      }
     return res;
   }
 
@@ -1448,9 +1696,12 @@ public class ArrayUtils {
     int [] res = new int[x.length];
     int j = 0, k = 0;
     for(int i = 0; i < x.length; i++){
-      while(j < y.length && y[j] < x[i])j++;
-      if(j == y.length || y[j] != x[i])
+      while(j < y.length && y[j] < x[i]) {
+    	  j++;
+      }
+      if(j == y.length || y[j] != x[i]) {
         res[k++] = x[i];
+        }
     }
     return Arrays.copyOf(res,k);
   }
@@ -1556,12 +1807,16 @@ public class ArrayUtils {
       NewChunk chunk = new NewChunk(vec, 0);
       for (double[] row : rows) chunk.addNum(row[c]);
       chunk.close(0, fs);
-      if( rowLayout== -1) rowLayout = vec.compute_rowLayout();
+      if( rowLayout== -1) {
+    	  rowLayout = vec.compute_rowLayout();
+      }
       vecs[c] = vec.close(rowLayout,fs);
     }
     fs.blockForPending();
     Frame fr = new Frame(key, names, vecs);
-    if( key != null ) DKV.put(key, fr);
+    if( key != null ) {
+    	DKV.put(key, fr);
+    }
     return fr;
   }
   public static Frame frame(double[]... rows) { return frame(null, rows); }
@@ -1574,12 +1829,14 @@ public class ArrayUtils {
   public static int[] removeSorted(int [] a, int [] b) {
     int [] indeces = new int[b.length];
     indeces[0] = Arrays.binarySearch(a,0,a.length,b[0]);
-    if(indeces[0] < 0)
+    if(indeces[0] < 0) {
       throw new NoSuchElementException("value " + b[0] + " not found in the first array.");
+      }
     for(int i = 1; i < b.length; ++i) {
       indeces[i] = Arrays.binarySearch(a,indeces[i-1],a.length,b[i]);
-      if(indeces[i] < 0)
+      if(indeces[i] < 0) {
         throw new NoSuchElementException("value " + b[i] + " not found in the first array.");
+        }
     }
     return removeIds(a,indeces);
   }
@@ -1588,29 +1845,42 @@ public class ArrayUtils {
     int [] res = new int[x.length-ids.length];
     int j = 0;
     for(int i = 0; i < x.length; ++i)
-      if(j == ids.length || i != ids[j]) res[i-j] = x[i]; else ++j;
+      if(j == ids.length || i != ids[j]) {
+    	  res[i-j] = x[i]; 
+      }
+    	  else ++j;
+      
     return res;
   }
   public static double[] removeIds(double[] x, int[] ids) {
     double [] res = new double[x.length-ids.length];
     int j = 0;
     for(int i = 0; i < x.length; ++i)
-      if(j == ids.length || i != ids[j]) res[i-j] = x[i]; else ++j;
+      if(j == ids.length || i != ids[j]) {
+    	  res[i-j] = x[i]; 
+      }
+      else ++j;
+     
     return res;
   }
 
   public static boolean hasNzs(double[] x) {
-    if(x == null)
+    if(x == null) {
       return false;
+      }
     for(double d:x)
-      if(d != 0) return true;
+      if(d != 0) {
+    	  return true;
+      }
     return false;
   }
 
   public static int countNonzeros(double[] beta) {
     int res = 0;
     for(double d:beta)
-      if(d != 0)++res;
+      if(d != 0) {
+    	  ++res;
+      }
     return res;
   }
 
@@ -1620,36 +1890,62 @@ public class ArrayUtils {
   }
 
   public static <T> T[] remove( T[] ary, int id) {
-    if(id < 0 || id >= ary.length) return Arrays.copyOf(ary,ary.length);
-    if(id == ary.length-1) return Arrays.copyOf(ary,id);
-    if(id == 0) return Arrays.copyOfRange(ary,1,ary.length);
+    if(id < 0 || id >= ary.length) {
+    	return Arrays.copyOf(ary,ary.length);
+    }
+    if(id == ary.length-1) {
+    	return Arrays.copyOf(ary,id);
+    }
+    if(id == 0) {
+    	return Arrays.copyOfRange(ary,1,ary.length);
+    }
     return append(Arrays.copyOf(ary,id), Arrays.copyOfRange(ary,id+1,ary.length));
   }
 
   public static byte[] remove(byte[] ary, int id) {
-    if(id < 0 || id >= ary.length) return Arrays.copyOf(ary,ary.length);
-    if(id == ary.length-1) return Arrays.copyOf(ary,id);
-    if(id == 0) return Arrays.copyOfRange(ary,1,ary.length);
+    if(id < 0 || id >= ary.length) {
+    	return Arrays.copyOf(ary,ary.length);
+    }
+    if(id == ary.length-1) {
+    	return Arrays.copyOf(ary,id);
+    }
+    if(id == 0) {
+    	return Arrays.copyOfRange(ary,1,ary.length);
+    }
     return append(Arrays.copyOf(ary,id), Arrays.copyOfRange(ary,id+1,ary.length));
   }
 
   public static int[] remove(int[] ary, int id) {
-    if(id < 0 || id >= ary.length) return Arrays.copyOf(ary,ary.length);
-    if(id == ary.length-1) return Arrays.copyOf(ary,id);
-    if(id == 0) return Arrays.copyOfRange(ary,1,ary.length);
+    if(id < 0 || id >= ary.length) {
+    	return Arrays.copyOf(ary,ary.length);
+    }
+    if(id == ary.length-1) {
+    	return Arrays.copyOf(ary,id);
+    }
+    if(id == 0) {
+    	return Arrays.copyOfRange(ary,1,ary.length);
+    }
     return append(Arrays.copyOf(ary,id), Arrays.copyOfRange(ary,id+1,ary.length));
   }
 
   public static long[] remove(long[] ary, int id) {
-    if(id < 0 || id >= ary.length) return Arrays.copyOf(ary,ary.length);
-    if(id == ary.length-1) return Arrays.copyOf(ary,id);
-    if(id == 0) return Arrays.copyOfRange(ary,1,ary.length);
+    if(id < 0 || id >= ary.length) {
+    	return Arrays.copyOf(ary,ary.length);
+    }
+    if(id == ary.length-1) {
+    	return Arrays.copyOf(ary,id);
+    }
+    if(id == 0) {
+    	return Arrays.copyOfRange(ary,1,ary.length);
+    }
     return append(Arrays.copyOf(ary,id), Arrays.copyOfRange(ary,id+1,ary.length));
   }
 
   public static double[] padUniformly(double[] origPoints, int newLength) {
     int origLength = origPoints.length;
-    if (newLength <= origLength || origLength<=1) return origPoints;
+    if (newLength <= origLength || origLength<=1) {
+    	return origPoints;
+    }
     int extraPoints = newLength - origLength;
     int extraPointsPerBin = extraPoints/(origLength-1);
     double[] res = new double[newLength];
@@ -1679,7 +1975,9 @@ public class ArrayUtils {
       // first one
       if (pos >= min && count==0) {
         uniqueValidPoints[count++]= min;
-        if (pos> min) uniqueValidPoints[count++]=pos;
+        if (pos> min) {
+        	uniqueValidPoints[count++]=pos;
+        }
         last=pos;
       }
       //last one
@@ -1701,16 +1999,24 @@ public class ArrayUtils {
   // See HistogramTest JUnit for tests
   public static double[] limitToRange(double[] sortedSplitPoints, double min, double maxEx) {
     int start=Arrays.binarySearch(sortedSplitPoints, min);
-    if (start<0) start=-start-1;
+    if (start<0) {
+    	start=-start-1;
+    }
     // go back one more to return at least one value
-    if (start==sortedSplitPoints.length) start--;
+    if (start==sortedSplitPoints.length) {
+    	start--;
+    }
     // go back one more to include the min (inclusive)
-    if (sortedSplitPoints[start] > min && start>0) start--;
+    if (sortedSplitPoints[start] > min && start>0) {
+    	start--;
+    }
     assert(start>=0);
     assert(sortedSplitPoints[start] <= min);
 
     int end=Arrays.binarySearch(sortedSplitPoints, maxEx);
-    if (end<0) end=-end-1;
+    if (end<0) {
+    	end=-end-1;
+    }
     assert(end>0 && end<= sortedSplitPoints.length);
     assert(end>=start);
     assert(sortedSplitPoints[end-1] < maxEx);
@@ -1745,12 +2051,16 @@ public class ArrayUtils {
   }
 
   public static int encodeAsInt(byte[] bs, int at) {
-    if (at + 4 > bs.length) throw new IndexOutOfBoundsException("Cannot encode more than 4 bytes into int: len = " + bs.length + ", pos=" + at);
+    if (at + 4 > bs.length) {
+    	throw new IndexOutOfBoundsException("Cannot encode more than 4 bytes into int: len = " + bs.length + ", pos=" + at);
+    }
     return (bs[at]&0xFF)+((bs[at+1]&0xFF)<<8)+((bs[at+2]&0xFF)<<16)+((bs[at+3]&0xFF)<<24);
   }
 
   public static byte[] decodeAsInt(int what, byte[] bs, int at) {
-    if (bs.length < at + 4) throw new IndexOutOfBoundsException("Wrong position " + at + ", array length is " + bs.length);
+    if (bs.length < at + 4) {
+    	throw new IndexOutOfBoundsException("Wrong position " + at + ", array length is " + bs.length);
+    }
     for (int i = at; i < at+4 && i < bs.length; i++) {
       bs[i] = (byte)(what&0xFF);
       what >>= 8;
@@ -1765,7 +2075,9 @@ public class ArrayUtils {
    * 0xff18000000000000L -> new byte[] { 0xff, 0x18, 0, 0, 0, 0, 0, 0}
    */
   public static byte[] toByteArray(long ...nums) {
-    if (nums == null || nums.length == 0) return EMPTY_BYTE_ARRAY;
+    if (nums == null || nums.length == 0) {
+    	return EMPTY_BYTE_ARRAY;
+    }
     byte[] result = new byte[8*nums.length];
     int c = 0;
     for (long n : nums) {
@@ -1786,9 +2098,13 @@ public class ArrayUtils {
   }
 
   public static boolean equalsAny(long value, long...lhs) {
-    if (lhs == null || lhs.length == 0) return false;
+    if (lhs == null || lhs.length == 0) {
+    	return false;
+    }
     for (long lhValue : lhs) {
-      if (value == lhValue) return true;
+      if (value == lhValue) {
+    	  return true;
+      }
     }
     return false;
   }
@@ -1818,12 +2134,16 @@ public class ArrayUtils {
 
   public static boolean isSorted(int[] vals) {
     for (int i = 1; i < vals.length; ++i)
-      if (vals[i - 1] > vals[i]) return false;
+      if (vals[i - 1] > vals[i]) {
+    	  return false;
+      }
     return true;
   }
   public static boolean isSorted(double[] vals) {
     for (int i = 1; i < vals.length; ++i)
-      if (vals[i - 1] > vals[i]) return false;
+      if (vals[i - 1] > vals[i]) {
+    	  return false;
+      }
     return true;
   }
 }

@@ -469,8 +469,9 @@ public class ForkJoinPool extends AbstractExecutorService {
      */
     private static void checkPermission() {
         SecurityManager security = System.getSecurityManager();
-        if (security != null)
+        if (security != null) {
             security.checkPermission(modifyThreadPermission);
+            }
     }
 
     // Nested classes
@@ -679,11 +680,13 @@ public class ForkJoinPool extends AbstractExecutorService {
                 U.putOrderedObject
                     (a, (((m = a.length - 1) & s) << ASHIFT) + ABASE, task);
                 if ((n = (top = s + 1) - base) <= 2) {
-                    if ((p = pool) != null)
+                    if ((p = pool) != null) {
                         p.signalWork();
+                    }
                 }
-                else if (n >= m)
+                else if (n >= m) {
                     growArray(true);
+                    }
             }
         }
 
@@ -724,8 +727,9 @@ public class ForkJoinPool extends AbstractExecutorService {
             if ((a = array) != null && (m = a.length - 1) >= 0) {
                 for (int s; (s = top - 1) - base >= 0;) {
                     long j = ((m & s) << ASHIFT) + ABASE;
-                    if ((t = (ForkJoinTask<?>)U.getObject(a, j)) == null)
+                    if ((t = (ForkJoinTask<?>)U.getObject(a, j)) == null) {
                         break;
+                    }
                     if (U.compareAndSwapObject(a, j, t, null)) {
                         top = s;
                         return t;
@@ -744,7 +748,9 @@ public class ForkJoinPool extends AbstractExecutorService {
             ForkJoinTask<?> t; ForkJoinTask<?>[] a;
             if ((a = array) != null) {
                 int j = (((a.length - 1) & b) << ASHIFT) + ABASE;
-                if ((t = (ForkJoinTask<?>)U.getObjectVolatile(a, j)) != null &&
+                if ((t = (ForkJoinTask<?>)U.getObjectVolatile(a, j)) {
+                	!= null &&
+                }
                     base == b &&
                     U.compareAndSwapObject(a, j, t, null)) {
                     base = b + 1;
@@ -770,8 +776,9 @@ public class ForkJoinPool extends AbstractExecutorService {
                     }
                 }
                 else if (base == b) {
-                    if (b + 1 == top)
+                    if (b + 1 == top) {
                         break;
+                    }
                     Thread.yield(); // wait for lagging update
                 }
             }
@@ -790,8 +797,9 @@ public class ForkJoinPool extends AbstractExecutorService {
          */
         final ForkJoinTask<?> peek() {
             ForkJoinTask<?>[] a = array; int m;
-            if (a == null || (m = a.length - 1) < 0)
+            if (a == null || (m = a.length - 1) < 0) {
                 return null;
+            }
             int i = mode == 0 ? top - 1 : base;
             int j = ((i & m) << ASHIFT) + ABASE;
             return (ForkJoinTask<?>)U.getObjectVolatile(a, j);
@@ -850,14 +858,16 @@ public class ForkJoinPool extends AbstractExecutorService {
                         int j    = ((b &    mask) << ASHIFT) + ABASE;
                         x = (ForkJoinTask<?>)U.getObjectVolatile(oldA, oldj);
                         if (x != null &&
-                            U.compareAndSwapObject(oldA, oldj, x, null))
+                            U.compareAndSwapObject(oldA, oldj, x, null)) {
                             U.putObjectVolatile(a, j, x);
+                            }
                     } while (++b != t);
                 }
                 return a;
             }
-            else if (!rejectOnFailure)
+            else if (!rejectOnFailure) {
                 return null;
+            }
             else
                 throw new RejectedExecutionException("Queue capacity exceeded");
         }
@@ -931,12 +941,14 @@ public class ForkJoinPool extends AbstractExecutorService {
                 for (ForkJoinTask<?> t;;) {           // traverse from s to b
                     int j = ((--s & m) << ASHIFT) + ABASE;
                     t = (ForkJoinTask<?>)U.getObjectVolatile(a, j);
-                    if (t == null)                    // inconsistent length
+                    if (t == null)  {                  // inconsistent length
                         break;
+                    }
                     else if (t == task) {
                         if (s + 1 == top) {           // pop
-                            if (!U.compareAndSwapObject(a, j, task, null))
+                            if (!U.compareAndSwapObject(a, j, task, null)) {
                                 break;
+                            }
                             top = s;
                             removed = true;
                         }
@@ -953,14 +965,16 @@ public class ForkJoinPool extends AbstractExecutorService {
                         break;
                     }
                     if (--n == 0) {
-                        if (!empty && base == b)
+                        if (!empty && base == b) {
                             stat = 0;
+                        }
                         break;
                     }
                 }
             }
-            if (removed)
+            if (removed) {
                 task.doExec();
+            }
             return stat;
         }
 
@@ -973,8 +987,9 @@ public class ForkJoinPool extends AbstractExecutorService {
                 currentSteal = t;
                 t.doExec();
                 if (top != base) {       // process remaining local tasks
-                    if (mode == 0)
+                    if (mode == 0) {
                         popAndExecAll();
+                    }
                     else
                         pollAndExecAll();
                 }
@@ -1020,8 +1035,9 @@ public class ForkJoinPool extends AbstractExecutorService {
                 	System.out.println("The error is: " + ignore);
                 }
             }
-            if ((p = parker) != null)
+            if ((p = parker) != null) {
                 U.unpark(p);
+            }
         }
 
         // Unsafe mechanics
@@ -1042,8 +1058,9 @@ public class ForkJoinPool extends AbstractExecutorService {
             } catch (Exception e) {
                 throw new Error(e);
             }
-            if ((s & (s-1)) != 0)
+            if ((s & (s-1)) != 0) {
                 throw new Error("data type scale not a power of two");
+            }
             ASHIFT = 31 - Integer.numberOfLeadingZeros(s);
         }
     }
@@ -1350,8 +1367,9 @@ public class ForkJoinPool extends AbstractExecutorService {
             lock.lock();
             try {                           // remove record from array
                 WorkQueue[] ws = workQueues;
-                if (ws != null && idx >= 0 && idx < ws.length && ws[idx] == w)
+                if (ws != null && idx >= 0 && idx < ws.length && ws[idx] == w) {
                     ws[idx] = null;
+                }
             } finally {
                 lock.unlock();
             }
@@ -1365,14 +1383,17 @@ public class ForkJoinPool extends AbstractExecutorService {
 
         if (!tryTerminate(false, false) && w != null) {
             w.cancelAll();                  // cancel remaining tasks
-            if (w.array != null)            // suppress signal if never ran
-                signalWork();               // wake up or create replacement
-            if (ex == null)                 // help clean refs on way out
+            if (w.array != null) {           // suppress signal if never ran
+                signalWork();     
+            }          // wake up or create replacement
+            if (ex == null)    {             // help clean refs on way out
                 ForkJoinTask.helpExpungeStaleExceptions();
+            }
         }
 
-        if (ex != null)                     // rethrow
+        if (ex != null)     {                // rethrow
             U.throwException(ex);
+        }
     }
 
 
@@ -1393,8 +1414,9 @@ public class ForkJoinPool extends AbstractExecutorService {
         for (int r = s.seed, m = submitMask;;) {
             WorkQueue[] ws; WorkQueue q;
             int k = r & m & SQMASK;          // use only even indices
-            if (runState < 0 || (ws = workQueues) == null || ws.length <= k)
+            if (runState < 0 || (ws = workQueues) == null || ws.length <= k) {
                 throw new RejectedExecutionException(); // shutting down
+            }
             else if ((q = ws[k]) == null) {  // create new queue
                 WorkQueue nq = new WorkQueue(this, null, SHARED_QUEUE);
                 Mutex lock = this.lock;      // construct outside lock
@@ -1447,8 +1469,9 @@ public class ForkJoinPool extends AbstractExecutorService {
                                ((long)(u + UAC_UNIT) << 32));
                     if (U.compareAndSwapLong(this, CTL, c, nc)) {
                         w.eventCount = (e + E_SEQ) & E_MASK;
-                        if ((p = w.parker) != null)
-                            U.unpark(p);                // activate and release
+                        if ((p = w.parker) != null) {
+                            U.unpark(p);             
+                        }   // activate and release
                         break;
                     }
                 }
@@ -1535,8 +1558,9 @@ public class ForkJoinPool extends AbstractExecutorService {
                     t = (ForkJoinTask<?>)U.getObjectVolatile(a, i);
                     if (q.base == b && ec >= 0 && t != null &&
                         U.compareAndSwapObject(a, i, t, null)) {
-                        if (q.top - (q.base = b + 1) > 1)
-                            signalWork();    // help pushes signal
+                        if (q.top - (q.base = b + 1) > 1) {
+                            signalWork(); 
+                        }   // help pushes signal
                         return t;
                     }
                     else if (ec < 0 || j <= m) {
@@ -1544,13 +1568,15 @@ public class ForkJoinPool extends AbstractExecutorService {
                         break;                // caller can retry after release
                     }
                 }
-                if (--j < 0)
+                if (--j < 0) {
                     break;
+                }
             }
 
             long c = ctl; int e = (int)c, a = (int)(c >> AC_SHIFT), nr, ns;
-            if (e < 0)                        // decode ctl on empty scan
-                w.runState = -1;              // pool is terminating
+            if (e < 0)  {                      // decode ctl on empty scan
+                w.runState = -1;
+            }              // pool is terminating
             else if (rs == 0 || rs != runState) { // incomplete scan
                 WorkQueue v; Thread p;        // try to release a waiter
                 if (e > 0 && a < 0 && w.eventCount == ec &&
@@ -1559,8 +1585,9 @@ public class ForkJoinPool extends AbstractExecutorService {
                                ((c + AC_UNIT) & (AC_MASK|TC_MASK)));
                     if (ctl == c && U.compareAndSwapLong(this, CTL, c, nc)) {
                         v.eventCount = (e + E_SEQ) & E_MASK;
-                        if ((p = v.parker) != null)
+                        if ((p = v.parker) != null) {
                             U.unpark(p);
+                        }
                     }
                 }
             }
@@ -1568,31 +1595,35 @@ public class ForkJoinPool extends AbstractExecutorService {
                 long nc = (long)ec | ((c - AC_UNIT) & (AC_MASK|TC_MASK));
                 w.nextWait = e;
                 w.eventCount = ec | INT_SIGN; // mark as inactive
-                if (ctl != c || !U.compareAndSwapLong(this, CTL, c, nc))
+                if (ctl != c || !U.compareAndSwapLong(this, CTL, c, nc)) {
                     w.eventCount = ec;        // unmark on CAS failure
+                }
                 else {
                     if ((ns = w.nsteals) != 0) {
                         w.nsteals = 0;        // set rescans if ran task
                         w.rescans = (a > 0) ? 0 : a + parallelism;
                         w.totalSteals += ns;
                     }
-                    if (a == 1 - parallelism) // quiescent
+                    if (a == 1 - parallelism) {// quiescent
                         idleAwaitWork(w, nc, c);
+                    }
                 }
             }
             else if (w.eventCount < 0) {      // already queued
                 if ((nr = w.rescans) > 0) {   // continue rescanning
                     int ac = a + parallelism;
-                    if (((w.rescans = (ac < nr) ? ac : nr - 1) & 3) == 0)
+                    if (((w.rescans = (ac < nr) ? ac : nr - 1) & 3) == 0) {
                         Thread.yield();       // yield before block
+                    }
                 }
                 else {
                     Thread.interrupted();     // clear status
                     Thread wt = Thread.currentThread();
                     U.putObject(wt, PARKBLOCKER, this);
                     w.parker = wt;            // emulate LockSupport.park
-                    if (w.eventCount < 0)     // recheck
+                    if (w.eventCount < 0)  {   // recheck
                         U.park(false, 0L);
+                    }
                     w.parker = null;
                     U.putObject(wt, PARKBLOCKER, null);
                 }
@@ -1623,12 +1654,14 @@ public class ForkJoinPool extends AbstractExecutorService {
                 Thread.interrupted();  // timed variant of version in scan()
                 U.putObject(wt, PARKBLOCKER, this);
                 w.parker = wt;
-                if (ctl == currentCtl)
+                if (ctl == currentCtl) {
                     U.park(false, SHRINK_RATE);
+                }
                 w.parker = null;
                 U.putObject(wt, PARKBLOCKER, null);
-                if (ctl != currentCtl)
+                if (ctl != currentCtl) {
                     break;
+                }
                 if (System.nanoTime() - startTime >= SHRINK_TIMEOUT &&
                     U.compareAndSwapLong(this, CTL, currentCtl, prevCtl)) {
                     w.eventCount = (w.eventCount + E_SEQ) | E_MASK;
@@ -1786,8 +1819,9 @@ while(restart=true)
             int tc = (short)((u = (int)(c >>> 32)) >>> UTC_SHIFT) + pc;
             boolean replace = false;
             if ((a = u >> UAC_SHIFT) <= 0) {
-                if ((ac = a + pc) <= 1)
+                if ((ac = a + pc) <= 1) {
                     replace = true;
+                }
                 else if ((e > 0 || (task != null &&
                                     ac <= (hc = pc >>> 1) && tc < pc + hc))) {
                     WorkQueue w;
@@ -1803,8 +1837,9 @@ while(restart=true)
                 (blocker == null || !blocker.isReleasable()) && ctl == c) {
                 if (!replace) {          // no compensation
                     long nc = ((c - AC_UNIT) & AC_MASK) | (c & ~AC_MASK);
-                    if (U.compareAndSwapLong(this, CTL, c, nc))
+                    if (U.compareAndSwapLong(this, CTL, c, nc)) {
                         return true;
+                    }
                 }
                 else if (e != 0) {       // release an idle worker
                     WorkQueue w; Thread p; int i;
@@ -1814,8 +1849,9 @@ while(restart=true)
                         if (w.eventCount == (e | INT_SIGN) &&
                             U.compareAndSwapLong(this, CTL, c, nc)) {
                             w.eventCount = (e + E_SEQ) & E_MASK;
-                            if ((p = w.parker) != null)
+                            if ((p = w.parker) != null) {
                                 U.unpark(p);
+                            }
                             return true;
                         }
                     }
@@ -1880,8 +1916,9 @@ while(restart=true)
                     joiner.currentJoin = prevJoin;
                     break;
                 }
-                else if ((k++ & (MAX_HELP - 1)) == MAX_HELP >>> 1)
+                else if ((k++ & (MAX_HELP - 1)) == MAX_HELP >>> 1) {
                     Thread.yield();                     // for politeness
+                }
             }
         }
         return s;
@@ -1918,15 +1955,18 @@ while(restart=true)
         int step = (r >>> 16) | 1;
         for (WorkQueue[] ws;;) {
             int rs = runState, m;
-            if ((ws = workQueues) == null || (m = ws.length - 1) < 1)
+            if ((ws = workQueues) == null || (m = ws.length - 1) < 1) {
                 return null;
+            }
             for (int j = (m + 1) << 2; ; r += step) {
                 WorkQueue q = ws[((r << 1) | 1) & m];
-                if (q != null && !q.isEmpty())
+                if (q != null && !q.isEmpty()) {
                     return q;
+                }
                 else if (--j < 0) {
-                    if (runState == rs)
+                    if (runState == rs) {
                         return null;
+                    }
                     break;
                 }
             }
@@ -1955,8 +1995,9 @@ while(restart=true)
                     do {} while (!U.compareAndSwapLong
                                  (this, CTL, c = ctl, c + AC_UNIT));
                 }
-                if ((b = q.base) - q.top < 0 && (t = q.pollAt(b)) != null)
+                if ((b = q.base) - q.top < 0 && (t = q.pollAt(b)) != null) {
                     w.runSubtask(t);
+                }
             }
             else {
                 long c;
@@ -1984,12 +2025,15 @@ while(restart=true)
     final ForkJoinTask<?> nextTaskFor(WorkQueue w) {
         for (ForkJoinTask<?> t;;) {
             WorkQueue q; int b;
-            if ((t = w.nextLocalTask()) != null)
+            if ((t = w.nextLocalTask()) != null) {
                 return t;
-            if ((q = findNonEmptyStealQueue(w)) == null)
+            }
+            if ((q = findNonEmptyStealQueue(w)) == null) {
                 return null;
-            if ((b = q.base) - q.top < 0 && (t = q.pollAt(b)) != null)
+            }
+            if ((b = q.base) - q.top < 0 && (t = q.pollAt(b)) != null) {
                 return t;
+            }
         }
     }
 
@@ -2037,8 +2081,9 @@ while(restart=true)
                 return true;
             }
             if (runState >= 0) {                    // not yet enabled
-                if (!enable)
+                if (!enable) {
                     return false;
+                }
                 lock.lock();
                 runState |= SHUTDOWN;
                 lock.unlock();
@@ -2051,8 +2096,10 @@ while(restart=true)
                 WorkQueue[] ws = workQueues; WorkQueue w;
                 if (ws != null) {
                     for (int i = 1; i < ws.length; i += 2) {
-                        if ((w = ws[i]) != null && w.eventCount >= 0)
+                        if ((w = ws[i]) != null && w.eventCount >= 0) {
                             return false;
+                           
+                        }
                     }
                 }
             }
@@ -2067,8 +2114,9 @@ while(restart=true)
                                 w.runState = -1;
                                 if (pass > 0) {
                                     w.cancelAll();
-                                    if (pass > 1)
+                                    if (pass > 1) {
                                         w.interruptOwner();
+                                    }
                                 }
                             }
                         }
@@ -2084,8 +2132,9 @@ while(restart=true)
                                 U.compareAndSwapLong(this, CTL, cc, nc)) {
                                 w.eventCount = (e + E_SEQ) & E_MASK;
                                 w.runState = -1;
-                                if ((p = w.parker) != null)
+                                if ((p = w.parker) != null) {
                                     U.unpark(p);
+                                }
                             }
                         }
                     }
@@ -2161,10 +2210,12 @@ while(restart=true)
                         Thread.UncaughtExceptionHandler handler,
                         boolean asyncMode) {
         checkPermission();
-        if (factory == null)
+        if (factory == null) {
             throw new NullPointerException();
-        if (parallelism <= 0 || parallelism > MAX_CAP)
+        }
+        if (parallelism <= 0 || parallelism > MAX_CAP) {
             throw new IllegalArgumentException();
+        }
         this.parallelism = parallelism;
         this.factory = factory;
         this.ueh = handler;
@@ -2209,8 +2260,10 @@ while(restart=true)
      *         scheduled for execution
      */
     public <T> T invoke(ForkJoinTask<T> task) {
-        if (task == null)
+        if (task == null) {
             throw new NullPointerException();
+        }
+        
         doSubmit(task);
         return task.join();
     }
@@ -2224,8 +2277,9 @@ while(restart=true)
      *         scheduled for execution
      */
     public void execute(ForkJoinTask<?> task) {
-        if (task == null)
+        if (task == null) {
             throw new NullPointerException();
+        }
         doSubmit(task);
     }
 
@@ -2237,11 +2291,14 @@ while(restart=true)
      *         scheduled for execution
      */
     public void execute(Runnable task) {
-        if (task == null)
-            throw new NullPointerException();
+        if (task == null) {
+        	  throw new NullPointerException();
+        }
+          
         ForkJoinTask<?> job;
-        if (task instanceof ForkJoinTask<?>) // avoid re-wrap
+        if (task instanceof ForkJoinTask<?>) { // avoid re-wrap
             job = (ForkJoinTask<?>) task;
+        }
         else
             job = new ForkJoinTask.AdaptedRunnableAction(task);
         doSubmit(job);
@@ -2257,8 +2314,9 @@ while(restart=true)
      *         scheduled for execution
      */
     public <T> ForkJoinTask<T> submit(ForkJoinTask<T> task) {
-        if (task == null)
+        if (task == null) {
             throw new NullPointerException();
+        }
         doSubmit(task);
         return task;
     }
@@ -2291,11 +2349,13 @@ while(restart=true)
      *         scheduled for execution
      */
     public ForkJoinTask<?> submit(Runnable task) {
-        if (task == null)
+        if (task == null) {
             throw new NullPointerException();
+        }
         ForkJoinTask<?> job;
-        if (task instanceof ForkJoinTask<?>) // avoid re-wrap
+        if (task instanceof ForkJoinTask<?>) { // avoid re-wrap
             job = (ForkJoinTask<?>) task;
+        }
         else
             job = new ForkJoinTask.AdaptedRunnableAction(task);
         doSubmit(job);
@@ -2328,9 +2388,10 @@ while(restart=true)
             done = true;
             return futures;
         } finally {
-            if (!done)
+            if (!done) {
                 for (ForkJoinTask<T> f : fs)
                     f.cancel(false);
+            }
         }
     }
 
@@ -2397,8 +2458,9 @@ while(restart=true)
         WorkQueue[] ws; WorkQueue w;
         if ((ws = workQueues) != null) {
             for (int i = 1; i < ws.length; i += 2) {
-                if ((w = ws[i]) != null && w.isApparentlyUnblocked())
+                if ((w = ws[i]) != null && w.isApparentlyUnblocked()) {
                     ++rc;
+                }
             }
         }
         return rc;
@@ -2447,8 +2509,9 @@ while(restart=true)
         WorkQueue[] ws; WorkQueue w;
         if ((ws = workQueues) != null) {
             for (int i = 1; i < ws.length; i += 2) {
-                if ((w = ws[i]) != null)
+                if ((w = ws[i]) != null) {
                     count += w.totalSteals;
+                }
             }
         }
         return count;
@@ -2469,8 +2532,9 @@ while(restart=true)
         WorkQueue[] ws; WorkQueue w;
         if ((ws = workQueues) != null) {
             for (int i = 1; i < ws.length; i += 2) {
-                if ((w = ws[i]) != null)
-                    count += w.queueSize();
+                if ((w = ws[i]) != null) {
+                    count += w.queueSize(};
+            	}
             }
         }
         return count;
@@ -2488,8 +2552,9 @@ while(restart=true)
         WorkQueue[] ws; WorkQueue w;
         if ((ws = workQueues) != null) {
             for (int i = 0; i < ws.length; i += 2) {
-                if ((w = ws[i]) != null)
+                if ((w = ws[i]) != null) {
                     count += w.queueSize();
+                }
             }
         }
         return count;
@@ -2505,8 +2570,9 @@ while(restart=true)
         WorkQueue[] ws; WorkQueue w;
         if ((ws = workQueues) != null) {
             for (int i = 0; i < ws.length; i += 2) {
-                if ((w = ws[i]) != null && !w.isEmpty())
+                if ((w = ws[i]) != null && !w.isEmpty()) {
                     return true;
+                }
             }
         }
         return false;
@@ -2580,8 +2646,9 @@ while(restart=true)
             for (int i = 0; i < ws.length; ++i) {
                 if ((w = ws[i]) != null) {
                     int size = w.queueSize();
-                    if ((i & 1) == 0)
+                    if ((i & 1) == 0) {
                         qs += size;
+                    }
                     else {
                         qt += size;
                         st += w.totalSteals;
@@ -2597,8 +2664,9 @@ while(restart=true)
         if (ac < 0) // ignore transient negative
             ac = 0;
         String level;
-        if ((c & STOP_BIT) != 0)
+        if ((c & STOP_BIT) != 0) {
             level = (tc == 0) ? "Terminated" : "Terminating";
+        }
         else
             level = runState < 0 ? "Shutting down" : "Running";
         return super.toString() +
@@ -2709,10 +2777,12 @@ while(restart=true)
         lock.lock();
         try {
             for (;;) {
-                if (isTerminated())
+                if (isTerminated()) {
                     return true;
-                if (nanos <= 0)
+                }
+                if (nanos <= 0) {
                     return false;
+                }
                 nanos = termination.awaitNanos(nanos);
             }
         } finally {
@@ -2823,8 +2893,9 @@ while(restart=true)
                 try {
                     do {} while (!blocker.isReleasable() && !blocker.block());
                 } finally {
-                    if (p != null)
+                    if (p != null) {
                         p.incrementActiveCount();
+                    }
                 }
                 break;
             }
@@ -2872,8 +2943,9 @@ while(restart=true)
         } catch (Exception e) {
             throw new Error(e);
         }
-        if ((s & (s-1)) != 0)
+        if ((s & (s-1)) != 0) {
             throw new Error("data type scale not a power of two");
+        }
         ASHIFT = 31 - Integer.numberOfLeadingZeros(s);
     }
 

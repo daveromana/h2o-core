@@ -25,7 +25,9 @@ class CsvParser extends Parser {
   @Override public ParseWriter parseChunk(int cidx, final ParseReader din, final ParseWriter dout) {
     BufferedString str = new BufferedString();
     byte[] bits = din.getChunkData(cidx);
-    if( bits == null ) return dout;
+    if( bits == null ) {
+    	return dout;
+    }
     int offset  = din.getChunkDataStart(cidx); // General cursor into the giant array of bytes
     final byte[] bits0 = bits;  // Bits for chunk0
     boolean firstChunk = true;  // Have not rolled into the 2nd chunk
@@ -34,17 +36,23 @@ class CsvParser extends Parser {
     boolean isNa = false;
     boolean isAllASCII = true;
     // If handed a skipping offset, then it points just past the prior partial line.
-    if( offset >= 0 ) state = WHITESPACE_BEFORE_TOKEN;
+    if( offset >= 0 ) {
+    	state = WHITESPACE_BEFORE_TOKEN;
+    }
     else {
       offset = 0; // Else start skipping at the start
       // Starting state.  Are we skipping the first (partial) line, or not?  Skip
       // a header line, or a partial line if we're in the 2nd and later chunks.
-      if (_setup._check_header == ParseSetup.HAS_HEADER || cidx > 0) state = SKIP_LINE;
+      if (_setup._check_header == ParseSetup.HAS_HEADER || cidx > 0) {
+    	  state = SKIP_LINE;
+      }
       else state = WHITESPACE_BEFORE_TOKEN;
     }
 
     // For parsing ARFF
-    if (_setup._parse_type.equals(ARFF_INFO) && _setup._check_header == ParseSetup.HAS_HEADER) state = WHITESPACE_BEFORE_TOKEN;
+    if (_setup._parse_type.equals(ARFF_INFO) && _setup._check_header == ParseSetup.HAS_HEADER) {
+    	state = WHITESPACE_BEFORE_TOKEN;
+    }
 
     int quotes = 0;
     long number = 0;
@@ -65,11 +73,14 @@ class CsvParser extends Parser {
 //          System.out.print(String.format("%c",bits[offset]));
           ++offset;
         }
-        if ((offset + 1 < bits.length) && (bits[offset] == CHAR_CR) && (bits[offset + 1] == CHAR_LF)) ++offset;
+        if ((offset + 1 < bits.length) && (bits[offset] == CHAR_CR) && (bits[offset + 1] == CHAR_LF)) {
+        	++offset;
+        }
         ++offset;
 //        System.out.println();
-        if (offset >= bits.length)
+        if (offset >= bits.length) {
           return dout;
+          }
         c = bits[offset];
       }
     }
@@ -95,8 +106,9 @@ class CsvParser extends Parser {
         // ---------------------------------------------------------------------
         case EXPECT_COND_LF:
           state = POSSIBLE_EMPTY_LINE;
-          if (c == CHAR_LF)
+          if (c == CHAR_LF) {
             break;
+          }
           continue;
         // ---------------------------------------------------------------------
         case STRING:
@@ -106,15 +118,17 @@ class CsvParser extends Parser {
           }
           if (!isEOL(c) && ((quotes != 0) || (c != CHAR_SEPARATOR))) {
             str.addChar();
-            if ((c & 0x80) == 128) //value beyond std ASCII
+            if ((c & 0x80) == 128) {//value beyond std ASCII
               isAllASCII = false;
+            }
             break;
           }
           // fallthrough to STRING_END
         // ---------------------------------------------------------------------
         case STRING_END:
-          if ((c != CHAR_SEPARATOR) && (c == CHAR_SPACE))
+          if ((c != CHAR_SEPARATOR) && (c == CHAR_SPACE)) {
             break;
+          }
           // we have parsed the string categorical correctly
           if((str.getOffset() + str.length()) > str.getBuffer().length){ // crossing chunk boundary
             assert str.getBuffer() != bits;
@@ -126,8 +140,9 @@ class CsvParser extends Parser {
           }
           if (!isNa) {
             dout.addStrCol(colIdx, str);
-            if (!isAllASCII)
+            if (!isAllASCII) {
               dout.setIsAllASCII(colIdx, isAllASCII);
+            }
           } else {
             dout.addInvalidCol(colIdx);
             isNa = false;
@@ -143,8 +158,9 @@ class CsvParser extends Parser {
             state = WHITESPACE_BEFORE_TOKEN;
             break;
           }
-          if (c==CHAR_SPACE)
+          if (c==CHAR_SPACE) {
             break;
+          }
           // fallthrough to EOL
         // ---------------------------------------------------------------------
         case EOL:
@@ -184,8 +200,9 @@ class CsvParser extends Parser {
         // ---------------------------------------------------------------------
         case POSSIBLE_EMPTY_LINE:
           if (isEOL(c)) {
-            if (c == CHAR_CR)
+            if (c == CHAR_CR) {
               state = EXPECT_COND_LF;
+            }
             break;
           }
           state = WHITESPACE_BEFORE_TOKEN;
@@ -248,7 +265,9 @@ class CsvParser extends Parser {
         // ---------------------------------------------------------------------
         case NUMBER:
           if ((c >= '0') && (c <= '9')) {
-            if (number >= LARGEST_DIGIT_NUMBER)  state = NUMBER_SKIP;
+            if (number >= LARGEST_DIGIT_NUMBER) {
+            	state = NUMBER_SKIP;
+            }
             else  number = (number*10)+(c-'0');
             break;
           } else if (c == CHAR_DECIMAL_SEP) {
@@ -345,9 +364,12 @@ class CsvParser extends Parser {
         case NUMBER_FRACTION:
           if ((c >= '0') && (c <= '9')) {
             if (number >= LARGEST_DIGIT_NUMBER) {
-              if (decimal)
+              if (decimal) {
                 fractionDigits = offset - 1 - fractionDigits;
-              if (exp == -1) number = -number;
+              }
+              if (exp == -1) {
+            	  number = -number;
+              }
               exp = 0;
               state = NUMBER_SKIP_NO_DOT;
             } else {
@@ -355,15 +377,17 @@ class CsvParser extends Parser {
             }
             break;
           } else if ((c == 'e') || (c == 'E')) {
-            if (decimal)
+            if (decimal) {
               fractionDigits = offset - 1 - fractionDigits;
+            }
             state = NUMBER_EXP_START;
             sgnExp = 1;
             break;
           }
           state = COND_QUOTED_NUMBER_END;
-          if (decimal)
+          if (decimal) {
             fractionDigits = offset - fractionDigits-1;
+          }
           if (exp == -1) {
             number = -number;
           }
@@ -423,8 +447,9 @@ class CsvParser extends Parser {
         str.set(bits, offset, 0);
       } else if (offset >= bits.length) { // Off end of 1st chunk?  Parse into 2nd chunk
         // Attempt to get more data.
-        if( firstChunk && bits1 == null )
+        if( firstChunk && bits1 == null ) {
           bits1 = din.getChunkData(cidx+1);
+        }
         // if we can't get further we might have been the last one and we must
         // commit the latest guy if we had one.
         if( !firstChunk || bits1 == null ) { // No more data available or allowed
@@ -438,26 +463,34 @@ class CsvParser extends Parser {
 
         // Now parsing in the 2nd chunk.  All offsets relative to the 2nd chunk start.
         firstChunk = false;
-        if (state == NUMBER_FRACTION)
+        if (state == NUMBER_FRACTION) {
           fractionDigits -= bits.length;
+        }
         offset -= bits.length;
         tokenStart -= bits.length;
         bits = bits1;           // Set main parsing loop bits
-        if( bits[0] == CHAR_LF && state == EXPECT_COND_LF )
+        if( bits[0] == CHAR_LF && state == EXPECT_COND_LF ) {
           break; // MAIN_LOOP; // when the first character we see is a line end
+        }
       }
       c = bits[offset];
-      if(isEOL(c) && state != COND_QUOTE && quotes != 0) // quoted string having newline character => fail the line!
+      if(isEOL(c) && state != COND_QUOTE && quotes != 0) { // quoted string having newline character => fail the line!
         state = EOL;
+      }
 
     } // end MAIN_LOOP
-    if (colIdx == 0)
+    if (colIdx == 0) {
       dout.rollbackLine();
+    }
     // If offset is still validly within the buffer, save it so the next pass
     // can start from there.
     if( offset+1 < bits.length ) {
-      if( state == EXPECT_COND_LF && bits[offset+1] == CHAR_LF ) offset++;
-      if( offset+1 < bits.length ) din.setChunkDataStart(cidx+1, offset+1 );
+      if( state == EXPECT_COND_LF && bits[offset+1] == CHAR_LF ) {
+    	  offset++;
+      }
+      if( offset+1 < bits.length ) {
+    	  din.setChunkDataStart(cidx+1, offset+1 );
+      }
     }
     return dout;
   }
@@ -495,12 +528,15 @@ class CsvParser extends Parser {
     byte[] bits = StringUtils.bytesOf(from);
     boolean inQuote = false;
     for( byte c : bits ) {
-      if( (c == singleQuote) || (c == CsvParser.CHAR_DOUBLE_QUOTE) )
+      if( (c == singleQuote) || (c == CsvParser.CHAR_DOUBLE_QUOTE) ) {
         inQuote ^= true;
-      if( !inQuote || c == HIVE_SEP )
+      }
+      if( !inQuote || c == HIVE_SEP ) {
         for( int i = 0; i < separators.length; ++i )
-          if( c == separators[i] )
+          if( c == separators[i] ) {
             ++result[i];
+          	}
+      }
     }
     return result;
   }
@@ -519,7 +555,9 @@ class CsvParser extends Parser {
     int quotes = 0;
     while (offset < bits.length) {
       while ((offset < bits.length) && (bits[offset] == CsvParser.CHAR_SPACE)) ++offset; // skip first whitespace
-      if(offset == bits.length)break;
+      if(offset == bits.length) {
+    	  break;
+      }
       StringBuilder t = new StringBuilder();
       byte c = bits[offset];
       if ((c == CsvParser.CHAR_DOUBLE_QUOTE) || (c == singleQuote)) {
@@ -545,17 +583,20 @@ class CsvParser extends Parser {
       }
       c = (offset == bits.length) ? CsvParser.CHAR_LF : bits[offset];
       tokens.add(t.toString());
-      if( CsvParser.isEOL(c) || (offset == bits.length) )
+      if( CsvParser.isEOL(c) || (offset == bits.length) ) {
         break;
-      if (c != separator)
-        return new String[0]; // an error
+      }
+      if (c != separator) {
+        return new String[0];
+      } // an error
       ++offset;               // Skip separator
     }
     // If we have trailing empty columns (split by separators) such as ",,\n"
     // then we did not add the final (empty) column, so the column count will
     // be down by 1.  Add an extra empty column here
-    if( bits.length > 0 && bits[bits.length-1] == separator  && bits[bits.length-1] != CsvParser.CHAR_SPACE)
+    if( bits.length > 0 && bits[bits.length-1] == separator  && bits[bits.length-1] != CsvParser.CHAR_SPACE) {
       tokens.add("");
+    }
     return tokens.toArray(new String[tokens.size()]);
   }
 
@@ -569,14 +610,19 @@ class CsvParser extends Parser {
     // their likelyhoods.
     int max = 0;
     for( int i = 0; i < s1.length; ++i ) {
-      if( s1[i] == 0 ) continue;   // Separator does not appear; ignore it
-      if( s1[max] < s1[i] ) max=i; // Largest count sep on 1st line
+      if( s1[i] == 0 ) {
+    	  continue;   // Separator does not appear; ignore it
+      }
+      if( s1[max] < s1[i] ) {
+    	  max=i; // Largest count sep on 1st line
+      }
       if( s1[i] == s2[i] && s1[i] >= s1[max]>>1 ) {  // Sep counts are equal?  And at nearly as large as the larger header sep?
         try {
           String[] t1 = determineTokens(l1, separators[i], singleQuote);
           String[] t2 = determineTokens(l2, separators[i], singleQuote);
-          if( t1.length != s1[i]+1 || t2.length != s2[i]+1 )
+          if( t1.length != s1[i]+1 || t2.length != s2[i]+1 ) {
             continue;           // Token parsing fails
+          }
           return separators[i];
         } catch( Exception ignore ) { /*pass; try another parse attempt*/ }
       }
@@ -584,12 +630,15 @@ class CsvParser extends Parser {
     // No sep's appeared, or no sep's had equal counts on lines 1 & 2.  If no
     // separators have same counts, the largest one will be used as the default
     // one.  If there's no largest one, space will be used.
-    if( s1[max]==0 ) max=separators.length-1; // Try last separator (space)
+    if( s1[max]==0 ) {
+    	max=separators.length-1; // Try last separator (space)
+    }
     if( s1[max]!=0 ) {
       String[] t1 = determineTokens(l1, separators[max], singleQuote);
       String[] t2 = determineTokens(l2, separators[max], singleQuote);
-      if( t1.length == s1[max]+1 && t2.length == s2[max]+1 )
+      if( t1.length == s1[max]+1 && t2.length == s2[max]+1 ) {
         return separators[max];
+      }
     }
 
     return GUESS_SEP;
@@ -597,11 +646,14 @@ class CsvParser extends Parser {
 
   // Guess number of columns
   public static int guessNcols( String[] columnNames, String[][] data ) {
-    if( columnNames != null ) return columnNames.length;
+    if( columnNames != null ) {
+    	return columnNames.length;
+    }
     int longest = 0;            // Longest line
     for( String[] s : data ) if( s.length > longest ) longest = s.length;
-    if( longest == data[0].length ) 
+    if( longest == data[0].length ) {
       return longest; // 1st line is longer than all the rest; take it
+    }
 
     // we don't have lines of same length, pick the most common length
     int lengths[] = new int[longest+1];
@@ -627,16 +679,21 @@ class CsvParser extends Parser {
     while(lastNewline > 0 && !CsvParser.isEOL(bits[lastNewline]))lastNewline--;
     if(lastNewline > 0) bits = Arrays.copyOf(bits,lastNewline+1);
     String[] lines = getFirstLines(bits);
-    if(lines.length==0 )
+    if(lines.length==0 ) {
       throw new ParseDataset.H2OParseException("No data!");
+    }
 
     // Guess the separator, columns, & header
     String[] labels;
     final String[][] data = new String[lines.length][];
     if( lines.length == 1 ) {       // Ummm??? Only 1 line?
       if( sep == GUESS_SEP) {
-        if (lines[0].split(",").length > 1) sep = (byte) ',';
-        else if (lines[0].split(" ").length > 1) sep = ' ';
+        if (lines[0].split(",").length > 1) {
+        	sep = (byte) ',';
+        }
+        else if (lines[0].split(" ").length > 1) {
+        	sep = ' ';
+        }
         else { //one item, guess type
           data[0] = new String[]{lines[0]};
           byte[] ctypes = new byte[1];
@@ -645,8 +702,9 @@ class CsvParser extends Parser {
             ctypes[0] = Vec.T_NUM;
           } else { // non-numeric
             BufferedString str = new BufferedString(data[0][0]);
-            if (ParseTime.isTime(str))
+            if (ParseTime.isTime(str)) {
               ctypes[0] = Vec.T_TIME;
+            }
             else if (ParseUUID.isUUID(str))
                 ctypes[0] = Vec.T_UUID;
             else { // give up and guess categorical
@@ -678,9 +736,13 @@ class CsvParser extends Parser {
         sep = guessSeparator(lines[0], lines[1], singleQuotes);
         if( sep == GUESS_SEP && lines.length > 2 ) {
           sep = guessSeparator(lines[1], lines[2], singleQuotes);
-          if( sep == GUESS_SEP) sep = guessSeparator(lines[0], lines[2], singleQuotes);
+          if( sep == GUESS_SEP) {
+        	  sep = guessSeparator(lines[0], lines[2], singleQuotes);
+          }
         }
-        if( sep == GUESS_SEP) sep = (byte)' '; // Bail out, go for space
+        if( sep == GUESS_SEP) {
+        	sep = (byte)' '; // Bail out, go for space
+        }
       }
 
       // Tokenize the first few lines using the separator
@@ -701,8 +763,9 @@ class CsvParser extends Parser {
 
       // See if compatible headers
       if( columnNames != null && labels != null ) {
-        if( labels.length != columnNames.length )
+        if( labels.length != columnNames.length ) {
           throw new ParseDataset.H2OParseException("Already have "+columnNames.length+" column labels, but found "+labels.length+" in this file");
+        }
         else {
           for( int i = 0; i < labels.length; ++i )
             if( !labels[i].equalsIgnoreCase(columnNames[i]) ) {
@@ -720,8 +783,12 @@ class CsvParser extends Parser {
     if (columnTypes == null || ncols != columnTypes.length) {
       int i = bits.length-1;
       for(; i > 0; --i)
-        if(bits[i] == '\n') break;
-      if(i > 0) bits = Arrays.copyOf(bits,i); // stop at the last full line
+        if(bits[i] == '\n') {
+        	break;
+        }
+      if(i > 0) {
+    	  bits = Arrays.copyOf(bits,i); // stop at the last full line
+      }
       CsvParser p = new CsvParser(resSetup, null);
       PreviewParseWriter dout = new PreviewParseWriter(resSetup._number_columns);
       try {
@@ -753,13 +820,23 @@ class CsvParser extends Parser {
       int lineEnd = offset;
       ++offset;
       // For Windoze, skip a trailing LF after CR
-      if( (offset < bits.length) && (bits[offset] == CsvParser.CHAR_LF)) ++offset;
-      if( bits[lineStart] == '#') continue; // Ignore      comment lines
-      if( bits[lineStart] == '%') continue; // Ignore ARFF comment lines
-      if( bits[lineStart] == '@') continue; // Ignore ARFF lines
+      if( (offset < bits.length) && (bits[offset] == CsvParser.CHAR_LF)) {
+    	  ++offset;
+      }
+      if( bits[lineStart] == '#') {
+    	  continue; // Ignore      comment lines
+      }
+      if( bits[lineStart] == '%') {
+    	  continue; // Ignore ARFF comment lines
+      }
+      if( bits[lineStart] == '@') {
+    	  continue; // Ignore ARFF lines
+      }
       if( lineEnd > lineStart ) {
         String str = new String(bits, lineStart,lineEnd-lineStart).trim();
-        if( !str.isEmpty() ) lines[nlines++] = str;
+        if( !str.isEmpty() ) {
+        	lines[nlines++] = str;
+        }
       }
     }
     return Arrays.copyOf(lines, nlines);
