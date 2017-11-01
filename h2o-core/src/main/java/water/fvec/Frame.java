@@ -229,21 +229,21 @@ public class Frame extends Lockable<Frame> {
   // Make unique names.  Efficient for the special case of appending endless
   // versions of "C123" style names where the next name is +1 over the prior
   // name.  All other names take the O(n^2) lookup.
-  private int pint( String name ) {
-    try { return Integer.valueOf(name.substring(1)); }
+  private int pint( String pintname ) {
+    try { return Integer.valueOf(pintname.substring(1)); }
     catch(NumberFormatException ignored) { }
     return 0;
   }
 
-  public String uniquify( String name ) {
-    String n = name;
+  public String uniquify( String uniquifyname ) {
+    String n = uniquifyname;
     int lastName = 0;
-    if( name.length() > 0 && name.charAt(0)=='C' )
-      lastName = pint(name);
+    if( uniquifyname.length() > 0 && uniquifyname.charAt(0)=='C' )
+      lastName = pint(uniquifyname);
     if( _lastNameBig && _names.length > 0 ) {
       String last = _names[_names.length-1];
       if( !last.equals("") && last.charAt(0)=='C' && lastName == pint(last)+1 )
-        return name;
+        return uniquifyname;
     }
     int cnt=0, again, max=0;
     do {
@@ -252,7 +252,7 @@ public class Frame extends Lockable<Frame> {
         if( lastName > 0 && s.charAt(0)=='C' )
           max = Math.max(max,pint(s));
         if( n.equals(s) )
-          n = name+(cnt++);
+          n = uniquifyname+(cnt++);
       }
     } while( again != cnt );
     if( lastName == max+1 ) _lastNameBig = true;
@@ -262,18 +262,18 @@ public class Frame extends Lockable<Frame> {
   /** Check that the vectors are all compatible.  All Vecs have their content
    *  sharded using same number of rows per chunk, and all names are unique.
    *  Throw an IAE if something does not match.  */
-  private void checkCompatibility(String name, Vec vec ) {
-    if( vec instanceof AppendableVec ) return; // New Vectors are endlessly compatible
+  private void checkCompatibility(String compname, Vec compvec ) {
+    if( compvec instanceof AppendableVec ) return; // New Vectors are endlessly compatible
     Vec v0 = anyVec();
     if( v0 == null ) return; // No fixed-size Vecs in the Frame
     // Vector group has to be the same, or else the layout has to be the same,
     // or else the total length has to be small.
-    if( !v0.isCompatibleWith(vec) ) {
-      if(!Vec.VectorGroup.sameGroup(v0,vec))
-        Log.err("Unexpected incompatible vector group, " + v0.group() + " != " + vec.group());
-      if(!Arrays.equals(v0.espc(), vec.espc()))
+    if( !v0.isCompatibleWith(compvec) ) {
+      if(!Vec.VectorGroup.sameGroup(v0,compvec))
+        Log.err("Unexpected incompatible vector group, " + v0.group() + " != " + compvec.group());
+      if(!Arrays.equals(v0.espc(), compvec.espc()))
         Log.err("Unexpected incompatible espc, " + Arrays.toString(v0.espc()) + " != " + Arrays.toString(vec.espc()));
-      throw new IllegalArgumentException("Vec " + name + " is not compatible with the rest of the frame");
+      throw new IllegalArgumentException("Vec " + compname + " is not compatible with the rest of the frame");
     }
   }
 
@@ -335,10 +335,10 @@ public class Frame extends Lockable<Frame> {
     return res;
   }
 
-  public Vec[] vecs(String[] names) {
-    Vec [] res = new Vec[names.length];
-    for(int i = 0; i < names.length; ++i)
-      res[i] = vec(names[i]);
+  public Vec[] vecs(String[] vecsnames) {
+    Vec [] res = new Vec[vecsnames.length];
+    for(int i = 0; i < vecsnames.length; ++i)
+      res[i] = vec(vecsnames[i]);
     return res;
   }
 
@@ -371,27 +371,27 @@ public class Frame extends Lockable<Frame> {
 
   /**  Return a Vec by name, or null if missing
    *  @return a Vec by name, or null if missing */
-  public Vec vec(String name) { int idx = find(name); return idx==-1 ? null : vecs()[idx]; }
+  public Vec vec(String name_vec) { int idx = find(name_vec); return idx==-1 ? null : vecs()[idx]; }
 
   /**   Finds the column index with a matching name, or -1 if missing
    *  @return the column index with a matching name, or -1 if missing */
-  public int find( String name ) {
-    if( name == null ) return -1;
+  public int find( String fname ) {
+    if( fname == null ) return -1;
     assert _names != null;
     // TODO: add a hashtable: O(n) is just stupid.
     for( int i=0; i<_names.length; i++ )
-      if( name.equals(_names[i]) )
+      if( fname.equals(_names[i]) )
         return i;
     return -1;
   }
 
   /**   Finds the matching column index, or -1 if missing
    *  @return the matching column index, or -1 if missing */
-  public int find( Vec vec ) {
+  public int find( Vec findvec ) {
     Vec[] vecs = vecs(); //warning: side-effect
-    if (vec == null) return -1;
+    if (findvec == null) return -1;
     for( int i=0; i<vecs.length; i++ )
-      if( vec.equals(vecs[i]) )
+      if( findvec.equals(vecs[i]) )
         return i;
     return -1;
   }
@@ -407,22 +407,22 @@ public class Frame extends Lockable<Frame> {
 
   /** Bulk {@link #find(String)} api
    *  @return An array of column indices matching the {@code names} array */
-  public int[] find(String[] names) {
-    if( names == null ) return null;
-    int[] res = new int[names.length];
-    for(int i = 0; i < names.length; ++i)
-      res[i] = find(names[i]);
+  public int[] find(String[] find_names) {
+    if( find_names == null ) return null;
+    int[] res = new int[find_names.length];
+    for(int i = 0; i < find_names.length; ++i)
+      res[i] = find(find_names[i]);
     return res;
   }
 
-  public void insertVec(int i, String name, Vec vec) {
+  public void insertVec(int i, String insvecname, Vec vec) {
     String [] names = new String[_names.length+1];
     Vec [] vecs = new Vec[_vecs.length+1];
     Key<Vec>[] keys = makeVecKeys(_keys.length + 1);
     System.arraycopy(_names,0,names,0,i);
     System.arraycopy(_vecs,0,vecs,0,i);
     System.arraycopy(_keys,0,keys,0,i);
-    names[i] = name;
+    names[i] = insvecname;
     vecs[i] = vec;
     keys[i] = vec._key;
     System.arraycopy(_names,i,names,i+1,_names.length-i);
@@ -570,23 +570,23 @@ public class Frame extends Lockable<Frame> {
   public void add( String[] names, Vec[] vecs) {
     bulkAdd(names, vecs);
   }
-  public void add( String[] names, Vec[] vecs, int cols ) {
-    if (null == vecs || null == names) return;
-    if (cols == names.length && cols == vecs.length) {
-      bulkAdd(names, vecs);
+  public void add( String[] names_add, Vec[] vecs, int cols ) {
+    if (null == vecs || null == names_add) return;
+    if (cols == names_add.length && cols == vecs.length) {
+      bulkAdd(names_add, vecs);
     } else {
       for (int i = 0; i < cols; i++)
-        add(names[i], vecs[i]);
+        add(names_add[i], vecs[i]);
     }
   }
 
   /** Append multiple named Vecs to the Frame.  Names are forced unique, by appending a
    *  unique number if needed.
    */
-  private void bulkAdd(String[] names, Vec[] vecs) {
-    String[] tmpnames = names.clone();
-    int N = names.length;
-    assert(names.length == vecs.length):"names = " + Arrays.toString(names) + ", vecs len = " + vecs.length;
+  private void bulkAdd(String[] blk_names, Vec[] vecs) {
+    String[] tmpnames = blk_names.clone();
+    int N = blk_names.length;
+    assert(blk_names.length == vecs.length):"names = " + Arrays.toString(blk_names) + ", vecs len = " + vecs.length;
     for (int i=0; i<N; ++i) {
       vecs[i] = vecs[i] != null ? makeCompatible(new Frame(vecs[i]))[0] : null;
       checkCompatibility(tmpnames[i]=uniquify(tmpnames[i]),vecs[i]);  // Throw IAE is mismatch
@@ -611,11 +611,11 @@ public class Frame extends Lockable<Frame> {
   /** Append a named Vec to the Frame.  Names are forced unique, by appending a
    *  unique number if needed.
    *  @return the added Vec, for flow-coding */
-  public Vec add( String name, Vec vec ) {
+  public Vec add( String add_name, Vec vec ) {
     vec = makeCompatible(new Frame(vec))[0];
-    checkCompatibility(name=uniquify(name),vec);  // Throw IAE is mismatch
+    checkCompatibility(add_name=uniquify(add_name),vec);  // Throw IAE is mismatch
     int ncols = _keys.length;
-    String[] names = Arrays.copyOf(_names,ncols+1);  names[ncols] = name;
+    String[] names = Arrays.copyOf(_names,ncols+1);  names[ncols] = add_name;
     Key<Vec>[] keys = Arrays.copyOf(_keys ,ncols+1);  keys [ncols] = vec._key;
     Vec[] vecs  = Arrays.copyOf(_vecs ,ncols+1);  vecs [ncols] = vec;
     _keys = keys;
@@ -630,19 +630,19 @@ public class Frame extends Lockable<Frame> {
   public Frame add( Frame fr ) { add(fr._names,fr.vecs().clone(),fr.numCols()); return this; }
 
   /** Insert a named column as the first column */
-  public Frame prepend( String name, Vec vec ) {
-    if( find(name) != -1 ) throw new IllegalArgumentException("Duplicate name '"+name+"' in Frame");
+  public Frame prepend( String p_name, Vec vec ) {
+    if( find(p_name) != -1 ) throw new IllegalArgumentException("Duplicate name '"+p_name+"' in Frame");
     if( _vecs.length != 0 ) {
       if( !anyVec().group().equals(vec.group()) && !Arrays.equals(anyVec().espc(),vec.espc()) )
-        throw new IllegalArgumentException("Vector groups differs - adding vec '"+name+"' into the frame " + Arrays.toString(_names));
+        throw new IllegalArgumentException("Vector groups differs - adding vec '"+p_name+"' into the frame " + Arrays.toString(_names));
       if( numRows() != vec.length() )
-        throw new IllegalArgumentException("Vector lengths differ - adding vec '"+name+"' into the frame " + Arrays.toString(_names));
+        throw new IllegalArgumentException("Vector lengths differ - adding vec '"+p_name+"' into the frame " + Arrays.toString(_names));
     }
     final int len = _names != null ? _names.length : 0;
     String[] _names2 = new String[len + 1];
     Vec[] _vecs2 = new Vec[len + 1];
     Key<Vec>[] _keys2 = makeVecKeys(len + 1);
-    _names2[0] = name;
+    _names2[0] = p_name;
     _vecs2 [0] = vec;
     _keys2 [0] = vec._key;
     if (_names != null) {
@@ -710,7 +710,7 @@ public class Frame extends Lockable<Frame> {
    *  @return a new frame which collects vectors from this frame with desired names.
    *  @throws IllegalArgumentException if there is no vector with desired name in this frame.
    */
-  public Frame subframe(String[] names) { return subframe(names, false, 0)[0]; }
+  public Frame subframe(String[] sub_names) { return subframe(sub_names, false, 0)[0]; }
 
   /** Create a subframe from this frame based on desired names.
    *  Throws an exception if desired column is not in this frame and <code>replaceBy</code> is <code>false</code>.
@@ -722,23 +722,23 @@ public class Frame extends Lockable<Frame> {
    *  @return array of 2 frames, the first is containing a desired subframe, the second one contains newly created columns or null
    *  @throws IllegalArgumentException if <code>replaceBy</code> is false and there is a missing column in this frame
    */
-  private Frame[] subframe(String[] names, boolean replaceBy, double c){
-    Vec [] vecs     = new Vec[names.length];
-    Vec [] cvecs    = replaceBy ? new Vec   [names.length] : null;
-    String[] cnames = replaceBy ? new String[names.length] : null;
+  private Frame[] subframe(String[] s_names, boolean replaceBy, double c){
+    Vec [] vecs     = new Vec[s_names.length];
+    Vec [] cvecs    = replaceBy ? new Vec   [s_names.length] : null;
+    String[] cnames = replaceBy ? new String[s_names.length] : null;
     int ccv = 0; // counter of constant columns
     vecs();                     // Preload the vecs
     HashMap<String, Integer> map = new HashMap<>((int) ((names.length/0.75f)+1)); // avoid rehashing by set up initial capacity
     for(int i = 0; i < _names.length; ++i) map.put(_names[i], i);
-    for(int i = 0; i < names.length; ++i)
-      if(map.containsKey(names[i])) vecs[i] = _vecs[map.get(names[i])];
+    for(int i = 0; i < s_names.length; ++i)
+      if(map.containsKey(s_names[i])) vecs[i] = _vecs[map.get(s_names[i])];
       else if (replaceBy) {
-        Log.warn("Column " + names[i] + " is missing, filling it in with " + c);
-        cnames[ccv] = names[i];
+        Log.warn("Column " + s_names[i] + " is missing, filling it in with " + c);
+        cnames[ccv] = s_names[i];
         vecs[i] = cvecs[ccv++] = anyVec().makeCon(c);
       }
     return new Frame[] {
-      new Frame(Key.<Frame>make("subframe" + Key.make().toString()), names, vecs),
+      new Frame(Key.<Frame>make("subframe" + Key.make().toString()), s_names, vecs),
       ccv > 0? new Frame(Key.<Frame>make("subframe" + Key.make().toString()), Arrays.copyOf(cnames, ccv), Arrays.copyOf(cvecs,ccv)) : null
     };
   }
@@ -832,10 +832,10 @@ public class Frame extends Lockable<Frame> {
 
   /** Removes the column with a matching name.
    *  @return The removed column */
-  public Vec remove( String name ) { return remove(find(name)); }
+  public Vec remove( String r_name ) { return remove(find(r_name)); }
 
-  public Frame remove( String[] names ) {
-    for( String name : names )
+  public Frame remove( String[] rmv_names ) {
+    for( String name : rmv_names )
       remove(find(name));
     return this;
   }
@@ -924,30 +924,30 @@ public class Frame extends Lockable<Frame> {
   }
 
   /** Restructure a Frame completely */
-  public void restructure( String[] names, Vec[] vecs) {
-    restructure(names, vecs, vecs.length);
+  public void restructure( String[] r_names, Vec[] r_vecs) {
+    restructure(r_names, r_vecs, r_vecs.length);
   }
 
   /** Restructure a Frame completely, but only for a specified number of columns (counting up)  */
-  public void restructure( String[] names, Vec[] vecs, int cols) {
+  public void restructure( String[] rst_names, Vec[] rst_vecs, int rst_cols) {
     // Make empty to dodge asserts, then "add()" them all which will check for
     // compatible Vecs & names.
     _keys  = makeVecKeys(0);
     _vecs  = new Vec   [0];
     setNames(new String[0]);
-    add(names,vecs,cols);
+    add(rst_names,rst_vecs,rst_cols);
   }
 
   // --------------------------------------------
   // Utilities to help external Frame constructors, e.g. Spark.
 
   // Make an initial Frame & lock it for writing.  Build Vec Keys.
-  void preparePartialFrame( String[] names ) {
+  void preparePartialFrame( String[] partial_names ) {
     // Nuke any prior frame (including freeing storage) & lock this one
     if( _keys != null ) delete_and_lock();
     else write_lock();
-    _keys = new Vec.VectorGroup().addVecs(names.length);
-    setNamesNoCheck(names);
+    _keys = new Vec.VectorGroup().addVecs(partial_names.length);
+    setNamesNoCheck(partial_names);
     // No Vectors tho!!! These will be added *after* the import
   }
 
@@ -956,11 +956,11 @@ public class Frame extends Lockable<Frame> {
   // Make NewChunks to for holding data from e.g. Spark.  Once per set of
   // Chunks in a Frame, before filling them.  This can be called in parallel
   // for different Chunk#'s (cidx); each Chunk can be filled in parallel.
-  static NewChunk[] createNewChunks(String name, byte[] type, int cidx) {
-    Frame fr = (Frame) Key.make(name).get();
+  static NewChunk[] createNewChunks(String chunk_name, byte[] chunk_type, int chunk_cidx) {
+    Frame fr = (Frame) Key.make(chunk_name).get();
     NewChunk[] nchks = new NewChunk[fr.numCols()];
     for (int i = 0; i < nchks.length; i++) {
-      nchks[i] = new NewChunk(new AppendableVec(fr._keys[i], type[i]), cidx);
+      nchks[i] = new NewChunk(new AppendableVec(fr._keys[i], chunk_type[i]), chunk_cidx);
     }
     return nchks;
   }
@@ -977,15 +977,15 @@ public class Frame extends Lockable<Frame> {
 
   // Build real Vecs from loose Chunks, and finalize this Frame.  Called once
   // after any number of [create,close]NewChunks.
-  void finalizePartialFrame( long[] espc, String[][] domains, byte[] types ) {
+  void finalizePartialFrame( long[] frame_espc, String[][] frame_domains, byte[] frame_types ) {
     // Compute elems-per-chunk.
     // Roll-up elem counts, so espc[i] is the starting element# of chunk i.
-    int nchunk = espc.length;
+    int nchunk = frame_espc.length;
     long espc2[] = new long[nchunk+1]; // Shorter array
     long x=0;                   // Total row count so far
     for( int i=0; i<nchunk; i++ ) {
       espc2[i] = x;             // Start elem# for chunk i
-      x += espc[i];             // Raise total elem count
+      x += frame_espc[i];             // Raise total elem count
     }
     espc2[nchunk]=x;            // Total element count in last
 

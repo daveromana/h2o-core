@@ -242,20 +242,31 @@ public abstract class ParseTime {
   private static int parseMonth(byte[] buf, int i, int end) {
     int MM=0;
     byte[] MMM = null;
-    OUTER: for( ; MM<MMS.length; MM++ ) {
+    boolean outer= true;
+    boolean inner= true;
+    
+    
+    while(outer){
+    for( ; MM<MMS.length; MM++ ) {
       byte[][] mss = MMS[MM];
-      INNER:
+      while(inner){
       for (byte[] ms : mss) {
         MMM = ms;
         if (MMM == null) continue;
         if (i + MMM.length > end) 
-          continue INNER;
+          continue;
         for (int j = 0; j < MMM.length; j++)
           if (MMM[j] != Character.toLowerCase(buf[i + j]))
-            continue INNER;
-        if (i+MMM.length==end || buf[i + MMM.length] == '-' || isDigit(buf[i + MMM.length])) break OUTER;
+            continue;
+        if (i+MMM.length==end || buf[i + MMM.length] == '-' || isDigit(buf[i + MMM.length])){
+        	outer = false;
+        	}
+      }
+        	}
       }
     }
+  
+  
     if( MM == MMS.length ) return -1; // No matching month
     MM++;                       // 1-based month
     return (MMM.length<<4)|MM;  // Return two values; skip in upper bytes, month in low nybble

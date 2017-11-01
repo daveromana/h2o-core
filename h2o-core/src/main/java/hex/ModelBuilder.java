@@ -1305,14 +1305,17 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     Set<String> rowNames=new TreeSet<>();
     for (Method m : methods) rowNames.add(m.getName());
     List<Method> meths = new ArrayList<>();
-    OUTER:
+    boolean outer= true;
+    
+    while(outer){
     for (String n : rowNames)
       for (Method m : methods)
         if (m.getName().equals(n)) { //find the first method that has that name
           meths.add(m);
-          continue OUTER;
+          continue;
         }
-
+    }
+    
     int numMetrics = rowNames.size();
 
     TwoDimTable table = new TwoDimTable("Cross-Validation Metrics Summary",

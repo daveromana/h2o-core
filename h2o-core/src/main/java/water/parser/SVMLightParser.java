@@ -79,9 +79,12 @@ class SVMLightParser extends Parser {
           c = bits[offset];
         }
       }
-  MAIN_LOOP:
-      while (true) {
-  NEXT_CHAR:
+  boolean main_loop = true;
+  boolean next_char = true; 
+  
+      while (main_loop) {
+    	  while(next_char){
+    		  
         switch (lstate) {
           // ---------------------------------------------------------------------
           case SKIP_LINE:
@@ -94,17 +97,19 @@ class SVMLightParser extends Parser {
               if(lstate != SKIP_LINE)
                 dout.newLine();
             }
-            if( !firstChunk )
-              break MAIN_LOOP; // second chunk only does the first row
+            if( !firstChunk ){
+            	main_loop = false; // second chunk only does the first row
+            }
             lstate = (c == CHAR_CR) ? EXPECT_COND_LF : POSSIBLE_EMPTY_LINE;
             gstate = TGT;
             break;
           // ---------------------------------------------------------------------
           case EXPECT_COND_LF:
             lstate = POSSIBLE_EMPTY_LINE;
-            if (c == CHAR_LF)
-              break;
-            continue MAIN_LOOP;
+            if (c == CHAR_LF){
+            	main_loop = false;
+            }
+            continue;
           // ---------------------------------------------------------------------
 
           // ---------------------------------------------------------------------
@@ -120,11 +125,12 @@ class SVMLightParser extends Parser {
             // fallthrough to WHITESPACE_BEFORE_TOKEN
           // ---------------------------------------------------------------------
           case WHITESPACE_BEFORE_TOKEN:
-            if (isWhitespace(c))
-                break;
+            if (isWhitespace(c)) {
+            	main_loop = false;
+            }
             if (isEOL(c)){
               lstate = EOL;
-              continue MAIN_LOOP;
+              continue;
             }
           // fallthrough to TOKEN
           case TOKEN:
@@ -150,7 +156,7 @@ class SVMLightParser extends Parser {
               String err = "Unexpected character, expected number or qid, got '" + new String(Arrays.copyOfRange(bits, offset,Math.min(bits.length,offset+5))) + "...'";
               dout.invalidLine(new ParseWriter.ParseErr(err,cidx,dout.lineNum(),offset + din.getGlobalByteOffset()));
               lstate = SKIP_LINE;
-              continue MAIN_LOOP;
+              continue;
             }
             // fallthrough to NUMBER
           // ---------------------------------------------------------------------
@@ -203,13 +209,13 @@ class SVMLightParser extends Parser {
                   dout.invalidLine(new ParseWriter.ParseErr(err,cidx,dout.lineNum(),offset + din.getGlobalByteOffset()));
                   lstate = SKIP_LINE;
                 }
-                break NEXT_CHAR;
+                next_char = false;
               case TGT:
               case VAL:
                 dout.addNumCol(colIdx++,number,exp);
                 lstate = WHITESPACE_BEFORE_TOKEN;
                 gstate = COL;
-                continue MAIN_LOOP;
+                continue;
             }
           // ---------------------------------------------------------------------
           case NUMBER_FRACTION:
@@ -243,7 +249,7 @@ class SVMLightParser extends Parser {
             }
             exp = 0;
             zeros = 0;
-            continue MAIN_LOOP;
+            continue;
           // ---------------------------------------------------------------------
           case NUMBER_EXP_START:
             if (exp == -1) {
@@ -258,7 +264,7 @@ class SVMLightParser extends Parser {
             }
             if ((c < '0') || (c > '9')){
               lstate = INVALID_NUMBER;
-              continue MAIN_LOOP;
+              continue;
             }
             lstate = NUMBER_EXP;  // fall through to NUMBER_EXP
           // ---------------------------------------------------------------------
@@ -269,14 +275,14 @@ class SVMLightParser extends Parser {
             }
             exp *= sgnExp;
             lstate = NUMBER_END;
-            continue MAIN_LOOP;
+            continue;
           // ---------------------------------------------------------------------
           case INVALID_NUMBER:
             if(gstate == TGT) { // invalid tgt -> skip the whole row
               lstate = SKIP_LINE;
               String err = "invalid number (expecting target)";
               dout.invalidLine(new ParseWriter.ParseErr(err,cidx,dout.lineNum(),offset + din.getGlobalByteOffset()));
-              continue MAIN_LOOP;
+              continue;
             }
             if(gstate == VAL){ // add invalid value and skip until whitespace or eol
               dout.addInvalidCol(colIdx++);
@@ -299,6 +305,7 @@ class SVMLightParser extends Parser {
               lstate = SKIP_TOKEN;
               break;
             }
+            
             // fall through
           case SKIP_TOKEN:
             if(isEOL(c))
@@ -346,7 +353,7 @@ class SVMLightParser extends Parser {
       } // end MAIN_LOOP
       return dout;
   }
-
+  }
   // --------------------------------------------------------
   // Used for previewing datasets.
   // Fill with zeros not NAs, and grow columns on-demand.

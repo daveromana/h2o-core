@@ -325,9 +325,10 @@ public class ConcurrentLinkedDeque<E>
     private void linkFirst(E e) {
         checkNotNull(e);
         final Node<E> newNode = new Node<E>(e);
+        boolean restartFromHead = true;
 
-        restartFromHead:
-        for (;;)
+        while(restartFromHead)
+        {
             for (Node<E> h = head, p = h, q;;) {
                 if ((q = p.prev) != null &&
                     (q = (p = q).prev) != null)
@@ -335,7 +336,7 @@ public class ConcurrentLinkedDeque<E>
                     // If p == q, we are sure to follow head instead.
                     p = (h != (h = head)) ? h : q;
                 else if (p.next == p) // PREV_TERMINATOR
-                    continue restartFromHead;
+                    continue;
                 else {
                     // p is first node
                     newNode.lazySetNext(p); // CAS piggyback
@@ -350,6 +351,7 @@ public class ConcurrentLinkedDeque<E>
                     // Lost CAS race to another thread; re-read prev
                 }
             }
+        }
     }
 
     /**
@@ -358,9 +360,10 @@ public class ConcurrentLinkedDeque<E>
     private void linkLast(E e) {
         checkNotNull(e);
         final Node<E> newNode = new Node<E>(e);
+        boolean restartFromTail = true;
 
-        restartFromTail:
-        for (;;)
+        while(restartFromTail)
+        {
             for (Node<E> t = tail, p = t, q;;) {
                 if ((q = p.next) != null &&
                     (q = (p = q).next) != null)
@@ -368,7 +371,7 @@ public class ConcurrentLinkedDeque<E>
                     // If p == q, we are sure to follow tail instead.
                     p = (t != (t = tail)) ? t : q;
                 else if (p.prev == p) // NEXT_TERMINATOR
-                    continue restartFromTail;
+                    continue;
                 else {
                     // p is last node
                     newNode.lazySetPrev(p); // CAS piggyback
@@ -383,6 +386,7 @@ public class ConcurrentLinkedDeque<E>
                     // Lost CAS race to another thread; re-read next
                 }
             }
+        }
     }
 
     private static final int HOPS = 2;
@@ -576,7 +580,10 @@ public class ConcurrentLinkedDeque<E>
         // Either head already points to an active node, or we keep
         // trying to cas it to the first node until it does.
         Node<E> h, p, q;
-        restartFromHead:
+        boolean restartFromHead = true;
+        
+        while(restartFromHead){
+        
         while ((h = head).item == null && (p = h.prev) != null) {
             for (;;) {
                 if ((q = p.prev) == null ||
@@ -586,13 +593,14 @@ public class ConcurrentLinkedDeque<E>
                     if (casHead(h, p))
                         return;
                     else
-                        continue restartFromHead;
+                        continue;
                 }
                 else if (h != head)
-                    continue restartFromHead;
+                    continue;
                 else
                     p = q;
             }
+        }
         }
     }
 
@@ -606,7 +614,10 @@ public class ConcurrentLinkedDeque<E>
         // Either tail already points to an active node, or we keep
         // trying to cas it to the last node until it does.
         Node<E> t, p, q;
-        restartFromTail:
+        boolean restartFromTail = true;
+        
+        while(restartFromTail){
+        
         while ((t = tail).item == null && (p = t.next) != null) {
             for (;;) {
                 if ((q = p.next) == null ||
@@ -616,39 +627,43 @@ public class ConcurrentLinkedDeque<E>
                     if (casTail(t, p))
                         return;
                     else
-                        continue restartFromTail;
+                        continue;
                 }
                 else if (t != tail)
-                    continue restartFromTail;
+                    continue;
                 else
                     p = q;
             }
         }
+        }
     }
 
     private void skipDeletedPredecessors(Node<E> x) {
-        whileActive:
+    	boolean findActive = true;
+    	
         do {
             Node<E> prev = x.prev;
             // assert prev != null;
             // assert x != NEXT_TERMINATOR;
             // assert x != PREV_TERMINATOR;
             Node<E> p = prev;
-            findActive:
-            for (;;) {
+            while(findActive){
                 if (p.item != null)
-                    break findActive;
+                    break;
                 Node<E> q = p.prev;
                 if (q == null) {
-                    if (p.next == p)
-                        continue whileActive;
-                    break findActive;
+                    if (p.next == p){
+                        continue;
+                    }
+                    break;
                 }
-                else if (p == q)
-                    continue whileActive;
+                else if (p == q){
+                    continue;
+                }
                 else
                     p = q;
             }
+
 
             // found active CAS target
             if (prev == p || x.casPrev(prev, p))
@@ -658,25 +673,27 @@ public class ConcurrentLinkedDeque<E>
     }
 
     private void skipDeletedSuccessors(Node<E> x) {
-        whileActive:
+        boolean findActive = true;
+        
         do {
             Node<E> next = x.next;
             // assert next != null;
             // assert x != NEXT_TERMINATOR;
             // assert x != PREV_TERMINATOR;
             Node<E> p = next;
-            findActive:
-            for (;;) {
+            while(findActive)
+            {
                 if (p.item != null)
-                    break findActive;
+                    break;
                 Node<E> q = p.next;
                 if (q == null) {
-                    if (p.prev == p)
-                        continue whileActive;
-                    break findActive;
+                    if (p.prev == p){
+                        continue;
+                        }
+                    break;
                 }
                 else if (p == q)
-                    continue whileActive;
+                    continue;
                 else
                     p = q;
             }
@@ -716,8 +733,10 @@ public class ConcurrentLinkedDeque<E>
      * Guarantees that head is set to the returned node.
      */
     Node<E> first() {
-        restartFromHead:
-        for (;;)
+    	
+    	boolean restartFromTail = true;
+        
+    	while(restartFromTail){
             for (Node<E> h = head, p = h, q;;) {
                 if ((q = p.prev) != null &&
                     (q = (p = q).prev) != null)
@@ -730,8 +749,9 @@ public class ConcurrentLinkedDeque<E>
                          || casHead(h, p))
                     return p;
                 else
-                    continue restartFromHead;
+                    continue;
             }
+    	}
     }
 
     /**
@@ -741,8 +761,9 @@ public class ConcurrentLinkedDeque<E>
      * Guarantees that tail is set to the returned node.
      */
     Node<E> last() {
-        restartFromTail:
-        for (;;)
+    	boolean restartFromTail = true;
+    	
+    	while(restartFromTail){
             for (Node<E> t = tail, p = t, q;;) {
                 if ((q = p.next) != null &&
                     (q = (p = q).next) != null)
@@ -755,8 +776,9 @@ public class ConcurrentLinkedDeque<E>
                          || casTail(t, p))
                     return p;
                 else
-                    continue restartFromTail;
+                    continue;
             }
+    }
     }
 
     // Minor convenience utilities
@@ -1122,6 +1144,9 @@ public class ConcurrentLinkedDeque<E>
      * @throws IllegalArgumentException if the collection is this deque
      */
     public boolean addAll(Collection<? extends E> c) {
+    	
+    	boolean restartFromTail = true;
+    	
         if (c == this)
             // As historically specified in AbstractQueue#addAll
             throw new IllegalArgumentException();
@@ -1143,16 +1168,15 @@ public class ConcurrentLinkedDeque<E>
             return false;
 
         // Atomically append the chain at the tail of this collection
-        restartFromTail:
-        for (;;)
+        while(restartFromTail){
             for (Node<E> t = tail, p = t, q;;) {
                 if ((q = p.next) != null &&
-                    (q = (p = q).next) != null)
+                    (q = (p = q).next) != null){
                     // Check for tail updates every other hop.
                     // If p == q, we are sure to follow tail instead.
-                    p = (t != (t = tail)) ? t : q;
-                else if (p.prev == p) // NEXT_TERMINATOR
-                    continue restartFromTail;
+                    p = (t != (t = tail)) ? t : q;}
+                else if (p.prev == p) {// NEXT_TERMINATOR
+                    continue;}
                 else {
                     // p is last node
                     beginningOfTheEnd.lazySetPrev(p); // CAS piggyback
@@ -1170,6 +1194,7 @@ public class ConcurrentLinkedDeque<E>
                     }
                     // Lost CAS race to another thread; re-read next
                 }
+            }
             }
     }
 

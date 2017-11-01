@@ -143,15 +143,16 @@ public class AstMoment extends AstBuiltin<AstMoment> {
       Chronology chronology = ISOChronology.getInstanceUTC();
       int nChunkRows = chks[0]._len;
       int[] tpl = new int[tp.length];
+      boolean byrow = true;
       System.arraycopy(tp, 0, tpl, 0, tp.length);
 
-      BYROW:
+      while(byrow){
       for (int i = 0; i < nChunkRows; i++) {
         for (int j = 0; j < nVecs; j++) {
           double d = chks[j].atd(i);
           if (Double.isNaN(d)) {
             nc.addNum(Double.NaN);
-            continue BYROW;
+            continue;
           }
           tpl[cm[j]] = (int) d;
         }
@@ -161,6 +162,7 @@ public class AstMoment extends AstBuiltin<AstMoment> {
         } catch (IllegalFieldValueException e) {
           nc.addNum(Double.NaN);
         }
+      }
       }
     }
   }

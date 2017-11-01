@@ -76,8 +76,10 @@ class CsvParser extends Parser {
     dout.newLine();
 
     final boolean forceable = dout instanceof FVecParseWriter && ((FVecParseWriter)dout)._ctypes != null && _setup._column_types != null;
-MAIN_LOOP:
-    while (true) {
+    boolean main_loop = true;
+    
+    
+    while (main_loop) {
       boolean forcedCategorical = forceable && colIdx < _setup._column_types.length && _setup._column_types[colIdx] == Vec.T_CAT;
       boolean forcedString = forceable && colIdx < _setup._column_types.length && _setup._column_types[colIdx] == Vec.T_STR;
 
@@ -89,13 +91,13 @@ MAIN_LOOP:
           } else {
             break;
           }
-          continue MAIN_LOOP;
+          continue;
         // ---------------------------------------------------------------------
         case EXPECT_COND_LF:
           state = POSSIBLE_EMPTY_LINE;
           if (c == CHAR_LF)
             break;
-          continue MAIN_LOOP;
+          continue;
         // ---------------------------------------------------------------------
         case STRING:
           if (c == quotes) {
@@ -157,8 +159,9 @@ MAIN_LOOP:
             colIdx = 0;
           }
           state = (c == CHAR_CR) ? EXPECT_COND_LF : POSSIBLE_EMPTY_LINE;
-          if( !firstChunk )
-            break MAIN_LOOP; // second chunk only does the first row
+          if( !firstChunk ){
+        	  main_loop = false;
+          }// second chunk only does the first row
           break;
         // ---------------------------------------------------------------------
         case POSSIBLE_CURRENCY:
@@ -177,7 +180,7 @@ MAIN_LOOP:
               state = STRING_END;
             }
           }
-          continue MAIN_LOOP;
+          continue;
         // ---------------------------------------------------------------------
         case POSSIBLE_EMPTY_LINE:
           if (isEOL(c)) {
@@ -198,7 +201,7 @@ MAIN_LOOP:
           } else if (isEOL(c)) {
             dout.addInvalidCol(colIdx++);
             state = EOL;
-            continue MAIN_LOOP;
+            continue;
           }
           // fallthrough to COND_QUOTED_TOKEN
         // ---------------------------------------------------------------------
@@ -216,7 +219,7 @@ MAIN_LOOP:
           if( dout.isString(colIdx) ) { // Forced already to a string col?
             state = STRING; // Do not attempt a number parse, just do a string parse
             str.set(bits, offset, 0);
-            continue MAIN_LOOP;
+            continue;
           } else if (((c >= '0') && (c <= '9')) || (c == '-') || (c == CHAR_DECIMAL_SEP) || (c == '+')) {
             state = NUMBER;
             number = 0;
@@ -239,7 +242,7 @@ MAIN_LOOP:
           } else {
             state = STRING;
             str.set(bits, offset, 0);
-            continue MAIN_LOOP;
+            continue;
           }
           // fallthrough to NUMBER
         // ---------------------------------------------------------------------
@@ -295,8 +298,9 @@ MAIN_LOOP:
             colIdx = 0;
             dout.newLine();
             state = (c == CHAR_CR) ? EXPECT_COND_LF : POSSIBLE_EMPTY_LINE;
-            if( !firstChunk )
-              break MAIN_LOOP; // second chunk only does the first row
+            if( !firstChunk ){
+            	main_loop = false; // second chunk only does the first row
+            }
             break;
           } else if ((c == '%')) {
             state = NUMBER_END;
@@ -325,7 +329,7 @@ MAIN_LOOP:
             break;
           }
           state = COND_QUOTED_NUMBER_END;
-          continue MAIN_LOOP;
+          continue;
         // ---------------------------------------------------------------------
         case NUMBER_SKIP_NO_DOT:
           if ((c >= '0') && (c <= '9')) {
@@ -336,7 +340,7 @@ MAIN_LOOP:
             break;
           }
           state = COND_QUOTED_NUMBER_END;
-          continue MAIN_LOOP;
+          continue;
         // ---------------------------------------------------------------------
         case NUMBER_FRACTION:
           if ((c >= '0') && (c <= '9')) {
@@ -364,7 +368,7 @@ MAIN_LOOP:
             number = -number;
           }
           exp = 0;
-          continue MAIN_LOOP;
+          continue;
         // ---------------------------------------------------------------------
         case NUMBER_EXP_START:
           if (exp == -1) {
@@ -392,7 +396,7 @@ MAIN_LOOP:
           }
           exp *= sgnExp;
           state = COND_QUOTED_NUMBER_END;
-          continue MAIN_LOOP;
+          continue;
 
         // ---------------------------------------------------------------------
         case COND_QUOTE:
@@ -403,7 +407,7 @@ MAIN_LOOP:
           } else {
             quotes = 0;
             state = STRING_END;
-            continue MAIN_LOOP;
+            continue;
           }
         // ---------------------------------------------------------------------
         default:
