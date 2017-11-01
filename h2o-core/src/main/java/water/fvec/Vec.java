@@ -190,7 +190,12 @@ public class Vec extends Keyed<Vec> {
   /** Set the categorical/factor names.  No range-checking on the actual
    *  underlying numeric domain; user is responsible for maintaining a mapping
    *  which is coherent with the Vec contents. */
-  public final void setDomain(String[] domain) { _domain = domain; if( domain != null ) _type = T_CAT; }
+  public final void setDomain(String[] domain) { 
+	  _domain = domain; 
+	  if( domain != null ) {
+		  _type = T_CAT; 
+	  }
+  }
   /** Returns cardinality for categorical domain or -1 for other types. */
   public final int cardinality() { return isCategorical() ? _domain.length : -1; }
 
@@ -464,7 +469,9 @@ public class Vec extends Keyed<Vec> {
       @Override protected void setupLocal() {
         for( int i=0; i<nchunks; i++ ) {
           Key k = v0.chunkKey(i);
-          if( k.home() ) DKV.put(k,new C0LChunk(l,v0.chunkLen(i)),_fs);
+          if( k.home() ) {
+        	  DKV.put(k,new C0LChunk(l,v0.chunkLen(i)),_fs);
+          }
         }
       }
     }.doAllNodes();
@@ -564,14 +571,18 @@ public class Vec extends Keyed<Vec> {
   public Vec makeCon(final double d, byte type) { return makeCon(d, group(), _rowLayout, type); }
 
   private static Vec makeCon( final double d, VectorGroup group, int rowLayout, byte type ) {
-    if( (long)d==d ) return makeCon((long)d, null, group, rowLayout, type);
+    if( (long)d==d ) {
+    	return makeCon((long)d, null, group, rowLayout, type);
+    }
     final Vec v0 = new Vec(group.addVec(), rowLayout, null, type);
     final int nchunks = v0.nChunks();
     new MRTask() {              // Body of all zero chunks
       @Override protected void setupLocal() {
         for( int i=0; i<nchunks; i++ ) {
           Key k = v0.chunkKey(i);
-          if( k.home() ) DKV.put(k,new C0DChunk(d,v0.chunkLen(i)),_fs);
+          if( k.home() ) {
+        	  DKV.put(k,new C0DChunk(d,v0.chunkLen(i)),_fs);
+          }
         }
       }
     }.doAllNodes();
@@ -670,7 +681,9 @@ public class Vec extends Keyed<Vec> {
         for (Vec v1 : vs) {
           for (int i = 0; i < nchunks; i++) {
             Key k = v1.chunkKey(i);
-            if (k.home()) DKV.put(k, new C0LChunk(l, chunkLen(i)), _fs);
+            if (k.home()) {
+            	DKV.put(k, new C0LChunk(l, chunkLen(i)), _fs);
+            }
           }
         }
         for( Vec v : vs ) if( v._key.home() ) DKV.put(v._key,v,_fs);
@@ -790,7 +803,9 @@ public class Vec extends Keyed<Vec> {
   /** Vecs's mode
    * @return Vec's mode */
   public int mode() {
-    if (!isCategorical()) throw H2O.unimpl();
+    if (!isCategorical()) {
+    	throw H2O.unimpl();
+    }
     long[] bins = bins();
     return ArrayUtils.maxIndex(bins);
   }
@@ -880,7 +895,9 @@ public class Vec extends Keyed<Vec> {
    *  repeatedly.  Per-chunk row-counts will not be changing, just row
    *  contents. */
   public void preWriting( ) {
-    if( !writable() ) throw new IllegalArgumentException("Vector not writable");
+    if( !writable() ) {
+    	throw new IllegalArgumentException("Vector not writable");
+    }
     setMutating(rollupStatsKey());
   }
 
@@ -892,7 +909,9 @@ public class Vec extends Keyed<Vec> {
     Value val = DKV.get(rskey);
     if( val != null ) {
       RollupStats rs = val.get(RollupStats.class);
-      if( rs.isMutating() ) return; // Vector already locked against rollups
+      if( rs.isMutating() ) {
+    	  return; // Vector already locked against rollups
+      }
     }
     // Set rollups to "vector isMutating" atomically.
     new SetMutating().invoke(rskey);
@@ -907,8 +926,9 @@ public class Vec extends Keyed<Vec> {
       Value val = DKV.get(rollupStatsKey());
       if (val != null) {
         RollupStats rs = val.get(RollupStats.class);
-        if (rs.isMutating())  // Vector was mutating, is now allowed for rollups
+        if (rs.isMutating()) { // Vector was mutating, is now allowed for rollups
           DKV.remove(rskey, fs);// Removing will cause them to be rebuilt, on demand
+        }
       }
     }
     return fs;                  // Flow-coding
@@ -922,12 +942,16 @@ public class Vec extends Keyed<Vec> {
    *  with a sane API (JDK has an insane API).  Overridden by subclasses that
    *  compute chunks in an alternative way, such as file-backed Vecs. */
    public int elem2ChunkIdx( long i ) {
-    if( !(0 <= i && i < length()) ) throw new ArrayIndexOutOfBoundsException("0 <= "+i+" < "+length());
+    if( !(0 <= i && i < length()) ) {
+    	throw new ArrayIndexOutOfBoundsException("0 <= "+i+" < "+length());
+    }
     long[] espc = espc();       // Preload
     int lo=0, hi = nChunks();
     while( lo < hi-1 ) {
       int mid = (hi+lo)>>>1;
-      if( i < espc[mid] ) hi = mid;
+      if( i < espc[mid] ) {
+    	  hi = mid;
+      }
       else                lo = mid;
     }
     while( espc[lo+1] == i ) lo++;
@@ -960,7 +984,9 @@ public class Vec extends Keyed<Vec> {
   }
   // Filled in lazily and racily... but all writers write the exact identical Key
   public Key rollupStatsKey() { 
-    if( _rollupStatsKey==null ) _rollupStatsKey=chunkKey(-2);
+    if( _rollupStatsKey==null ) {
+    	_rollupStatsKey=chunkKey(-2);
+    }
     return _rollupStatsKey;
   }
 
@@ -974,7 +1000,9 @@ public class Vec extends Keyed<Vec> {
   }
 
   private boolean checkMissing(int cidx, Value val) {
-    if( val != null ) return true;
+    if( val != null ) {
+    	return true;
+    }
     Log.err("Error: Missing chunk " + cidx + " for " + _key);
     return false;
   }
@@ -1046,10 +1074,12 @@ public class Vec extends Keyed<Vec> {
     long cstart = c._start;             // Read once, since racily filled in
     Vec v = c._vec;
     int tcidx = c._cidx;
-    if( cstart == start && v != null && tcidx == cidx)
+    if( cstart == start && v != null && tcidx == cidx) {
       return c;                       // Already filled-in
-    if(!(cstart == -1 || v == null || tcidx == -1))
+    }
+    if(!(cstart == -1 || v == null || tcidx == -1)) {
       throw new RuntimeException("Was not filled in (everybody racily writes the same start value:  cstart = " + cstart + " v == null? " + (v == null) + " cidx = " + tcidx + ", chunk = " + c.getClass().getName());
+    }
     assert cstart == -1 || v == null || tcidx == -1:" cstart = " + cstart + " v == null? " + (v == null) + " cidx = " + tcidx + ", chunk = " + c.getClass().getName(); // Was not filled in (everybody racily writes the same start value)
     c._vec = this;             // Fields not filled in by unpacking from Value
     c._start = start;          // Fields not filled in by unpacking from Value
@@ -1093,7 +1123,9 @@ public class Vec extends Keyed<Vec> {
    *  throw if not a String */
   public final BufferedString atStr( BufferedString bStr, long i ) {
     if (isCategorical()) { //for categorical vecs, return the factor level
-      if (isNA(i)) return null;
+      if (isNA(i)) {
+    	  return null;
+      }
       return bStr.set(_domain[(int)at8(i)]);
     } else return chunkForRow(i).atStr_abs(bStr, i);
   }
@@ -1209,8 +1241,9 @@ public class Vec extends Keyed<Vec> {
   private Futures closeLocal(Futures fs) {
     int nc = nChunks();
     for( int i=0; i<nc; i++ )
-      if( H2O.containsKey(chunkKey(i)) )
+      if( H2O.containsKey(chunkKey(i)) ) {
         chunkForChunkIdx(i).close(i, fs);
+      }
     return fs;                  // Flow-coding
   }
 
@@ -1298,7 +1331,9 @@ public class Vec extends Keyed<Vec> {
     // Remove RollupStats
     new MRTask() {
       @Override public void setupLocal() {
-        for( Key k : keys ) if( k != null ) H2O.raw_remove(chunkKey(k,-2));
+        for( Key k : keys ) if( k != null ) {
+        	H2O.raw_remove(chunkKey(k,-2));
+        }
       }
     }.doAllNodes();
   }
@@ -1320,7 +1355,9 @@ public class Vec extends Keyed<Vec> {
     for( int i=0; i<ncs; i++ ) {
       Key ck = chunkKey(i);
       ab.put(DKV.getGet(ck));   // Pull all Chunks local
-      if( !ck.home() ) H2O.raw_remove(ck); // Remove the non-local ones as you go
+      if( !ck.home() ) {
+    	  H2O.raw_remove(ck); // Remove the non-local ones as you go
+      }
     }
     return super.writeAll_impl(ab);
   }
@@ -1362,8 +1399,9 @@ public class Vec extends Keyed<Vec> {
           j++;
         } catch(NumberFormatException ex){nan_cnt++;}
         if(j == double_domain.length) { // only atempt to adapt if we have fully double domain,  (to preserve current behavior for ints, could relax this later)
-          if (j < double_domain.length)
+          if (j < double_domain.length) {
             double_domain = Arrays.copyOf(double_domain, j);
+          }
           double[] new_double_domain = new VecUtils.CollectDoubleDomain(double_domain, 100000).doAll(this).domain();
           if (new_double_domain.length > 0) {
             int n = domain.length;
@@ -1383,8 +1421,9 @@ public class Vec extends Keyed<Vec> {
               j++;
             } catch (NumberFormatException ex) {/*ignore*/}
           }
-          if (!ArrayUtils.isSorted(double_domain))
+          if (!ArrayUtils.isSorted(double_domain)) {
             ArrayUtils.sort(order_indeces, double_domain);
+          }
           final double[] sorted_domain_vals = ArrayUtils.select(double_domain, order_indeces);
           final int[] sorted_indeces = ArrayUtils.select(indeces, order_indeces);
           new MRTask() {
@@ -1392,8 +1431,9 @@ public class Vec extends Keyed<Vec> {
             public void map(Chunk c0, Chunk c1) {
               for (int i = 0; i < c0._len; ++i) {
                 double d = c0.atd(i);
-                if (Double.isNaN(d))
+                if (Double.isNaN(d)) {
                   c1.setNA(i);
+                }
                 else {
                   c1.set(i, sorted_indeces[Arrays.binarySearch(sorted_domain_vals, d)]);
                 }
@@ -1508,8 +1548,9 @@ public class Vec extends Keyed<Vec> {
     static boolean sameGroup(Vec v1, Vec v2) {
       byte[] bits1 = v1._key._kb;
       byte[] bits2 = v2._key._kb;
-      if( bits1.length != bits2.length )
+      if( bits1.length != bits2.length ) {
         return false;
+      }
       int res  = 0;
       for( int i = KEY_PREFIX_LEN; i < bits1.length; i++ )
         res |= bits1[i] ^ bits2[i];
@@ -1566,7 +1607,9 @@ public class Vec extends Keyed<Vec> {
     // Fetch from the local cache
     private static ESPC getLocal( Key kespc ) {
       ESPC local = ESPCS.get(kespc);
-      if( local != null ) return local;
+      if( local != null ) {
+    	  return local;
+      }
       ESPCS.putIfAbsent(kespc,new ESPC(kespc,new long[0][])); // Racey, not sure if new or old is returned
       return ESPCS.get(kespc);
     }
@@ -1574,7 +1617,9 @@ public class Vec extends Keyed<Vec> {
     // Fetch from remote, and unify as needed
     private static ESPC getRemote( ESPC local, Key kespc ) {
       final ESPC remote = DKV.getGet(kespc);
-      if( remote == null || remote == local ) return local; // No change
+      if( remote == null || remote == local ) {
+    	  return local; // No change
+      }
 
       // Something New?  If so, we need to unify the sharable arrays with a
       // "smashing merge".  Every time a remote instance of a ESPC is updated
@@ -1592,7 +1637,9 @@ public class Vec extends Keyed<Vec> {
         // if the local is racily updated by another thread, after this thread
         // reads the remote value (which then gets invalidated, and updated to
         // a new larger value).
-        if( local_espcs.length >= remote_espcs.length ) return local;
+        if( local_espcs.length >= remote_espcs.length ) {
+        	return local;
+        }
         // Use my (local, older, more heavily shared) ESPCs where possible.
         // I.e., the standard remote read will create new copies of all ESPC
         // arrays, but the *local* copies are heavily shared.  All copies are
@@ -1602,7 +1649,9 @@ public class Vec extends Keyed<Vec> {
         // Attempt to update local cache with the larger value
         ESPC res = ESPCS.putIfMatch(kespc,remote,local);  // Update local copy with larger
         // if res==local, then update succeeded, table has 'remote' (the larger object).
-        if( res == local ) return remote;
+        if( res == local ) {
+        	return remote;
+        }
         // if res!=local, then update failed, and returned 'res' is probably
         // larger than either remote or local
         local = res;
@@ -1614,14 +1663,20 @@ public class Vec extends Keyed<Vec> {
     /** Get the ESPC for a Vec.  Called once per new construction or read_impl.  */
     public static long[] espc( Vec v ) {
       final int r = v._rowLayout;
-      if( r == -1 ) return null; // Never was any row layout
+      if( r == -1 ) {
+    	  return null; // Never was any row layout
+      }
       // Check the local cache
       final Key kespc = espcKey(v._key);
       ESPC local = getLocal(kespc);
-      if( r < local._espcs.length ) return local._espcs[r];
+      if( r < local._espcs.length ) {
+    	  return local._espcs[r];
+      }
       // Now try to refresh the local cache from the remote cache
       final ESPC remote = getRemote( local, kespc);
-      if( r < remote._espcs.length ) return remote._espcs[r];
+      if( r < remote._espcs.length ) {
+    	  return remote._espcs[r];
+      }
       throw H2O.fail("Vec "+v._key+" asked for layout "+r+", but only "+remote._espcs.length+" layouts defined");
     }
 
@@ -1631,8 +1686,9 @@ public class Vec extends Keyed<Vec> {
       for( int i=0; i<espcs.length; i++ ) if( espc==espcs[i] ) return i;
       // Check for a local deep equals next:
       for( int i=0; i<espcs.length; i++ )
-        if( espc.length==espcs[i].length && Arrays.equals(espc,espcs[i]) ) 
+        if( espc.length==espcs[i].length && Arrays.equals(espc,espcs[i]) ) {
           return i;
+        }
       return -1;                // No match
     }
 
@@ -1644,7 +1700,9 @@ public class Vec extends Keyed<Vec> {
       Key kespc = espcKey(key);
       ESPC local = getLocal(kespc);
       int idx = find_espc(espc,local._espcs);
-      if( idx != -1 ) return idx;
+      if( idx != -1 ) {
+    	  return idx;
+      }
 
       // See if the ESPC is in the LOCAL DKV - if not it might have been
       // invalidated, and a refetch might get a new larger ESPC with the
@@ -1652,17 +1710,23 @@ public class Vec extends Keyed<Vec> {
       if( !H2O.containsKey(kespc) ) {
         local = getRemote(local,kespc);      // Fetch remote, merge as needed
         idx = find_espc(espc, local._espcs); // Retry
-        if( idx != -1 ) return idx;
+        if( idx != -1 ) {
+        	return idx;
+        }
       }
       
       // Send the ESPC over to the ESPC master, and request it get
       // inserted.
       new TAtomic<ESPC>() {
         @Override public ESPC atomic( ESPC old ) {
-          if( old == null ) return new ESPC(_key,new long[][]{espc});
+          if( old == null ) {
+        	  return new ESPC(_key,new long[][]{espc});
+          }
           long[][] espcs = old._espcs;
           int idx = find_espc(espc,espcs);
-          if( idx != -1 ) return null; // Abort transaction, idx exists; client needs to refresh
+          if( idx != -1 ) {
+        	  return null; // Abort transaction, idx exists; client needs to refresh
+          }
           int len = espcs.length;
           espcs = Arrays.copyOf(espcs,len+1);
           espcs[len] = espc;    // Insert into array

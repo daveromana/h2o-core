@@ -46,26 +46,32 @@ public class TwoDimTable extends Iced {
    */
   public TwoDimTable(String tableHeader, String tableDescription, String[] rowHeaders, String[] colHeaders, String[] colTypes,
                      String[] colFormats, String colHeaderForRowHeaders) {
-    if (tableHeader == null)
+    if (tableHeader == null) {
       tableHeader = "";
-    if (tableDescription == null)
+    }
+    if (tableDescription == null) {
       tableDescription = "";
+    }
     this.colHeaderForRowHeaders = colHeaderForRowHeaders;
 
-    if (rowHeaders == null)
+    if (rowHeaders == null) {
       throw new IllegalArgumentException("rowHeaders is null");
+    }
     else {
       for (int r = 0; r < rowHeaders.length; ++r)
-        if (rowHeaders[r] == null)
+        if (rowHeaders[r] == null) {
           rowHeaders[r] = "";
+        }
     }
 
-    if (colHeaders == null)
+    if (colHeaders == null) {
       throw new IllegalArgumentException("colHeaders is null");
+    }
     else {
       for (int c = 0; c < colHeaders.length; ++c)
-        if (colHeaders[c] == null)
+        if (colHeaders[c] == null) {
           colHeaders[c] = "";
+        }
     }
 
     final int rowDim = rowHeaders.length;
@@ -75,14 +81,16 @@ public class TwoDimTable extends Iced {
       colTypes = new String[colDim];
       Arrays.fill(colTypes, "string");
     }
-    else if (colTypes.length != colDim)
+    else if (colTypes.length != colDim) {
       throw new IllegalArgumentException("colTypes must have the same length as colHeaders");
+    }
     else {
       for (int c = 0; c < colDim; ++c) {
         colTypes[c] = colTypes[c].toLowerCase();
         if (!(colTypes[c].equals("double") || colTypes[c].equals("float") || colTypes[c].equals("int") ||
-            colTypes[c].equals("long") || colTypes[c].equals("string")))
+            colTypes[c].equals("long") || colTypes[c].equals("string"))) {
           throw new IllegalArgumentException("colTypes values must be one of \"double\", \"float\", \"int\", \"long\", or \"string\"");
+        }
       }
     }
 
@@ -127,10 +135,12 @@ public class TwoDimTable extends Iced {
     for (int c = 0; c < colDim; ++c) {
       if (colTypes[c].equalsIgnoreCase("string")) {
         for (String[] vec : strCellValues) {
-          if (vec == null)
+          if (vec == null) {
             throw new IllegalArgumentException("Null string in strCellValues");
-          if (vec.length != colDim)
+          }
+          if (vec.length != colDim) {
             throw new IllegalArgumentException("Each row in strCellValues must have the same length as colHeaders");
+          }
         }
         break;
       }
@@ -138,8 +148,9 @@ public class TwoDimTable extends Iced {
     for (int c = 0; c < colDim; ++c) {
       if (!colTypes[c].equalsIgnoreCase("string")) {
         for (double[] vec : dblCellValues) {
-          if (vec.length != colDim)
+          if (vec.length != colDim) {
             throw new IllegalArgumentException("Each row in dblCellValues must have the same length as colHeaders");
+          }
         }
         break;
       }
@@ -148,8 +159,9 @@ public class TwoDimTable extends Iced {
     for (int r = 0; r < rowDim; ++r) {
       for (int c = 0; c < colDim; ++c) {
         if (strCellValues[r] != null && strCellValues[r][c] != null &&
-            dblCellValues[r] != null && !isEmpty(dblCellValues[r][c]))
+            dblCellValues[r] != null && !isEmpty(dblCellValues[r][c])) {
           throw new IllegalArgumentException("Cannot provide both a String and a Double at row " + r + " and column " + c + ".");
+        }
       }
     }
 
@@ -164,10 +176,12 @@ public class TwoDimTable extends Iced {
         case "long":
           for (int r = 0; r < rowDim; ++r) {
             double val = dblCellValues[r][c];
-            if (isEmpty(val))
+            if (isEmpty(val)) {
               set(r, c, Double.NaN);
-            else if ((long)val==val)
+            }
+            else if ((long)val==val) {
               set(r, c, (long)val);
+            }
             else
               set(r, c, val);
           }
@@ -236,20 +250,27 @@ public class TwoDimTable extends Iced {
    * @param o Object value
    */
   public void set(final int row, final int col, final Object o) {
-    if (o == null)
+    if (o == null) {
       cellValues[row][col] = new IcedWrapper(null);
-    else if (o instanceof Double && Double.isNaN((double)o))
+    }
+    else if (o instanceof Double && Double.isNaN((double)o)) {
       cellValues[row][col] = new IcedWrapper(Double.NaN);
-    else if (o instanceof int[])
+    }
+    else if (o instanceof int[]) {
       cellValues[row][col] = new IcedWrapper(Arrays.toString((int[])o));
-    else if (o instanceof long[])
+    }
+    else if (o instanceof long[]) {
       cellValues[row][col] = new IcedWrapper(Arrays.toString((long[])o));
-    else if (o instanceof float[])
+    }
+    else if (o instanceof float[]) {
       cellValues[row][col] = new IcedWrapper(Arrays.toString((float[])o));
-    else if (o instanceof double[])
+    }
+    else if (o instanceof double[]) {
       cellValues[row][col] = new IcedWrapper(Arrays.toString((double[])o));
-    else if (colTypes[col]=="string")
+    }
+    else if (colTypes[col]=="string") {
       cellValues[row][col] = new IcedWrapper(o.toString());
+    }
     else
       cellValues[row][col] = new IcedWrapper(o);
   }
@@ -273,9 +294,15 @@ public class TwoDimTable extends Iced {
   private static int PRINTOUT_ROW_LIMIT = 20;
   private boolean skip(int row) {
     assert(PRINTOUT_ROW_LIMIT % 2 == 0);
-    if (getRowDim() <= PRINTOUT_ROW_LIMIT) return false;
-    if (row <= PRINTOUT_ROW_LIMIT/2) return false;
-    if (row >= getRowDim()-PRINTOUT_ROW_LIMIT/2) return false;
+    if (getRowDim() <= PRINTOUT_ROW_LIMIT) {
+    	return false;
+    }
+    if (row <= PRINTOUT_ROW_LIMIT/2) {
+    	return false;
+    }
+    if (row >= getRowDim()-PRINTOUT_ROW_LIMIT/2) {
+    	return false;
+    }
     return true;
   }
   /**
@@ -285,8 +312,9 @@ public class TwoDimTable extends Iced {
    * @return String containing the ASCII version of the table
    */
   public String toString(final int pad, boolean full) {
-    if (pad < 0)
+    if (pad < 0) {
       throw new IllegalArgumentException("pad must be a non-negative integer");
+    }
 
     final int rowDim = getRowDim();
     final int colDim = getColDim();
@@ -300,7 +328,9 @@ public class TwoDimTable extends Iced {
     cellStrings[0][0] = colHeaderForRowHeaders != null ? colHeaderForRowHeaders : "";
     int row = 0;
     for (int r = 0; r < rowDim; ++r) {
-      if (!full && skip(r)) continue;
+      if (!full && skip(r)) {
+    	  continue;
+      }
       cellStrings[row+1][0] = rowHeaders[r];
       row++;
     }
@@ -311,7 +341,9 @@ public class TwoDimTable extends Iced {
       final String formatString = colFormats[c];
       row = 0;
       for (int r = 0; r < rowDim; ++r) {
-        if (!full && skip(r)) continue;
+        if (!full && skip(r)) {
+        	continue;
+        }
         Object o = get(r,c);
         if ((o == null) || o instanceof Double && isEmpty((double)o)){
           cellStrings[row + 1][c + 1] = "";
@@ -323,11 +355,21 @@ public class TwoDimTable extends Iced {
           continue;
         }
         try {
-          if (o instanceof Double) cellStrings[row + 1][c + 1] = String.format(formatString, (Double) o);
-          else if (o instanceof Float) cellStrings[row + 1][c + 1] = String.format(formatString, (Float) o);
-          else if (o instanceof Integer) cellStrings[row + 1][c + 1] = String.format(formatString, (Integer) o);
-          else if (o instanceof Long) cellStrings[row + 1][c + 1] = String.format(formatString, (Long) o);
-          else if (o instanceof String) cellStrings[row + 1][c + 1] = (String)o;
+          if (o instanceof Double) {
+        	  cellStrings[row + 1][c + 1] = String.format(formatString, (Double) o);
+          }
+          else if (o instanceof Float) {
+        	  cellStrings[row + 1][c + 1] = String.format(formatString, (Float) o);
+          }
+          else if (o instanceof Integer) {
+        	  cellStrings[row + 1][c + 1] = String.format(formatString, (Integer) o);
+          }
+          else if (o instanceof Long) {
+        	  cellStrings[row + 1][c + 1] = String.format(formatString, (Long) o);
+          }
+          else if (o instanceof String) {
+        	  cellStrings[row + 1][c + 1] = (String)o;
+          }
           else cellStrings[row + 1][c + 1] = String.format(formatString, cellValues[r][c]);
         } catch(Throwable t) {
           cellStrings[row + 1][c + 1] = o.toString();
@@ -357,12 +399,14 @@ public class TwoDimTable extends Iced {
         assert(!full);
         sb.append("---");
       } else {
-        if (len > 0)
+        if (len > 0) {
           sb.append(String.format("%" + colLen[0] + "s", cellStrings[r][0]));
+        }
         for (int c = 1; c <= colDim; ++c) {
           len = colLen[c];
-          if (len > 0)
+          if (len > 0) {
             sb.append(String.format("%" + (len + pad) + "s", cellStrings[r][c].equals("null") ? "" : cellStrings[r][c]));
+          }
         }
       }
       sb.append("\n");
