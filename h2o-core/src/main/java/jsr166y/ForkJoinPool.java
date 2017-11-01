@@ -2532,10 +2532,11 @@ while(restart=true)
         if ((ws = workQueues) != null) {
             for (int i = 1; i < ws.length; i += 2) {
                 if ((w = ws[i]) != null) {
-                    count += w.queueSize(};
+                    count += w.queueSize();
+                }
             	}
             }
-        }
+        
         return count;
     }
 
