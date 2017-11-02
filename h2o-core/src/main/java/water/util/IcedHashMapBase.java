@@ -133,21 +133,28 @@ public abstract class IcedHashMapBase<K, V> extends Iced implements Map<K, V>, C
 	abstract protected Map<K, V> init();
 
 	protected void writeMap(AutoBuffer ab, int mode) {
-    for( Entry<K, V> e : map().entrySet() ) {
-      K key = e.getKey();   assert key != null;
-      V val = e.getValue(); assert val != null;
-      // put key
-      if( mode==1 || mode==2 || mode==5 ) {ab.putStr((String)key); else ab.put((Freezable)key);}
+		for (Entry<K, V> e : map().entrySet()) {
+			K key = e.getKey();
+			assert key != null;
+			V val = e.getValue();
+			assert val != null;
+			// put key
+			if (mode == 1 || mode == 2 || mode == 5) {
+				ab.putStr((String) key);
+			} else
+				ab.put((Freezable) key);
 
-      // put value
-      if( mode==1 || mode==3 ) {ab.putStr((String)val);}
-      else if( mode==5 || mode==6 ) {
-        ab.put4(((Freezable[]) val).length);
-        for (Freezable v : (Freezable[]) val) ab.put(v);
-      }
-      else ab.put((Freezable)val);
-    }
-  }
+			// put value
+			if (mode == 1 || mode == 3) {
+				ab.putStr((String) val);
+			} else if (mode == 5 || mode == 6) {
+				ab.put4(((Freezable[]) val).length);
+				for (Freezable v : (Freezable[]) val)
+					ab.put(v);
+			} else
+				ab.put((Freezable) val);
+		}
+	}
 
 	/**
 	 * Helper for serialization - fills the mymap() from K-V pairs in the AutoBuffer
@@ -218,9 +225,7 @@ public abstract class IcedHashMapBase<K, V> extends Iced implements Map<K, V>, C
 				ab.putJSONName((String) value);
 			} else if (value instanceof String[]) {
 				ab.putJSONAStr((String[]) value);
-			}
-
-			else if (value instanceof Integer) {
+			} else if (value instanceof Integer) {
 				ab.putJSON4((Integer) value);
 			} else if (value instanceof Freezable) {
 				ab.putJSON((Freezable) value);

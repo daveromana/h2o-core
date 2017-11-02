@@ -107,7 +107,7 @@ final class RollupStats extends Iced {
 		BufferedString tmpStr = new BufferedString();
 		if (isString) {
 			_isInt = false;
-		}
+			}
 		// Checksum support
 		long checksum = 0;
 		long start = c._start;
@@ -121,15 +121,14 @@ final class RollupStats extends Iced {
 			Arrays.fill(_mins, d);
 			Arrays.fill(_maxs, d);
 			if (d == Double.POSITIVE_INFINITY) {
-				_pinfs++;
-			} else if (d == Double.NEGATIVE_INFINITY) {
-				_ninfs++;
-			} else {
+				_pinfs++;}
+			else if (d == Double.NEGATIVE_INFINITY) {
+				_ninfs++;}
+			else {
 				if (Double.isNaN(d)) {
-					_naCnt = c._len;
-				} else if (d != 0) {
-					_nzCnt = c._len;
-				}
+					_naCnt = c._len;}
+				else if (d != 0) {
+					_nzCnt = c._len;}
 				_mean = d;
 				_rows = c._len;
 			}
@@ -154,10 +153,9 @@ final class RollupStats extends Iced {
 			// Hard-count sparse-but-zero (weird case of setting a zero over a non-zero)
 			for (int i = c.nextNZ(-1); i < c._len; i = c.nextNZ(i))
 				if (c.isNA(i)) {
-					nans++;
-				} else if (c.at8(i) == 0) {
-					zs++;
-				}
+					nans++;}
+				else if (c.at8(i) == 0) {
+					zs++;}
 			int os = c._len - zs - nans; // Ones
 			_nzCnt += os;
 			_naCnt += nans;
@@ -180,53 +178,51 @@ final class RollupStats extends Iced {
 			for (int i = c.nextNZ(-1); i < c._len; i = c.nextNZ(i)) {
 				if (c.isNA(i)) {
 					_naCnt++;
-				} else {
+				}
+				else {
 					long lo = c.at16l(i), hi = c.at16h(i);
 					if (lo != 0 || hi != 0) {
-						_nzCnt++;
-					}
+						_nzCnt++;}
 					l = lo ^ 37 * hi;
 				}
 				if (l != 0) {// ignore 0s in checksum to be consistent with sparse chunks
-					checksum ^= (17 * (start + i)) ^ 23 * l;
-				}
+					checksum ^= (17 * (start + i)) ^ 23 * l;}
 			}
 
 		} else if (isString) { // String columns do not compute min/max/mean/sigma
 			for (int i = c.nextNZ(-1); i < c._len; i = c.nextNZ(i)) {
 				if (c.isNA(i)) {
-					_naCnt++;
-				} else {
+					_naCnt++;}
+				else {
 					_nzCnt++;
 					l = c.atStr(tmpStr, i).hashCode();
 				}
-				if (l != 0) {// ignore 0s in checksum to be consistent with sparse chunks
-					checksum ^= (17 * (start + i)) ^ 23 * l;
-				}
+				if (l != 0) { // ignore 0s in checksum to be consistent with sparse chunks
+					checksum ^= (17 * (start + i)) ^ 23 * l;}
 			}
 		} else {
 			// Work off all numeric rows, or only the nonzeros for sparse
 			if (c instanceof C1Chunk) {
-				checksum = new RollupStatsHelpers(this).numericChunkRollup((C1Chunk) c, start, checksum);
-			} else if (c instanceof C1SChunk) {
-				checksum = new RollupStatsHelpers(this).numericChunkRollup((C1SChunk) c, start, checksum);
-			} else if (c instanceof C1NChunk) {
-				checksum = new RollupStatsHelpers(this).numericChunkRollup((C1NChunk) c, start, checksum);
-			} else if (c instanceof C2Chunk) {
-				checksum = new RollupStatsHelpers(this).numericChunkRollup((C2Chunk) c, start, checksum);
-			} else if (c instanceof C2SChunk) {
-				checksum = new RollupStatsHelpers(this).numericChunkRollup((C2SChunk) c, start, checksum);
-			} else if (c instanceof C4SChunk) {
-				checksum = new RollupStatsHelpers(this).numericChunkRollup((C4SChunk) c, start, checksum);
-			} else if (c instanceof C4FChunk) {
-				checksum = new RollupStatsHelpers(this).numericChunkRollup((C4FChunk) c, start, checksum);
-			} else if (c instanceof C4Chunk) {
-				checksum = new RollupStatsHelpers(this).numericChunkRollup((C4Chunk) c, start, checksum);
-			} else if (c instanceof C8Chunk) {
-				checksum = new RollupStatsHelpers(this).numericChunkRollup((C8Chunk) c, start, checksum);
-			} else if (c instanceof C8DChunk) {
-				checksum = new RollupStatsHelpers(this).numericChunkRollup((C8DChunk) c, start, checksum);
-			} else
+				checksum = new RollupStatsHelpers(this).numericChunkRollup((C1Chunk) c, start, checksum);}
+			else if (c instanceof C1SChunk) {
+				checksum = new RollupStatsHelpers(this).numericChunkRollup((C1SChunk) c, start, checksum);}
+			else if (c instanceof C1NChunk) {
+				checksum = new RollupStatsHelpers(this).numericChunkRollup((C1NChunk) c, start, checksum);}
+			else if (c instanceof C2Chunk) {
+				checksum = new RollupStatsHelpers(this).numericChunkRollup((C2Chunk) c, start, checksum);}
+			else if (c instanceof C2SChunk) {
+				checksum = new RollupStatsHelpers(this).numericChunkRollup((C2SChunk) c, start, checksum);}
+			else if (c instanceof C4SChunk) {
+				checksum = new RollupStatsHelpers(this).numericChunkRollup((C4SChunk) c, start, checksum);}
+			else if (c instanceof C4FChunk) {
+				checksum = new RollupStatsHelpers(this).numericChunkRollup((C4FChunk) c, start, checksum);}
+			else if (c instanceof C4Chunk) {
+				checksum = new RollupStatsHelpers(this).numericChunkRollup((C4Chunk) c, start, checksum);}
+			else if (c instanceof C8Chunk) {
+				checksum = new RollupStatsHelpers(this).numericChunkRollup((C8Chunk) c, start, checksum);}
+			else if (c instanceof C8DChunk) {
+				checksum = new RollupStatsHelpers(this).numericChunkRollup((C8DChunk) c, start, checksum);}
+			else
 				checksum = new RollupStatsHelpers(this).numericChunkRollup(c, start, checksum);
 
 			// special case for sparse chunks
@@ -270,12 +266,10 @@ final class RollupStats extends Iced {
 	private void reduce(RollupStats rs) {
 		for (double d : rs._mins)
 			if (!Double.isNaN(d)) {
-				min(d);
-			}
+				min(d);}
 		for (double d : rs._maxs)
 			if (!Double.isNaN(d)) {
-				max(d);
-			}
+				max(d);}
 		_naCnt += rs._naCnt;
 		_nzCnt += rs._nzCnt;
 		_pinfs += rs._pinfs;
@@ -343,12 +337,11 @@ final class RollupStats extends Iced {
 		@Override
 		public void postGlobal() {
 			if (_rs == null) {
-				_rs = new RollupStats(0);
-			} else {
+				_rs = new RollupStats(0);}
+			else {
 				_rs._sigma = Math.sqrt(_rs._sigma / (_rs._rows - 1));
 				if (_rs._rows == 1) {
-					_rs._sigma = 0;
-				}
+					_rs._sigma = 0;}
 				if (_rs._rows < 5) {
 					for (int i = 0; i < 5 - _rs._rows; i++) { // Fix PUBDEV-150 for files under 5 rows
 						_rs._maxs[4 - i] = Double.NaN;
@@ -361,14 +354,12 @@ final class RollupStats extends Iced {
 			Vec vec = _fr.anyVec();
 			String[] ss = vec.domain();
 			if (vec.isCategorical() && ss.length > 2) {
-				_rs._mean = _rs._sigma = Double.NaN;
-			}
+				_rs._mean = _rs._sigma = Double.NaN;}
 			if (ss != null) {
 				long dsz = (2/* hdr */ + 1/* len */ + ss.length) * 8; // Size of base domain array
 				for (String s : vec.domain())
 					if (s != null) {
-						dsz += 2 * s.length() + (2/* hdr */ + 1/* value */ + 1/* hash */ + 2/* hdr */ + 1/* len */) * 8;
-					}
+						dsz += 2 * s.length() + (2/* hdr */ + 1/* value */ + 1/* hash */ + 2/* hdr */ + 1/* len */) * 8;}
 				_rs._size += dsz; // Account for domain size in Vec size
 				// Account for Chunk key size
 				int keysize = (2/* hdr */ + 1/* kb */ + 1/* hash */ + 2/* hdr */ + 1/* len */) * 8
@@ -397,25 +388,25 @@ final class RollupStats extends Iced {
 	}
 
 	static void start(final Vec vec, Futures fs, boolean computeHisto) {
-    if( vec instanceof InteractionWrappedVec ) {
-    	return;
-    }
-    if( DKV.get(vec._key)== null ) {
-      throw new RuntimeException("Rollups not possible, because Vec was deleted: "+vec._key);
-    }
-    if( vec.isString() ) {
-    	computeHisto = false; // No histogram for string columns
-    }
-    final Key rskey = vec.rollupStatsKey();
-    RollupStats rs = getOrNull(vec,rskey);
-    if(rs == null || (computeHisto && !rs.hasHisto())) {
-      fs.add(new RPC(rskey.home_node(),new ComputeRollupsTask(vec,computeHisto)).addCompleter(new H2OCallback() {
-        @Override public void callback(H2OCountedCompleter h2OCountedCompleter) {
-          DKV.get(rskey); // fetch new results via DKV to enable caching of the results.
-        }
-        }
-      }
-  }
+		if (vec instanceof InteractionWrappedVec) {
+			return;}
+		if (DKV.get(vec._key) == null) {
+			throw new RuntimeException("Rollups not possible, because Vec was deleted: " + vec._key);}
+		if (vec.isString()) {
+			computeHisto = false; // No histogram for string columns
+			}
+		final Key rskey = vec.rollupStatsKey();
+		RollupStats rs = getOrNull(vec, rskey);
+		if (rs == null || (computeHisto && !rs.hasHisto())) {
+			fs.add(new RPC(rskey.home_node(), new ComputeRollupsTask(vec, computeHisto))
+					.addCompleter(new H2OCallback() {
+						@Override
+						public void callback(H2OCountedCompleter h2OCountedCompleter) {
+							DKV.get(rskey); // fetch new results via DKV to enable caching of the results.
+						}
+					}).call());
+		}
+	}
 
 	private static NonBlockingHashMap<Key, RPC> _pendingRollups = new NonBlockingHashMap<>();
 
@@ -430,8 +421,7 @@ final class RollupStats extends Iced {
 		RollupStats rs = DKV.getGet(rskey);
 		while (rs == null || (!rs.isReady() || (computeHisto && !rs.hasHisto()))) {
 			if (rs != null && rs.isMutating()) {
-				throw new IllegalArgumentException("Can not compute rollup stats while vec is being modified. (1)");
-			}
+				throw new IllegalArgumentException("Can not compute rollup stats while vec is being modified. (1)");}
 			// 1. compute only once
 			try {
 				RPC rpcNew = new RPC(rskey.home_node(), new ComputeRollupsTask(vec, computeHisto));
@@ -461,9 +451,8 @@ final class RollupStats extends Iced {
 	// Fetch if present, but do not compute
 	static RollupStats getOrNull(Vec vec, final Key rskey) {
 		Value val = DKV.get(rskey);
-		if (val == null) { // No rollup stats present?
-			return vec.length() > 0 ? /* not computed */null : /* empty vec */new RollupStats(0);
-		}
+		if (val == null) {// No rollup stats present?
+			return vec.length() > 0 ? /* not computed */null : /* empty vec */new RollupStats(0);}
 		RollupStats rs = val.get(RollupStats.class);
 		return rs.isReady() ? rs : null;
 	}
@@ -500,13 +489,11 @@ final class RollupStats extends Iced {
 			for (int i = c.nextNZ(-1); i < c._len; i = c.nextNZ(i)) {
 				double d = c.atd(i);
 				if (!Double.isNaN(d)) {
-					_bins[idx(d)]++;
-				}
+					_bins[idx(d)]++;}
 			}
 			// Sparse? We skipped all the zeros; do them now
 			if (c.isSparseZero()) {
-				_bins[idx(0.0)] += (c._len - c.sparseLenZero());
-			}
+				_bins[idx(0.0)] += (c._len - c.sparseLenZero());}
 		}
 
 		private int idx(double d) {
@@ -552,8 +539,7 @@ final class RollupStats extends Iced {
 			RollupStats newRs = RollupStats.makeComputing();
 			CountedCompleter cc = getCompleter(); // should be null or RPCCall
 			if (cc != null) {
-				assert cc.getCompleter() == null;
-			}
+				assert cc.getCompleter() == null;}
 			newRs._tsk = cc == null ? this : cc;
 			return new Value(_rsKey, newRs);
 		}
@@ -563,8 +549,7 @@ final class RollupStats extends Iced {
 			Value old = DKV.DputIfMatch(_rsKey, new Value(_rsKey, rs), nnn, fs);
 			assert rs.isReady();
 			if (old != nnn) {
-				throw new IllegalArgumentException("Can not compute rollup stats while vec is being modified. (2)");
-			}
+				throw new IllegalArgumentException("Can not compute rollup stats while vec is being modified. (2)");}
 			fs.blockForPending();
 		}
 
@@ -587,8 +572,7 @@ final class RollupStats extends Iced {
 						if (_computeHisto && !rs.hasHisto()) { // a.2 => compute rollups
 							CountedCompleter cc = getCompleter(); // should be null or RPCCall
 							if (cc != null) {
-								assert cc.getCompleter() == null;
-							}
+								assert cc.getCompleter() == null;}
 							// note: if cc == null then onExceptionalCompletion tasks waiting on this may be
 							// woken up before exception handling iff exception is thrown.
 							Value nnn = makeComputing();
@@ -605,8 +589,7 @@ final class RollupStats extends Iced {
 						rs._tsk.join();
 					} else if (rs.isMutating()) { // c) => throw IAE
 						throw new IllegalArgumentException(
-								"Can not compute rollup stats while vec is being modified. (3)");
-					}
+								"Can not compute rollup stats while vec is being modified. (3)");}
 				} else { // d) => compute the rollups
 					final Value nnn = makeComputing();
 					Futures fs = new Futures();
@@ -619,8 +602,8 @@ final class RollupStats extends Iced {
 							// quit
 							r._rs._checksum ^= vec.length();
 							if (_computeHisto) {
-								computeHisto(r._rs, vec, nnn);
-							} else
+								computeHisto(r._rs, vec, nnn);}
+							else
 								installResponse(nnn, r._rs);
 							break;
 						} catch (Exception e) {
@@ -699,9 +682,8 @@ final class RollupStats extends Iced {
 					// i) pint is the last of (j-1)'s bin count (>1 when either duplicates exist in
 					// input, or stride makes dups at lower accuracy)
 					// AND ii) h>0 so we do need to find the next non-zero bin
-					if (k < j) {
+					if (k < j)
 						k = j; // if j jumped over the k needed for the last P, catch k up to j
-					}
 					// Saves potentially winding k forward over the same zero stretch many times
 					while (rs._bins[k] == 0)
 						k++; // find the next non-zero bin

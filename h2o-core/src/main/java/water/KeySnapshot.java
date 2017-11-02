@@ -260,7 +260,7 @@ public class KeySnapshot {
 				public void compute2() {
 					new GlobalUKeySetTask().doAllNodes();
 				}
-			}
+			});
 		}
 		return res;
 	}

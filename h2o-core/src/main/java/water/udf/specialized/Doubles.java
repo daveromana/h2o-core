@@ -46,9 +46,13 @@ public class Doubles extends DataColumns.BaseFactory<Double> {
 			return c.isNA(idx) ? null : c.atd(idx);
 		}
 
-	@Override public void set(int idx, Double value) {
-      if (value == null) {c.setNA(idx); else c.set(idx, value);}
-    }
+		@Override
+		public void set(int idx, Double value) {
+			if (value == null) {
+				c.setNA(idx);
+			} else
+				c.set(idx, value);
+		}
 
 		public void set(int idx, double value) {
 			c.set(idx, value);
@@ -80,9 +84,13 @@ public class Doubles extends DataColumns.BaseFactory<Double> {
 			return get(idx);
 		}
 
-	@Override public void set(long idx, Double value) {
-      if (value == null) {vec().setNA(idx); else vec().set(idx, value);}
-    }
+		@Override
+		public void set(long idx, Double value) {
+			if (value == null) {
+				vec().setNA(idx);
+			} else
+				vec().set(idx, value);
+		}
 
 		public void set(long idx, double value) {
 			vec().set(idx, value);

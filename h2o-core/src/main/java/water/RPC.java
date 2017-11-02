@@ -648,26 +648,27 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
     return new AutoBuffer(ab._h2o, H2O.ACK_ACK_PRIORITY).putTask(UDP.udp.ackack.ordinal(),_tasknum);
   }
 
-  private void doAllCompletions() {
-    final Throwable e = _dt.getDException();
-    // Also notify any and all pending completion-style tasks
-    if( _fjtasks != null ) {
-      for( final H2OCountedCompleter task : _fjtasks ) {
-        H2O.submitTask(new H2OCountedCompleter(task.priority()) {
-          @Override public void compute2() {
-            if (e != null) {// re-throw exception on this side as if it happened locally
-              task.completeExceptionally(e);
-            }
-            else try {
-              task.__tryComplete(_dt);
-            } catch (Throwable e) {
-              task.completeExceptionally(e);
-            }
-          }
-        }
-      }
-    }
-  }
+	private void doAllCompletions() {
+		final Throwable e = _dt.getDException();
+		// Also notify any and all pending completion-style tasks
+		if (_fjtasks != null) {
+			for (final H2OCountedCompleter task : _fjtasks) {
+				H2O.submitTask(new H2OCountedCompleter(task.priority()) {
+					@Override
+					public void compute2() {
+						if (e != null) { // re-throw exception on this side as if it happened locally
+							task.completeExceptionally(e);
+						} else
+							try {
+								task.__tryComplete(_dt);
+							} catch (Throwable e) {
+								task.completeExceptionally(e);
+							}
+					}
+				});
+			}
+		}
+	}
 
   // ---
   public synchronized RPC<V> addCompleter( H2OCountedCompleter task ) {
