@@ -92,7 +92,7 @@ public class Tabulate extends Keyed<Tabulate> {
 
 	private String labelForBin(final int v, int b) {
 		int missing = _stats[v]._missing;
-		if (missing == 1 && b == 0) {
+		/*if (missing == 1 && b == 0) {
 			return "missing(NA)";
 		}
 		if (missing == 1) {
@@ -105,7 +105,7 @@ public class Tabulate extends Keyed<Tabulate> {
 		if (_stats[v]._isInt && (_stats[v]._max - _stats[v]._min + 1) <= bins) {
 			return Integer.toString((int) (_stats[v]._min + b));
 		}
-		double d = (_stats[v]._max - _stats[v]._min) / bins;
+		double d = (_stats[v]._max - _stats[v]._min) / bins;*/
 		return String.format("%5f", _stats[v]._min + (b + 0.5) * d);
 	}
 
