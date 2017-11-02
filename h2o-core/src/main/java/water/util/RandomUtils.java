@@ -1,4 +1,4 @@
-package water.util;
+package main.java.water.util;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -240,31 +240,28 @@ public class RandomUtils {
       // This section is translated from the init_by_array code in the C version.
       int i = 1;
       int j = 0;
-      for( int k = Math.max(N, SEEDS.length); k > 0; k-- ) {
-        int jseeds = (j == 0 || j == 1) ? seedInts[j] : SEEDS[j];
-
-        mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >>> 30)) * SEED_FACTOR1))
-            + jseeds + j;
-        i++;
-        j++;
-        if( i >= N ) {
-          mt[0] = mt[N - 1];
-          i = 1;
-        }
-        if( j >= SEEDS.length ) {
-          j = 0;
-        }
-      }
-      for( int k = N - 1; k > 0; k-- ) {
-        mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >>> 30)) * SEED_FACTOR2)) - i;
-        i++;
-        if( i >= N ) {
-          mt[0] = mt[N - 1];
-          i = 1;
-        }
-      }
-      mt[0] = UPPER_MASK; // Most significant bit is 1 - guarantees non-zero
-                          // initial array.
+      
+      int k = Math.max(N, SEEDS.length);
+      int x = N - 1;
+      
+        while(k>0 && x>0){
+        	int jseeds = (j == 0 || j == 1) ? seedInts[j] : SEEDS[j];
+        	 mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >>> 30)) * SEED_FACTOR1))
+        	            + jseeds + j;
+        	        i++;
+        	        j++;
+        	  if( j >= SEEDS.length ) {
+        		  j = 0;
+        	  }
+        	 mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >>> 30)) * SEED_FACTOR2)) - i;
+        	        i++;      
+        	        if( i >= N ) {
+        	            mt[0] = mt[N - 1];
+        	            i = 1;
+        	          }      
+       }
+        mt[0] = UPPER_MASK; // Most significant bit is 1 - guarantees non-zero
+        // initial array.
     }
 
     @Override
