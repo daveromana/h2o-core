@@ -36,7 +36,23 @@ public class ProfileCollectorTask extends MRTask<ProfileCollectorTask> {
         _result[i] = that._result[i];
         }
   }
-
+  
+  /*methods to reduce cyclomatic complexity
+*/  
+  private boolean ridSett (final int j,final String val) {
+	  boolean inf =false;
+	  if( j==0 && (   val.equals("sun.misc.Unsafe.park(Native Method)")
+              || val.equals("java.lang.Object.wait(Native Method)")
+              || val.equals("java.lang.Thread.sleep(Native Method)")
+              || val.equals("java.lang.Thread.yield(Native Method)")
+              || val.equals("java.net.PlainSocketImpl.socketAccept(Native Method)")
+              || val.equals("sun.nio.ch.ServerSocketChannelImpl.accept0(Native Method)")
+              || val.equals("sun.nio.ch.DatagramChannelImpl.receive0(Native Method)")
+              || val.equals("java.lang.Thread.dumpThreads(Native Method)")
+      ) ) { inf=true; }
+		return inf;
+  }
+   
   /**
    * This runs on each node in the cluster.
    */
@@ -45,8 +61,7 @@ public class ProfileCollectorTask extends MRTask<ProfileCollectorTask> {
     _result = new NodeProfile[H2O.CLOUD.size()];
 
     Map<String, Integer> countedStackTraces = new HashMap<>();
-
-    final int repeats = 100;
+   final int repeats = 100;
     for (int i=0; i<repeats; ++i) {
       Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
       for (Map.Entry<Thread, StackTraceElement[]> el : allStackTraces.entrySet()) {
@@ -55,15 +70,9 @@ public class ProfileCollectorTask extends MRTask<ProfileCollectorTask> {
         for (StackTraceElement ste : el.getValue()) {
           String val = ste.toString();
           // filter out unimportant stuff
-          if( j==0 && (   val.equals("sun.misc.Unsafe.park(Native Method)")
-                  || val.equals("java.lang.Object.wait(Native Method)")
-                  || val.equals("java.lang.Thread.sleep(Native Method)")
-                  || val.equals("java.lang.Thread.yield(Native Method)")
-                  || val.equals("java.net.PlainSocketImpl.socketAccept(Native Method)")
-                  || val.equals("sun.nio.ch.ServerSocketChannelImpl.accept0(Native Method)")
-                  || val.equals("sun.nio.ch.DatagramChannelImpl.receive0(Native Method)")
-                  || val.equals("java.lang.Thread.dumpThreads(Native Method)")
-          ) ) { break; }
+         
+          if(ridSett(j, val)==true){break;}
+         
 
           sb.append(ste.toString());
           sb.append("\n");

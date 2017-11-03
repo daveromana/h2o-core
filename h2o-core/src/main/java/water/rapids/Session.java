@@ -330,6 +330,18 @@ public class Session {
    *                  might be a Frame (which would not be in FRAMES). So we pass the "returning" value explicitly,
    *                  so that all its references can be properly accounted for.
    */
+  
+  private void reducCC (Integer s, Integer c, Key<Vec> vec) {
+	  
+	  if (s == null) {
+    	  throw new IllegalStateException("REFCNTS missing vec " + vec);
+      }
+      if (c.intValue() != s.intValue()) {
+        throw new IllegalStateException(
+            "Ref-count mismatch for vec " + vec + ": REFCNT = " + s + ", should be " + c);
+      }
+	   
+   }
   private void sanity_check_refs(Val returning) {
     if ((sanityChecksCounter++) % 1000 >= sanityChecksFrequency) {
     	return;
@@ -358,13 +370,9 @@ public class Session {
       Key<Vec> vec = pair.getKey();
       Integer count = pair.getValue();
       Integer savedCount = REFCNTS.get(vec);
-      if (savedCount == null) {
-    	  throw new IllegalStateException("REFCNTS missing vec " + vec);
-      }
-      if (count.intValue() != savedCount.intValue()) {
-        throw new IllegalStateException(
-            "Ref-count mismatch for vec " + vec + ": REFCNT = " + savedCount + ", should be " + count);
-      }
+      
+      reducCC(savedCount, count, vec);
+   
     }
     // Then check that every cached REFCNT is in the computed set as well.
     if (refcnts.size() != REFCNTS.size()) {
