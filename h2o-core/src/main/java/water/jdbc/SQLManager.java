@@ -23,7 +23,7 @@ public class SQLManager {
    * @param table (Input)
    * @param select_query (Input)
    * @param username (Input)
-   * @param password (Input)
+   * @param pass.w.ord (Input)
    * @param columns (Input)
    * @param optimize (Input)                
    */

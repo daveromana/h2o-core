@@ -132,7 +132,7 @@ final public class H2O {
 		/** -jks is Java KeyStore file on local filesystem */
 		public String jks = null;
 
-		/** -jks_pass is Java KeyStore password; default is 'h2oh2o' */
+		/** -jks_pass is Java KeyStore pass.w.ord; default is 'h2oh2o' */
 		public String jks_pass = DEFAULT_JKS_PASS;
 
 		/** -hash_login enables HashLoginService */
