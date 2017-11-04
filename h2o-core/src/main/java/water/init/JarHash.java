@@ -84,20 +84,11 @@ public abstract class JarHash {
 
   // Look for resources (JS files, PNG's, etc) from the self-jar first, then
   // from a possible local dev build.
-  public static InputStream getResource2(String uri) {
-    try {
-      // If -Dwebdev=1 is set in VM args, we're in front end dev mode, so skip the class loader.
-      // This is to allow the front end scripts/styles/templates to be loaded from the build
-      //  directory during development.
-
-      // Try all registered locations
-      for( File f : RESOURCE_FILES ) {
-        File f2 = new File(f,uri);
-        if( f2.exists() ) {
-          return new FileInputStream(f2);
-          }
-      }
-
+  public String noPathTraversal(HttpServletRequest req) throws IOException {
+   
+     
+    	return IOUtils.slurp(new File(SAFE_DIR, new File(req.getParameter("file")).getName())); 
+  }
       // Fall through to jar file mode.
       ClassLoader cl = ClassLoader.getSystemClassLoader();
       InputStream is = loadResource(uri, cl);
