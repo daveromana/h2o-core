@@ -74,21 +74,13 @@ public abstract class JarHash {
   }
 
 
-  private static final ArrayList<File> RESOURCE_FILES = new ArrayList<>();
-
-  public static void registerResourceRoot(File f) {
-    if (f.exists()) {
-      RESOURCE_FILES.add(f);
-    }
-  }
 
   // Look for resources (JS files, PNG's, etc) from the self-jar first, then
   // from a possible local dev build.
-  public String noPathTraversal(HttpServletRequest req) throws IOException {
-   
-     
-    	return IOUtils.slurp(new File(SAFE_DIR, new File(req.getParameter("file")).getName())); 
-  }
+	public String noPathTraversal(HttpServletRequest req) throws IOException {
+
+		return IOUtils.slurp(new File(SAFE_DIR, new File(req.getParameter("file")).getName()));
+	}
       // Fall through to jar file mode.
       ClassLoader cl = ClassLoader.getSystemClassLoader();
       InputStream is = loadResource(uri, cl);
