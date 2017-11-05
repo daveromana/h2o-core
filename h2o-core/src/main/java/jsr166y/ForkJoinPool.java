@@ -1347,12 +1347,17 @@ public class ForkJoinPool extends AbstractExecutorService {
 						&& w.eventCount == (e | INT_SIGN)) {
 					long nc = (((long) (w.nextWait & E_MASK)) | ((long) (u + UAC_UNIT) << 32));
 					long n_c = (long) (((u + UTC_UNIT) & UTC_MASK) | ((u + UAC_UNIT) & UAC_MASK)) << 32;
-					if ((U.compareAndSwapLong(this, CTL, c, nc)||(U.compareAndSwapLong(this, CTL, c, n_c)) {
+					if 
+							(U.compareAndSwapLong(this, CTL, c, nc)
+									||
+							(U.compareAndSwapLong(this, CTL, c, n_c))
+									) {
 						w.eventCount = (e + E_SEQ) & E_MASK;
 						addWorker();
 						break;
-					}else{
-				break;
+					}
+					else{
+						break;
 					}
 				}
 		}

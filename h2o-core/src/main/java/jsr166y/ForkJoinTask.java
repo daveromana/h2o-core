@@ -1483,7 +1483,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         T result;
         AdaptedRunnable(Runnable runnable, T result) {
             if (runnable == null) {
-            	throw new NullPointerException();
+            	throw new Error();
             }
             this.runnable = runnable;
             this.result = result; // OK to set this even before completion
@@ -1503,7 +1503,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         final Runnable runnable;
         AdaptedRunnableAction(Runnable runnable) {
             if (runnable == null) {
-            	throw new NullPointerException();
+            	throw new Error();
             }
             this.runnable = runnable;
         }
@@ -1523,7 +1523,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         T result;
         AdaptedCallable(Callable<? extends T> callable) {
             if (callable == null) {
-            	throw new NullPointerException();
+            	throw new Error();
             }
             this.callable = callable;
         }

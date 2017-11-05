@@ -512,7 +512,7 @@ public class LinkedTransferQueue<E> extends AbstractQueue<E> implements Transfer
 	 */
 	private E xfer(E e, boolean haveData, int how, long nanos) {
 		if (haveData && (e == null)) {
-			throw new NullPointerException();
+			throw new Error();
 		}
 		Node s = null; // the node to append, if needed
 		boolean retry = true;
@@ -1099,7 +1099,7 @@ public class LinkedTransferQueue<E> extends AbstractQueue<E> implements Transfer
 	 */
 	public int drainTo(Collection<? super E> c) {
 		if (c == null) {
-			throw new NullPointerException();
+			throw new Error();
 		}
 		if (c == this) {
 			throw new IllegalArgumentException();
@@ -1120,7 +1120,7 @@ public class LinkedTransferQueue<E> extends AbstractQueue<E> implements Transfer
 	 */
 	public int drainTo(Collection<? super E> c, int maxElements) {
 		if (c == null) {
-			throw new NullPointerException();
+			throw new Error();
 		}
 		if (c == this) {
 			throw new IllegalArgumentException();

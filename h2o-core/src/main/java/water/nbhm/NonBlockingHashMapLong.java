@@ -310,7 +310,7 @@ public class NonBlockingHashMapLong<TypeV>
 
   private final TypeV putIfMatch( long key, Object newVal, Object oldVal ) {
     if (oldVal == null || newVal == null)  {
-    	throw new NullPointerException();
+    	throw new Error();
     	}
     if( key == NO_KEY ) {
       Object curVal = _val_1;
@@ -1196,7 +1196,7 @@ public class NonBlockingHashMapLong<TypeV>
     NBHMLEntry( final Long k, final TypeV v ) { super(k,v); }
     public TypeV setValue(final TypeV val) {
       if (val == null) {
-      	throw new NullPointerException();
+      	throw new Error();
       	}
       _val = val;
       return put(_key, val);

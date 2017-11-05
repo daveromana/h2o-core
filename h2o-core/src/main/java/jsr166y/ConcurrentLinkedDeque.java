@@ -743,7 +743,7 @@ public class ConcurrentLinkedDeque<E> extends AbstractCollection<E> implements D
 	 */
 	private static void checkNotNull(Object v) {
 		if (v == null) {
-			throw new NullPointerException();
+			throw new Error();
 		}
 	}
 

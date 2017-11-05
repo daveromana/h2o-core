@@ -477,7 +477,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV> extends AbstractMap<TypeK,
 
 	private final TypeV putIfMatch(Object key, Object newVal, Object oldVal) {
 		if (oldVal == null || newVal == null) {
-			throw new NullPointerException();
+			throw new Error();
 		}
 		final Object res = putIfMatch(this, _kvs, key, newVal, oldVal);
 		assert !(res instanceof Prime);
@@ -521,7 +521,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV> extends AbstractMap<TypeK,
 	@Override
 	public boolean containsValue(final Object val) {
 		if (val == null) {
-			throw new NullPointerException();
+			throw new Error();
 		}
 		for (TypeV V : values())
 			if (V == val || V.equals(val)) {
@@ -1485,7 +1485,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV> extends AbstractMap<TypeK,
 
 		public TypeV setValue(final TypeV val) {
 			if (val == null) {
-				throw new NullPointerException();
+				throw new Error();
 			}
 			_val = val;
 			return put(_key, val);
