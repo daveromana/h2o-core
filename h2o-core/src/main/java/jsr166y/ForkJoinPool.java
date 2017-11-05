@@ -1313,8 +1313,9 @@ public class ForkJoinPool extends AbstractExecutorService {
 				r ^= r << 13; // same xorshift as WorkQueues
 				r ^= r >>> 17;
 				s.seed = r ^= r << 5;
-			} else
+			} else{
 				Thread.yield(); // yield if no alternatives
+			}
 		}
 	}
 
