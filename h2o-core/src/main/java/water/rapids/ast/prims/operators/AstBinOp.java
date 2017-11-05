@@ -219,6 +219,7 @@ abstract public class AstBinOp extends AstPrimitive {
    * Auto-widen the scalar to every element of the frame
    */
   private ValFrame frame_op_scalar(Frame fr, final String str) {
+	  final BufferedString conStr = new BufferedString(str);
     Frame res = new MRTask() {
       @Override
       public void map(Chunk[] chks, NewChunk[] cress) {
@@ -229,7 +230,7 @@ abstract public class AstBinOp extends AstPrimitive {
           Vec vec = chk.vec();
           // String Vectors: apply str_op as BufferedStrings to all elements
           if (vec.isString()) {
-            final BufferedString conStr = new BufferedString(str);
+           
             for (int i = 0; i < chk._len; i++)
               cres.addNum(str_op(chk.atStr(vstr, i), conStr));
           } else if (vec.isCategorical()) {
@@ -259,6 +260,7 @@ abstract public class AstBinOp extends AstPrimitive {
    * Auto-widen the scalar to every element of the frame
    */
   private ValFrame scalar_op_frame(final String str, Frame fr) {
+	  final BufferedString conStr = new BufferedString(str);
     Frame res = new MRTask() {
       @Override
       public void map(Chunk[] chks, NewChunk[] cress) {
@@ -269,7 +271,7 @@ abstract public class AstBinOp extends AstPrimitive {
           Vec vec = chk.vec();
           // String Vectors: apply str_op as BufferedStrings to all elements
           if (vec.isString()) {
-            final BufferedString conStr = new BufferedString(str);
+           
             for (int i = 0; i < chk._len; i++)
               cres.addNum(str_op(conStr, chk.atStr(vstr, i)));
           } else if (vec.isCategorical()) {

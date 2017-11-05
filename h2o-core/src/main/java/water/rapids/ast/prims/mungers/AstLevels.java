@@ -35,6 +35,8 @@ public class AstLevels extends AstPrimitive {
     Futures fs = new Futures();
     Key[] keys = Vec.VectorGroup.VG_LEN1.addVecs(f.numCols());
     Vec[] vecs = new Vec[keys.length];
+    AppendableVec v = new AppendableVec(keys[i], Vec.T_NUM);
+    NewChunk nc = new NewChunk(v, 0);
 
     // compute the longest vec... that's the one with the most domain levels
     int max = 0;
@@ -47,8 +49,7 @@ public class AstLevels extends AstPrimitive {
 
     final int rowLayout = Vec.ESPC.rowLayout(keys[0], new long[]{0, max});
     for (int i = 0; i < f.numCols(); ++i) {
-      AppendableVec v = new AppendableVec(keys[i], Vec.T_NUM);
-      NewChunk nc = new NewChunk(v, 0);
+      
       String[] dom = f.vec(i).domain();
       int numToPad = dom == null ? max : max - dom.length;
       if (dom != null) {

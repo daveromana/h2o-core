@@ -1431,9 +1431,6 @@ public class ForkJoinPool extends AbstractExecutorService {
 						w.rescans = (a > 0) ? 0 : a + parallelism;
 						w.totalSteals += ns;
 					int ac = a + parallelism;
-					}
-					else if (((w.rescans = (ac < nr) ? ac : nr - 1) & 3) == 0) {
-						Thread.yield(); // yield before block
 					}else {
 					Thread.interrupted(); // clear status
 					Thread wt = Thread.currentThread();
@@ -1589,8 +1586,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 							replace = true;
 							break; // in compensation range and tasks available
 						}
-					}else if((task == null || task.status >= 0) && // recheck need to block
-					(blocker == null || !blocker.isReleasable()) && ctl == c) {
+					}else {
 						return true;
 					}
 		return false;
@@ -1625,11 +1621,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 									}
 								
 					}
-				}
-				if (s < 0 || (s = task.status) < 0) {
-					joiner.currentJoin = prevJoin;
-					break;
-				} else if ((k++ & (MAX_HELP - 1)) == MAX_HELP >>> 1) {
+				}else {
 					Thread.yield(); // for politeness
 				}
 			}

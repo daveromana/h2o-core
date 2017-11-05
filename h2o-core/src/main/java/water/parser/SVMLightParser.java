@@ -144,6 +144,8 @@ class SVMLightParser extends Parser {
               continue;
             }
           // fallthrough to TOKEN
+          String s =  new String(Arrays.copyOfRange(bits, offset,Math.min(bits.length,offset+5)));
+       ParserWriter w =   new ParseWriter.ParseErr(err,cidx,dout.lineNum(),offset + din.getGlobalByteOffset());
           case TOKEN:
             if (((c >= '0') && (c <= '9')) || (c == '-') || (c == CHAR_DECIMAL_SEP) || (c == '+')) {
               lstate = NUMBER;
@@ -164,8 +166,8 @@ class SVMLightParser extends Parser {
             } else if(c == 'q'){
               lstate = QID0;
             } else { // failed, skip the line
-              String err = "Unexpected character, expected number or qid, got '" + new String(Arrays.copyOfRange(bits, offset,Math.min(bits.length,offset+5))) + "...'";
-              dout.invalidLine(new ParseWriter.ParseErr(err,cidx,dout.lineNum(),offset + din.getGlobalByteOffset()));
+              String err = "Unexpected character, expected number or qid, got '" + s + "...'" + w;
+              dout.invalidLine();
               lstate = SKIP_LINE;
               continue;
             }
@@ -379,8 +381,9 @@ class SVMLightParser extends Parser {
   // Fill with zeros not NAs, and grow columns on-demand.
   private static class SVMLightInspectParseWriter extends PreviewParseWriter {
     public SVMLightInspectParseWriter() {
+    	 _data[i] = new String[MAX_PREVIEW_COLS];
       for (int i = 0; i < MAX_PREVIEW_LINES;++i)
-        _data[i] = new String[MAX_PREVIEW_COLS];
+       
       for (String[] datum : _data) Arrays.fill(datum, "0");
     }
 

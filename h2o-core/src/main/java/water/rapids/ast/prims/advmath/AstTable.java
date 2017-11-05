@@ -283,6 +283,7 @@ public class AstTable extends AstPrimitive {
 
     @Override
     public void map(Chunk c0, Chunk c1) {
+    	col1s = new NonBlockingHashMapLong<>();
       for (int i = 0; i < c0._len; i++) {
 
         double d0 = c0.atd(i);
@@ -300,17 +301,17 @@ public class AstTable extends AstPrimitive {
         // Atomically fetch/create nested NBHM
         NonBlockingHashMapLong<AtomicLong> col1s = _col0s.get(l0);
         if (col1s == null) {   // Speed filter pre-filled entries
-          col1s = new NonBlockingHashMapLong<>();
+          
           NonBlockingHashMapLong<AtomicLong> old = _col0s.putIfAbsent(l0, col1s);
           if (old != null) {
         	  col1s = old; // Lost race, use old value
           }
         }
-
+        cnt = new AtomicLong();
         // Atomically fetch/create nested AtomicLong
         AtomicLong cnt = col1s.get(l1);
         if (cnt == null) {   // Speed filter pre-filled entries
-          cnt = new AtomicLong();
+          
           AtomicLong old = col1s.putIfAbsent(l1, cnt);
           if (old != null) {
         	  cnt = old; // Lost race, use old value

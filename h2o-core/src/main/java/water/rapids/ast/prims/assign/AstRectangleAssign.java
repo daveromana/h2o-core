@@ -128,6 +128,7 @@ public class AstRectangleAssign extends AstPrimitive {
     // copy-on-write
     Vec[] dvecs = dst.vecs();
     final Vec[] svecs = src.vecs();
+    BufferedString bStr = new BufferedString();
     for (int col = 0; col < cols.length; col++) {
       int dtype = dvecs[cols[col]].get_type();
       if (dtype != svecs[col].get_type()) {
@@ -149,7 +150,7 @@ public class AstRectangleAssign extends AstPrimitive {
       long[] rownums = rows.expand8();   // Just these rows
       for (int col = 0; col < svecs.length; col++)
         if (svecs[col].get_type() == Vec.T_STR) {
-          BufferedString bStr = new BufferedString();
+         
           for (int ridx = 0; ridx < rownums.length; ridx++) {
             BufferedString s = svecs[col].atStr(bStr, ridx);
             dvecs[cols[col]].set(rownums[ridx], s != null ? s.toString() : null);
@@ -169,47 +170,50 @@ public class AstRectangleAssign extends AstPrimitive {
     new AssignFrameFrameTask(rows, svecs).doAll(vecs2);
   }
 
-  private static class AssignFrameFrameTask extends RowSliceTask {
-    private Vec[] _svecs;
-    private AssignFrameFrameTask(AstNumList rows, Vec[] svecs) {
-      super(rows);
-      _svecs = svecs;
-    }
-    @Override
-    void mapChunkSlice(Chunk[] cs, int chkOffset) {
-      long start = cs[0].start();
-      Chunk[] scs = null;
-      for (int i = chkOffset; i < cs[0]._len; ++i) {
-        long idx = _rows.index(start + i);
-        if (idx < 0) {
-        	continue;
-        }
-        if ((scs == null) || (scs[0].start() < idx) || (idx >= scs[0].start() + scs[0].len())) {
-          int sChkIdx = _svecs[0].elem2ChunkIdx(idx);
-          scs = new Chunk[_svecs.length];
-          for (int j = 0; j < _svecs.length; j++) {
-            scs[j] = _svecs[j].chunkForChunkIdx(sChkIdx);
-          }
-        }
-        BufferedString bStr = new BufferedString();
-        int si = (int) (idx - scs[0].start());
-        for (int j = 0; j < cs.length; j++) {
-          Chunk chk = cs[j];
-          Chunk schk = scs[j];
-          if (_svecs[j].get_type() == Vec.T_STR) {
-            BufferedString s = schk.atStr(bStr, si);
-            chk.set(i, s != null ? s.toString() : null);
-            BufferedString bss = chk.atStr(new BufferedString(), i);
-            if (s == null && bss != null) {
-              chk.set(i, s != null ? s.toString() : null);
-            }
-          } else {
-            chk.set(i, schk.atd(si));
-          }
-        }
-      }
-    }
-  }
+	private static class AssignFrameFrameTask extends RowSliceTask {
+		private Vec[] _svecs;
+
+		private AssignFrameFrameTask(AstNumList rows, Vec[] svecs) {
+			BufferedString bStr = new BufferedString();
+			super(rows);
+			_svecs = svecs;
+		}
+
+		@Override
+		void mapChunkSlice(Chunk[] cs, int chkOffset) {
+			long start = cs[0].start();
+			Chunk[] scs = null;
+			for (int i = chkOffset; i < cs[0]._len; ++i) {
+				long idx = _rows.index(start + i);
+				if (idx < 0) {
+					continue;
+				}
+				if ((scs == null) || (scs[0].start() < idx) || (idx >= scs[0].start() + scs[0].len())) {
+					int sChkIdx = _svecs[0].elem2ChunkIdx(idx);
+					scs = new Chunk[_svecs.length];
+					for (int j = 0; j < _svecs.length; j++) {
+						scs[j] = _svecs[j].chunkForChunkIdx(sChkIdx);
+					}
+				}
+
+				int si = (int) (idx - scs[0].start());
+				for (int j = 0; j < cs.length; j++) {
+					Chunk chk = cs[j];
+					Chunk schk = scs[j];
+					if (_svecs[j].get_type() == Vec.T_STR) {
+						BufferedString s = schk.atStr(bStr, si);
+						chk.set(i, s != null ? s.toString() : null);
+						BufferedString bss = chk.atStr(new BufferedString(), i);
+						if (s == null && bss != null) {
+							chk.set(i, s != null ? s.toString() : null);
+						}
+					} else {
+						chk.set(i, schk.atd(si));
+					}
+				}
+			}
+		}
+	}
 
   // Assign a SCALAR over some dst rows; optimize for all rows
   private void assign_frame_scalar(Frame dst, int[] cols, AstNumList rows, Object src, Session ses) {
