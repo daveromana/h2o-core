@@ -413,7 +413,7 @@ public class HttpResponseStatus implements Comparable<HttpResponseStatus> {
     }
 
     if (reasonPhrase == null) {
-      throw new NullPointerException("reasonPhrase");
+      throw new Error("reasonPhrase");
     }
 
     for (int i = 0; i < reasonPhrase.length(); i ++) {
