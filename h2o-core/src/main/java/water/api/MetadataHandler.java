@@ -33,13 +33,14 @@ public class MetadataHandler extends Handler {
 
     docs.routes = new RouteV3[RequestServer.numRoutes()];
     int i = 0;
+    MetadataV3 look = new MetadataV3();
+    look.routes = new RouteV3[1];
     for (Route route : RequestServer.routes()) {
       RouteV3 schema = new RouteV3(route);
       docs.routes[i] = schema;
 
       // ModelBuilder input / output schema hackery
-      MetadataV3 look = new MetadataV3();
-      look.routes = new RouteV3[1];
+      
       look.routes[0] = schema;
       look.path = route._url;
       look.http_method = route._http_method;

@@ -1428,12 +1428,13 @@ public class Frame extends Lockable<Frame> {
 				}
 			}
 			// Vec'ize the index array
+			NewChunk nc = new NewChunk(av, c);
 			Futures fs = new Futures();
 			AppendableVec av = new AppendableVec(Vec.newKey(), Vec.T_NUM);
 			int r = 0;
 			int c = 0;
 			while (r < rows.length) {
-				NewChunk nc = new NewChunk(av, c);
+				
 				long end = Math.min(r + CHK_ROWS, rows.length);
 				for (; r < end; r++) {
 					nc.addNum(rows[r]);
@@ -1657,6 +1658,7 @@ public class Frame extends Lockable<Frame> {
 			int rx = 0; // Which row to in/ex-clude
 			int rlo = 0; // Lo/Hi for this block of rows
 			int rhi = rlen;
+			BufferedString tmpStr = new BufferedString();
 			while (true) { // Still got rows to include?
 				if (_rows != null) { // Got a row selector?
 					if (rx >= _rows.length) {
@@ -1675,7 +1677,7 @@ public class Frame extends Lockable<Frame> {
 				}
 				// Process this next set of rows
 				// For all cols in the new set;
-				BufferedString tmpStr = new BufferedString();
+				
 				for (int i = 0; i < _cols.length; i++)
 					chks[_cols[i]].extractRows(nchks[i], rlo, rhi);
 				rlo = rhi;

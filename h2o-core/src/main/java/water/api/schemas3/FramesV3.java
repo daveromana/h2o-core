@@ -70,13 +70,13 @@ public class FramesV3 extends RequestSchemaV3<Frames, FramesV3> {
     this.frame_id = new KeyV3.FrameKeyV3(f.frame_id);
     this.column = f.column; // NOTE: this is needed for request handling, but isn't really part of state
     this.find_compatible_models = f.find_compatible_models;
-
+    this.frames[i++] = new FrameV3(frame, f.row_offset, f.row_count);
     if (f.frames != null) {
       this.frames = new FrameV3[f.frames.length];
-
+      this.frames[i++] = new FrameSynopsisV3(frame);
       int i = 0;
       for (Frame frame : f.frames) {
-        this.frames[i++] = new FrameV3(frame, f.row_offset, f.row_count);
+       
       }
     }
     return this;
@@ -90,7 +90,7 @@ public class FramesV3 extends RequestSchemaV3<Frames, FramesV3> {
 
       int i = 0;
       for (Frame frame : f.frames) {
-        this.frames[i++] = new FrameSynopsisV3(frame);
+        
       }
     }
     return this;

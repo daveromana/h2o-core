@@ -202,11 +202,13 @@ public class ModelParametersSchemaV3<P extends Model.Parameters, S extends Model
     // all fields and collecting the fields in a Map of Sets.  Then pass over them a second
     // time setting the full lists.
     Map<String, Set<String>> field_exclusivity_groups = new HashMap<>();
+    Set<String> me = field_exclusivity_groups.get(name);
+    List<String> me = new ArrayList<String>();
     for (ModelParameterSchemaV3 param : metadata) {
       String name = param.name;
 
       // Turn param.is_mutually_exclusive_with into a List which we will walk over twice
-      List<String> me = new ArrayList<String>();
+      
       me.add(name);
       // Note: this can happen if this field doesn't have an @API annotation, in which case we got an earlier WARN
       if (param.is_mutually_exclusive_with != null) {
@@ -236,7 +238,7 @@ public class ModelParametersSchemaV3<P extends Model.Parameters, S extends Model
     // Now walk over all the fields and create new comprehensive is_mutually_exclusive arrays, not containing self.
     for (ModelParameterSchemaV3 param : metadata) {
       String name = param.name;
-      Set<String> me = field_exclusivity_groups.get(name);
+      
       Set<String> not_me = new HashSet<>(me);
       not_me.remove(name);
       param.is_mutually_exclusive_with = not_me.toArray(new String[not_me.size()]);

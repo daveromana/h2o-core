@@ -76,6 +76,8 @@ public abstract class JarHash {
   // Look for resources (JS files, PNG's, etc) from the self-jar first, then
   // from a possible local dev build.
   public static InputStream getResource2(String uri) {
+	  File f2 = new File(f,uri);
+	  FileInputStream f = new FileInputStream(f2);
     try {
       // If -Dwebdev=1 is set in VM args, we're in front end dev mode, so skip the class loader.
       // This is to allow the front end scripts/styles/templates to be loaded from the build
@@ -83,9 +85,9 @@ public abstract class JarHash {
 
       // Try all registered locations
       for( File f : RESOURCE_FILES ) {
-        File f2 = new File(f,uri);
+      
         if( f2.exists() )
-          return new FileInputStream(f2);
+          return f;
       }
 
       // Fall through to jar file mode.

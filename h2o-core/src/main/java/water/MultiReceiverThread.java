@@ -38,6 +38,8 @@ class MultiReceiverThread extends Thread {
       try {
         // ---
         // Cleanup from any prior socket failures.  Rare unless we're really sick.
+    	  byte[] buf = new byte[AutoBuffer.MTU];
+    	  DatagramPacket pack = new DatagramPacket(buf,buf.length);
         if( errsock != null && errgroup != null ) { // socket error AND group present
           final InetAddress tmp = errgroup; errgroup = null;
           errsock.leaveGroup(tmp); // Could throw, but errgroup cleared for next pass
@@ -72,8 +74,7 @@ class MultiReceiverThread extends Thread {
         }
 
         // Receive a packet & handle it
-        byte[] buf = new byte[AutoBuffer.MTU];
-        DatagramPacket pack = new DatagramPacket(buf,buf.length);
+       
         sock.receive(pack);
         UDPReceiverThread.basic_packet_handling(new AutoBuffer(pack));
       } catch( SocketException e ) {

@@ -127,7 +127,8 @@ public class TimelineV3 extends RequestSchemaV3<Timeline,TimelineV3> {
     ArrayList<EventV3> outputEvents = new ArrayList<>();
     ArrayList<TimelineSnapshot.Event> heartbeats = new ArrayList();
     H2O cloud = TimeLine.getCLOUD();
-
+    int[] sends = new int[cloud.size()];
+    int[] recvs = new int[cloud.size()];
     if (null != timeline.snapshot) {
       for (TimelineSnapshot.Event event : timeline.snapshot) {
         H2ONode h2o = cloud.members()[event._nodeId];
@@ -145,9 +146,7 @@ public class TimelineV3 extends RequestSchemaV3<Timeline,TimelineV3> {
           int totalSends = 0;
           int totalRecvs = 0;
           int totalDrops = 0;
-          int[] sends = new int[cloud.size()];
-          int[] recvs = new int[cloud.size()];
-          for (TimelineSnapshot.Event h : heartbeats) {
+           for (TimelineSnapshot.Event h : heartbeats) {
             if (h.isSend()) {
               ++totalSends;
               ++sends[h._nodeId];

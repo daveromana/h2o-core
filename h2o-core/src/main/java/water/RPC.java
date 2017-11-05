@@ -205,9 +205,10 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
       // finish off the current AutoBuffer (which is now going TCP style), and
       // make a new UDP-sized packet.  On a re-send of a TCP-sized hunk, just
       // send the basic UDP control packet.
+      AutoBuffer ab = new AutoBuffer(_target,_dt.priority());
       if( !_sentTcp ) {
         while( true ) {         // Retry loop for broken TCP sends
-          AutoBuffer ab = new AutoBuffer(_target,_dt.priority());
+         
           try {
             final boolean t;
             ab.putTask(UDP.udp.exec, _tasknum).put1(CLIENT_UDP_SEND);
@@ -388,6 +389,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
     private void sendAck() {
       // Send results back
       DTask dt, origDt = _dt; // _dt can go null the instant it is send over wire
+      ab = new AutoBuffer(_client,udp._prior).putTask(udp,_tsknum).put1(SERVER_UDP_SEND);
       assert origDt!=null;    // Freed after completion
       while((dt = _dt) != null) { // Retry loop for broken TCP sends
         AutoBuffer ab = null;
@@ -399,7 +401,7 @@ public class RPC<V extends DTask> implements Future<V>, Delayed, ForkJoinPool.Ma
           // priority.
 
           UDP.udp udp = dt.priority()==H2O.FETCH_ACK_PRIORITY ? UDP.udp.fetchack : UDP.udp.ack;
-          ab = new AutoBuffer(_client,udp._prior).putTask(udp,_tsknum).put1(SERVER_UDP_SEND);
+         
           assert ab.position() == 1+2+4+1;
           dt.write(ab);         // Write the DTask - could be very large write
           dt._repliedTcp = ab.hasTCP(); // Resends do not need to repeat TCP result
