@@ -75,6 +75,7 @@ public class UploadFileVec extends FileVec {
       byte prev[] = null;
       byte bytebuf[] = new byte[FileVec.DFLT_CHUNK_SIZE];
       int bytesInChunkSoFar = 0;
+      C1NChunk c = new C1NChunk(bytebuf);
       while (true) {
         int rv = is.read(bytebuf, bytesInChunkSoFar, FileVec.DFLT_CHUNK_SIZE - bytesInChunkSoFar);
         if (rv < 0) {
@@ -83,7 +84,7 @@ public class UploadFileVec extends FileVec {
         bytesInChunkSoFar += rv;
         if( bytesInChunkSoFar == FileVec.DFLT_CHUNK_SIZE ) {
           // Write full chunk of size FileVec.CHUNK_SZ.
-          C1NChunk c = new C1NChunk(bytebuf);
+          
           uv.addAndCloseChunk(c, fs);
           prev = bytebuf;
           bytebuf = new byte[FileVec.DFLT_CHUNK_SIZE];

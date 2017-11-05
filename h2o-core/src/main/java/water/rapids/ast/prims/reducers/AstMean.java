@@ -51,6 +51,7 @@ public class AstMean extends AstPrimitive {
   @Override
   public Val apply(Env env, Env.StackHelp stk, AstRoot[] asts) {
     Val val1 = asts[1].exec(env);
+    ValRow v = new ValRow(new double[]{Double.NaN}, null);
     if (val1 instanceof ValFrame) {
       Frame fr = stk.track(val1).getFrame();
       boolean na_rm = asts[2].exec(env).getNum() == 1;
@@ -63,10 +64,11 @@ public class AstMean extends AstPrimitive {
       boolean na_rm = asts[2].exec(env).getNum() == 1;
       double d = 0;
       int n = 0;
+     
       for (double r: row) {
         if (Double.isNaN(r)) {
           if (!na_rm) {
-            return new ValRow(new double[]{Double.NaN}, null);
+            return v;
             }
         } else {
           d += r;

@@ -1337,6 +1337,7 @@ public class NonBlockingHashMap<TypeK, TypeV> extends AbstractMap<TypeK, TypeV>
 			// because our correctness stems from box'ing the Value field. Slamming
 			// the Key field is a minor speed optimization.
 			Object key;
+			final Prime box = (oldval == null || oldval == TOMBSTONE) ? TOMBPRIME : new Prime(oldval);
 			while ((key = key(oldkvs, idx)) == null)
 				CAS_key(oldkvs, idx, null, TOMBSTONE);
 

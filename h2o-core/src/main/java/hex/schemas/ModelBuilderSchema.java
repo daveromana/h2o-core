@@ -104,7 +104,7 @@ public class ModelBuilderSchema<B extends ModelBuilder, S extends ModelBuilderSc
     this.algo = builder._parms.algoName().toLowerCase();
     this.algo_full_name = builder._parms.fullName();
     this.supervised = builder.isSupervised();
-
+    ValidationMessageV3() v = new ValidationMessageV3().fillFromImpl(vm);
     this.can_build = builder.can_build();
     this.visibility = builder.builderVisibility();
     job = builder._job == null ? null : new JobV3(builder._job);
@@ -118,7 +118,7 @@ public class ModelBuilderSchema<B extends ModelBuilder, S extends ModelBuilderSc
       int i = 0;
       for (ModelBuilder.ValidationMessage vm : msgs) {
         if( vm != null ) {
-        	this.messages[i++] = new ValidationMessageV3().fillFromImpl(vm); // TODO: version // Note: does default field_name mapping
+        	this.messages[i++] = v; // TODO: version // Note: does default field_name mapping
         }
       }
       // default fieldname hacks

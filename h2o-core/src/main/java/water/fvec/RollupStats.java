@@ -557,6 +557,7 @@ final class RollupStats extends Iced {
 		public void compute2() {
 			assert _rsKey.home();
 			final Vec vec = DKV.getGet(_vecKey);
+			Futures fs = new Futures();
 			while (true) {
 				Value v = DKV.get(_rsKey);
 				RollupStats rs = (v == null) ? null : v.<RollupStats>get();
@@ -576,7 +577,7 @@ final class RollupStats extends Iced {
 							// note: if cc == null then onExceptionalCompletion tasks waiting on this may be
 							// woken up before exception handling iff exception is thrown.
 							Value nnn = makeComputing();
-							Futures fs = new Futures();
+						
 							Value oldv = DKV.DputIfMatch(_rsKey, nnn, v, fs);
 							fs.blockForPending();
 							if (oldv == v) { // got the lock

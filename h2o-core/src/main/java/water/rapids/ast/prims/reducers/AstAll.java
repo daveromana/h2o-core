@@ -29,12 +29,13 @@ public class AstAll extends AstPrimitive {
   @Override
   public ValNum apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
     Val val = stk.track(asts[1].exec(env));
+    ValNum r = new ValNum(0);
     if (val.isNum()) {
     	return new ValNum(val.getNum() == 0 ? 0 : 1);
     }
     for (Vec vec : val.getFrame().vecs())
       if (vec.nzCnt() + vec.naCnt() < vec.length()) {
-        return new ValNum(0);   // Some zeros in there somewhere
+        return r ;   // Some zeros in there somewhere
         }
     return new ValNum(1);
   }

@@ -144,6 +144,7 @@ public class CreateInteractions extends H2O.H2OCountedCompleter {
     DKV.remove(_ci._job._result);
 
     Frame source_frame = DKV.getGet(_ci._source_frame);
+    createInteractionDomain pass1 = new createInteractionDomain(idx1 == idx2, _ci._interactOnNA).doAll(A, B);
 
     ArrayList<int[]> al = interactions();
     for (int l=0; l<al.size(); ++l) {
@@ -167,7 +168,7 @@ public class CreateInteractions extends H2O.H2OCountedCompleter {
         final Vec B = source_frame.vecs()[idx2];
 
         // Pass 1: compute unique domains of all interaction features
-        createInteractionDomain pass1 = new createInteractionDomain(idx1 == idx2, _ci._interactOnNA).doAll(A, B);
+       
 
         // Create a new Vec based on the domain
         final Vec vec = source_frame.anyVec().makeZero(makeDomain(pass1._unsortedMap, A.domain(), B.domain()));

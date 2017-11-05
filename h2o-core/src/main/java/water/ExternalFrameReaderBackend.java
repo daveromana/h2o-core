@@ -31,7 +31,7 @@ final class ExternalFrameReaderBackend {
         assert selectedColumnIndices != null : "Selected column indices can't be null";
         Frame fr = DKV.getGet(frameKey);
         Chunk[] chunks = ChunkUtils.getChunks(fr, chunkIdx);
-
+        UUID uuid = new UUID(chnk.at16h(rowIdx), chnk.at16l(rowIdx));
         // write number of rows
         AutoBuffer ab = new AutoBuffer();
         ab.putInt(chunks[0]._len);
@@ -79,7 +79,7 @@ final class ExternalFrameReaderBackend {
                             } else if (chnk.vec().isString()) {
                                 ExternalFrameUtils.sendString(ab, channel, chnk.atStr(valStr, rowIdx).toString());
                             } else if (chnk.vec().isUUID()) {
-                                UUID uuid = new UUID(chnk.at16h(rowIdx), chnk.at16l(rowIdx));
+                                
                                 ExternalFrameUtils.sendString(ab, channel, uuid.toString());
                             } else {
                                 assert false : "Can never be here";

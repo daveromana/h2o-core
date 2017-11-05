@@ -224,7 +224,8 @@ public class FrameV3 extends FrameBaseV3<Frame, FrameV3> {
   }
 
   public FrameV3 fillFromImpl(Frame f, long row_offset, int row_count, int column_offset, int column_count) {
-    if( row_count == 0 ) {
+	  ColV3 i = new ColV3(f._names[column_offset + i], vecs[column_offset + i], this.row_offset, this.row_count);
+	  if( row_count == 0 ) {
     	row_count = 100;                                 // 100 rows by default
     }
     if( column_count == 0 ) {
@@ -265,7 +266,7 @@ public class FrameV3 extends FrameBaseV3<Frame, FrameV3> {
         Log.warn("For Frame: " + f._key + ", Vec number: " + (column_offset + i) + " (" + f.name((column_offset + i))+ ") is missing; not returning it.");
         }
       else {
-        columns[i] = new ColV3(f._names[column_offset + i], vecs[column_offset + i], this.row_offset, this.row_count);
+        columns[i] = c;
         }
 
     fs.blockForPending();

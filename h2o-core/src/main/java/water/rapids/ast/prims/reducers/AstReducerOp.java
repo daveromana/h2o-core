@@ -23,10 +23,11 @@ public abstract class AstReducerOp extends AstPrimitive {
     // reduction op is used between pairs of actual values, and never against
     // the empty list.  NaN is returned if there are *no* values in the
     // reduction.
+	  double d2 = val.isFrame() ? new AstReducerOp.RedOp().doAll(stk.track(val).getFrame())._d : val.getNum();
     double d = Double.NaN;
     for (int i = 1; i < asts.length; i++) {
       Val val = asts[i].exec(env);
-      double d2 = val.isFrame() ? new AstReducerOp.RedOp().doAll(stk.track(val).getFrame())._d : val.getNum();
+      
       if (i == 1) {
     	  d = d2;
       }

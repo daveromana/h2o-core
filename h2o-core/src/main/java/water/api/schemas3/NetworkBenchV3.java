@@ -11,10 +11,11 @@ public class NetworkBenchV3 extends RequestSchemaV3<NetworkBench, NetworkBenchV3
 
   @Override
   public NetworkBenchV3 fillFromImpl(NetworkBench impl) {
+	  TwoDimTableV3() t = new TwoDimTableV3().fillFromImpl(impl._results[i].to2dTable());
     if(impl._results != null) {
       results = new TwoDimTableV3[impl._results.length];
       for(int i = 0; i < results.length; ++i)
-        results[i] = (TwoDimTableV3)new TwoDimTableV3().fillFromImpl(impl._results[i].to2dTable());
+        results[i] = t;
     }
     return this;
   }

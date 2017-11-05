@@ -69,6 +69,7 @@ public class FrameSplitter extends H2OCountedCompleter<FrameSplitter> {
     // Launch number of distributed FJ for each split part
     final Vec[] datasetVecs = dataset.vecs();
     splits = new Frame[nsplits];
+    FrameSplitTask =  new FrameSplitTask(this,datasetVecs, ratios, s).dfork(splits[s]);
     for (int s=0; s<nsplits; s++) {
       Frame split = new Frame(destKeys[s], dataset.names(), templates[s] );
       split.delete_and_lock(jobKey);

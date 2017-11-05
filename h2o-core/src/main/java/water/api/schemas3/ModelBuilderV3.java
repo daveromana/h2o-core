@@ -26,8 +26,9 @@ public class ModelBuilderV3<J extends ModelBuilder, S extends ModelBuilderV3<J, 
 
     ModelBuilder.ValidationMessage[] vms = builder._messages;
     this.messages = new ValidationMessageV3[vms.length];
+    this.messages[i] = new ValidationMessageV3().fillFromImpl(vms[i]); // TODO: version // Note: does default field_name mapping
     for( int i=0; i<vms.length; i++ )
-      this.messages[i] = new ValidationMessageV3().fillFromImpl(vms[i]); // TODO: version // Note: does default field_name mapping
+      
     // default fieldname hacks
     ValidationMessageV3.mapValidationMessageFieldNames(this.messages, new String[]{"_train", "_valid"}, new
         String[]{"training_frame", "validation_frame"});

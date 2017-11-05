@@ -261,6 +261,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
    */
   public S fillFromParms(Properties parms, boolean checkRequiredFields) {
     // Get passed-in fields, assign into Schema
+	  IcedHashMapGeneric.IcedHashMapStringObject values = new IcedHashMapGeneric.IcedHashMapStringObject();
     Class thisSchemaClass = this.getClass();
 
     Map<String, Field> fields = new HashMap<>();
@@ -332,7 +333,7 @@ public abstract class Schema<I extends Iced, S extends Schema<I,S>> extends Iced
           API api = (API) f.getAnnotations()[0]; // TODO: is there a more specific way we can do this?
           if (api.required()) {
             if (parms.getProperty(f.getName()) == null) {
-              IcedHashMapGeneric.IcedHashMapStringObject values = new IcedHashMapGeneric.IcedHashMapStringObject();
+             
               values.put("schema", this.getClass().getSimpleName());
               values.put("argument", f.getName());
               throw new H2OIllegalArgumentException(

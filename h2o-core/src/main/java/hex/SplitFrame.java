@@ -27,7 +27,7 @@ public class SplitFrame extends Transformer<SplitFrame.Frames> {
     _destination_frames = destination_frames;
   }
   public SplitFrame() { super(null, "hex.SplitFrame$Frames", "SplitFrame"); }
-
+  IllegalArgumentException i = new IllegalArgumentException("Ratio must be > 0!");
   @Override public Job<Frames> execImpl() {
     if (_ratios.length < 0)     {
     	throw new IllegalArgumentException("No ratio specified!");
@@ -38,7 +38,7 @@ public class SplitFrame extends Transformer<SplitFrame.Frames> {
     // Check the case for single ratio - FIXME in /4 version change this to throw exception
     for (double r : _ratios)
       if (r <= 0.0) {
-    	  new IllegalArgumentException("Ratio must be > 0!");
+    	 
       }
     if (_ratios.length == 1) {
     	if( _ratios[0] < 0.0 || _ratios[0] > 1.0 ) {

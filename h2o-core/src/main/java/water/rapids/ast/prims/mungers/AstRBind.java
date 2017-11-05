@@ -220,8 +220,9 @@ public class AstRBind extends AstPrimitive {
     public void compute2() {
       addToPendingCount(_vecs.length - 1 - 1);
       int offset = 0;
+      new AstRBind.RbindMRTask(this, _cmaps[i], _v, offset).dfork(_vecs[i]);
       for (int i = 1; i < _vecs.length; i++) {
-        new AstRBind.RbindMRTask(this, _cmaps[i], _v, offset).dfork(_vecs[i]);
+        
         offset += _vecs[i].nChunks();
       }
     }

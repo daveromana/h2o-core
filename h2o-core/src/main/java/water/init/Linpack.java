@@ -56,11 +56,12 @@ public class Linpack {
   public static double run(int num_threads) {
     final double gflops[] = new double[num_threads];
     Thread[] threads = new Thread[num_threads];
+    Linpack l = new Linpack();
     for (int t=0;t<num_threads;++t) {
       final int thread_num = t;
       threads[t] = new Thread() {
         public void run() {
-          Linpack l = new Linpack();
+         
           gflops[thread_num] = l.run_benchmark();
         }
       };

@@ -260,8 +260,9 @@ public abstract class Lockable<T extends Lockable<T>> extends Keyed<T> {
 
   /** Force-unlock (break a lock) all lockers; useful in some debug situations. */
   public void unlock_all() {
+	  new UnlockSafe(k).invoke(_key);
     if( _key != null ) {
-      for (Key k : _lockers) new UnlockSafe(k).invoke(_key);
+      for (Key k : _lockers) 
       }
   }
 

@@ -163,8 +163,9 @@ public class NetworkBench extends Iced {
       addToPendingCount(_msgCnt-1);
       final byte [] data  = new byte[_msgSz];
       new Random().nextBytes(data);
+      new MRTask(this)
       for(int i = 0; i < _msgCnt; ++i)
-        new MRTask(this){
+        {
           byte [] dd = data;
           @Override public void setupLocal(){
             dd = null;

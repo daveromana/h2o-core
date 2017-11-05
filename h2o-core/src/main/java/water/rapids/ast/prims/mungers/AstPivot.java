@@ -86,13 +86,14 @@ public class AstPivot extends AstBuiltin<AstPivot> {
       long firstIdx =  cs[_indexColIdx].at8(0);
       long globalIdx = cs[_indexColIdx].start();
       int start = 0;
+      double[] newRow = new double[nc.length-1];
       if (globalIdx > 0 && cs[_indexColIdx].vec().at8(globalIdx-1)==firstIdx){
         while(start < cs[_indexColIdx].len() && firstIdx == cs[_indexColIdx].at8(start)) start++;
       }
       for (int i=start; i<cs[_indexColIdx]._len; i++) {
         long currentIdx = cs[_indexColIdx].at8(i);
         // start with a copy of the current row
-        double[] newRow = new double[nc.length-1];
+       
         Arrays.fill(newRow,Double.NaN);
         if (((i == cs[_indexColIdx]._len -1) &&
               (cs[_indexColIdx].nextChunk() == null || cs[_indexColIdx].nextChunk() != null && currentIdx != cs[_indexColIdx].nextChunk().at8(0)))

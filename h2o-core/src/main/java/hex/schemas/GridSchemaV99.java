@@ -121,7 +121,7 @@ public class GridSchemaV99 extends SchemaV3<Grid, GridSchemaV99> {
       validation_metrics = new ModelMetricsBaseV3[modelKeys.size()];
       cross_validation_metrics = new ModelMetricsBaseV3[modelKeys.size()];
       cross_validation_metrics_summary = new TwoDimTableV3[modelKeys.size()];
-
+      TwoDimTableV3 v =  new TwoDimTableV3(o._cross_validation_metrics_summary);
       for (int i = 0; i < modelKeys.size(); i++) {
         Model m = DKV.getGet(modelKeys.get(i));
 
@@ -139,7 +139,7 @@ public class GridSchemaV99 extends SchemaV3<Grid, GridSchemaV99> {
         	  cross_validation_metrics[i] = (ModelMetricsBaseV3) SchemaServer.schema(3, o._cross_validation_metrics).fillFromImpl(o._cross_validation_metrics);
           }
           if (o._cross_validation_metrics_summary != null) {
-            cross_validation_metrics_summary[i] = new TwoDimTableV3(o._cross_validation_metrics_summary);
+            cross_validation_metrics_summary[i] = v;
             }
         }
       }

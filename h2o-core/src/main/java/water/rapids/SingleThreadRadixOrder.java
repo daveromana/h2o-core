@@ -219,9 +219,10 @@ class SingleThreadRadixOrder extends DTask<SingleThreadRadixOrder> {
 		OXHeader msbh = new OXHeader(_o.length, numRows, _batchSize);
 		Futures fs = new Futures();
 		DKV.put(getSortedOXHeaderKey(_isLeft, _MSBvalue), msbh, fs, true);
+		SplitByMSBLocal.OXbatch tmp = new SplitByMSBLocal.OXbatch(_o[b], _x[b]);
 		assert _o.length == _x.length;
 		for (b = 0; b < _o.length; b++) {
-			SplitByMSBLocal.OXbatch tmp = new SplitByMSBLocal.OXbatch(_o[b], _x[b]);
+			
 			Value v = new Value(SplitByMSBLocal.getSortedOXbatchKey(_isLeft, _MSBvalue, b), tmp);
 			DKV.put(v._key, v, fs, true); // the OXbatchKey's on this node will be reused for the new keys
 			v.freeMem();

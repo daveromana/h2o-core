@@ -975,6 +975,7 @@ public class NonBlockingHashMapLong<TypeV>
       // results here, because our correctness stems from box'ing the Value
       // field.  Slamming the Key field is a minor speed optimization.
       long key;
+      final Prime box = (oldval == null || oldval == TOMBSTONE) ? TOMBPRIME : new Prime(oldval);
       while( (key=_keys[idx]) == NO_KEY ){
         CAS_key(idx, NO_KEY, (idx+_keys.length)/*a non-zero key which hashes here*/);
       }
@@ -984,7 +985,7 @@ public class NonBlockingHashMapLong<TypeV>
       // Box what we see in the old table, to prevent further updates.
       Object oldval = _vals[idx]; // Read OLD table
       while( !(oldval instanceof Prime) ) {
-        final Prime box = (oldval == null || oldval == TOMBSTONE) ? TOMBPRIME : new Prime(oldval);
+       
         if( CAS_val(idx,oldval,box) ) { // CAS down a box'd version of oldval
           // If we made the Value slot hold a TOMBPRIME, then we both
           // prevented further updates here but also the (absent) oldval is

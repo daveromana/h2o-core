@@ -7,6 +7,7 @@ import water.util.JProfile;
 public class ProfilerHandler extends Handler {
   @SuppressWarnings("unused") // called through reflection by RequestServer
   public ProfilerV3 fetch(int version, ProfilerV3 p) {
+	  n.entries = new ProfilerNodeV3.ProfilerNodeEntryV3[s.profile.stacktraces.length];
     if (p.depth < 1) {
     	throw new IllegalArgumentException("depth must be >= 1.");
     }
@@ -19,7 +20,7 @@ public class ProfilerHandler extends Handler {
 
       n.node_name = s.profile.node_name;
       n.timestamp = s.profile.timestamp;
-      n.entries = new ProfilerNodeV3.ProfilerNodeEntryV3[s.profile.stacktraces.length];
+      
       for (int j = 0; j < s.profile.stacktraces.length; j++) {
         ProfilerNodeV3.ProfilerNodeEntryV3 e = new ProfilerNodeV3.ProfilerNodeEntryV3();
         e.stacktrace = s.profile.stacktraces[j];

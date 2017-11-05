@@ -18,11 +18,12 @@ public class MemoryBandwidth {
 
     final double membw[] = new double[num_threads];
     Thread[] threads = new Thread[num_threads];
+    MemoryBandwidth l = new MemoryBandwidth();
     for (int t=0;t<num_threads;++t) {
       final int thread_num = t;
       threads[t] = new Thread() {
         public void run() {
-          MemoryBandwidth l = new MemoryBandwidth();
+         
           membw[thread_num] = l.run_benchmark();
         }
       };

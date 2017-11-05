@@ -1203,6 +1203,7 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV> extends AbstractMap<TypeK,
 			// table is mid-resize. We don't need to act on the results here,
 			// because our correctness stems from box'ing the Value field. Slamming
 			// the Key field is a minor speed optimization.
+			final Prime box = (oldval == null || oldval == TOMBSTONE) ? TOMBPRIME : new Prime(oldval);
 			Object key;
 			while ((key = key(oldkvs, idx)) == null)
 				CAS_key(oldkvs, idx, null, TOMBSTONE);
@@ -1210,9 +1211,10 @@ public class NonBlockingIdentityHashMap<TypeK, TypeV> extends AbstractMap<TypeK,
 			// ---
 			// Prevent new values from appearing in the old table.
 			// Box what we see in the old table, to prevent further updates.
+			
 			Object oldval = val(oldkvs, idx); // Read OLD table
 			while (!(oldval instanceof Prime)) {
-				final Prime box = (oldval == null || oldval == TOMBSTONE) ? TOMBPRIME : new Prime(oldval);
+				
 				if (CAS_val(oldkvs, idx, oldval, box)) { // CAS down a box'd version of oldval
 					// If we made the Value slot hold a TOMBPRIME, then we both
 					// prevented further updates here but also the (absent)

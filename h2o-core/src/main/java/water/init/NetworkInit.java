@@ -52,7 +52,7 @@ public class NetworkInit {
 	public static void initializeNetworkSockets() {
 		// Assign initial ports
 		H2O.API_PORT = H2O.ARGS.port == 0 ? H2O.ARGS.baseport : H2O.ARGS.port;
-
+		InetSocketAddress isa = new InetSocketAddress(H2O.SELF_ADDRESS, H2O.H2O_PORT);
 		// Late instantiation of Jetty object, if needed.
 		if (H2O.getJetty() == null && !H2O.ARGS.disable_web) {
 			H2O.setJetty(new JettyHTTPD());
@@ -88,7 +88,7 @@ public class NetworkInit {
 				// Bind to the UDP socket
 				_udpSocket = DatagramChannel.open();
 				_udpSocket.socket().setReuseAddress(true);
-				InetSocketAddress isa = new InetSocketAddress(H2O.SELF_ADDRESS, H2O.H2O_PORT);
+				
 				_udpSocket.socket().bind(isa);
 				// Bind to the TCP socket also
 				_tcpSocket = ServerSocketChannel.open();

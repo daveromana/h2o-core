@@ -71,13 +71,14 @@ public class AstStratifiedSplit extends AstPrimitive {
     ClassIdxTask finTask = new ClassIdxTask(numClasses,classes).doAll(stratifyingColumn);
     // Loop through each class in the input column
     HashSet<Long> usedIdxs = new HashSet<>();
+    HashSet<Long> tmpIdxs = new HashSet<>();
     for (int classLabel = 0; classLabel < numClasses; classLabel++) {
       // extract frame with index locations of the minority class
       // calculate target number of this class to go to test
       final LongAry indexAry = finTask._indexes[classLabel];
       long tnum = Math.max(Math.round(indexAry.size() * splittingFraction), 1);
 
-      HashSet<Long> tmpIdxs = new HashSet<>();
+      
       // randomly select the target number of indexes
       int generated = 0;
       int count = 0;

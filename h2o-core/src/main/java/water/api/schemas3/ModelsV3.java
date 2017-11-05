@@ -61,12 +61,13 @@ public class ModelsV3 extends RequestSchemaV3<Models, ModelsV3> {
 
   public ModelsV3 fillFromImplWithSynopsis(Models m) {
     this.model_id = new KeyV3.ModelKeyV3(m.model_id);
+    ModelSynopsisV3 m =   new ModelSynopsisV3(model);
     if (null != m.models) {
       this.models = new ModelSchemaBaseV3[m.models.length];
 
       int i = 0;
       for (Model model : m.models) {
-        this.models[i++] = new ModelSynopsisV3(model);
+        this.models[i++] = m;
       }
     }
     return this;

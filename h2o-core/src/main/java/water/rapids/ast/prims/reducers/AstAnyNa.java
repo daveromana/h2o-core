@@ -28,10 +28,11 @@ public class AstAnyNa extends AstPrimitive {
 
   @Override
   public ValNum apply(Env env, Env.StackHelp stk, AstRoot asts[]) {
+	  ValNum v =new ValNum(1);
     Frame fr = stk.track(asts[1].exec(env)).getFrame();
     for (Vec vec : fr.vecs()) 
     	if (vec.nzCnt() > 0) {
-    	return new ValNum(1);
+    	return v;
     }
     return new ValNum(0);
   }

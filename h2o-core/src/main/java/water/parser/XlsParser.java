@@ -236,9 +236,10 @@ class XlsParser extends Parser {
 
   // Find the workbook & root entries
   private void __readPropertySets(Buf entry) {
-    int offset = 0;
+	  Buf d = new Buf(entry, offset, PROPERTY_STORAGE_BLOCK_SIZE);
+	  int offset = 0;
     while( offset < entry._lim ) {
-      Buf d = new Buf(entry, offset, PROPERTY_STORAGE_BLOCK_SIZE);
+    
       int nameSize = d.get2(SIZE_OF_NAME_POS);
       int type = d._bbuf[TYPE_POS];
       int startBlock = d.get4(START_BLOCK_POS);
