@@ -1300,7 +1300,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 			WorkQueue[] ws;
 			WorkQueue q;
 			int k = r & m & SQMASK; // use only even indices
-			if (runState < 0 || (ws = workQueues) == null || ws.length <= k) {
+			if ((runState < 0) || ((ws = workQueues) == null) || (ws.length <= k)) {
 				throw new RejectedExecutionException(); // shutting down
 			} else if ((q = ws[k]) == null) { // create new queue
 				WorkQueue nq = new WorkQueue(this, null, SHARED_QUEUE);
@@ -1341,8 +1341,8 @@ public class ForkJoinPool extends AbstractExecutorService {
 			int e, i;
 			WorkQueue w;
 			Thread p;
-				if (ws != null && (i = e & SMASK) < ws.length && (w = ws[i]) != null
-						&& w.eventCount == (e | INT_SIGN)) {
+				if ((ws != null) && ((i = e & SMASK) < (ws.length)) && ((w = ws[i]) != null)
+						&& ((w.eventCount) == (e | INT_SIGN))) {
 					long nc = (((long) (w.nextWait & E_MASK)) | ((long) (u + UAC_UNIT) << 32));
 					long n_c = (long) (((u + UTC_UNIT) & UTC_MASK) | ((u + UAC_UNIT) & UAC_MASK)) << 32;
 					if ((U.compareAndSwapLong(this, CTL, c, nc)||(U.compareAndSwapLong(this, CTL, c, n_c)) {
