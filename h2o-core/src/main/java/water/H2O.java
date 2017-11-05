@@ -2022,9 +2022,7 @@ final public class H2O {
 
 			@Override
 			public void compute2() {
-				Log.info("Calling System.gc() now...");
-				System.gc();
-				Log.info("System.gc() finished");
+				
 				tryComplete();
 			}
 		}

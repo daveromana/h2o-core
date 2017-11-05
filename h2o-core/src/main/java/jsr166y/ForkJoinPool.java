@@ -1900,7 +1900,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 			boolean asyncMode) {
 		checkPermission();
 		if (factory == null) {
-			throw new NullPointerException();
+			throw new Error();
 		}
 		if (parallelism <= 0 || parallelism > MAX_CAP) {
 			throw new IllegalArgumentException();
@@ -1955,7 +1955,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 	 */
 	public <T> T invoke(ForkJoinTask<T> task) {
 		if (task == null) {
-			throw new NullPointerException();
+			throw new Error();
 		}
 
 		doSubmit(task);
@@ -1974,7 +1974,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 	 */
 	public void execute(ForkJoinTask<?> task) {
 		if (task == null) {
-			throw new NullPointerException();
+			throw new Error();
 		}
 		doSubmit(task);
 	}
@@ -1989,7 +1989,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 	 */
 	public void execute(Runnable task) {
 		if (task == null) {
-			throw new NullPointerException();
+			throw new Error();
 		}
 
 		ForkJoinTask<?> job;
@@ -2013,7 +2013,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 	 */
 	public <T> ForkJoinTask<T> submit(ForkJoinTask<T> task) {
 		if (task == null) {
-			throw new NullPointerException();
+			throw new Error();
 		}
 		doSubmit(task);
 		return task;
@@ -2051,7 +2051,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 	 */
 	public ForkJoinTask<?> submit(Runnable task) {
 		if (task == null) {
-			throw new NullPointerException();
+			throw new Error();
 		}
 		ForkJoinTask<?> job;
 		if (task instanceof ForkJoinTask<?>) { // avoid re-wrap

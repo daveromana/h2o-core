@@ -122,7 +122,7 @@ public class AstMerge extends AstPrimitive {
     new MRTask() {
       @Override
       public void setupLocal() {
-        System.gc();
+      
       }
     }.doAllNodes();
 
