@@ -691,8 +691,8 @@ public class ForkJoinPool extends AbstractExecutorService {
 						return t;
 					}
 				}
+				return null;
 			}
-			return null;
 		}
 
 		/**
@@ -896,10 +896,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 						empty = false;
 					}
 				}
-			}
-			if (removed) {
-				task.doExec();
-			}
+			}task.doExec();
 			return stat;
 		}
 
@@ -1347,17 +1344,12 @@ public class ForkJoinPool extends AbstractExecutorService {
 						&& w.eventCount == (e | INT_SIGN)) {
 					long nc = (((long) (w.nextWait & E_MASK)) | ((long) (u + UAC_UNIT) << 32));
 					long n_c = (long) (((u + UTC_UNIT) & UTC_MASK) | ((u + UAC_UNIT) & UAC_MASK)) << 32;
-					if 
-							(U.compareAndSwapLong(this, CTL, c, nc)
-									||
-							(U.compareAndSwapLong(this, CTL, c, n_c))
-									) {
+					if ((U.compareAndSwapLong(this, CTL, c, nc)||(U.compareAndSwapLong(this, CTL, c, n_c)) {
 						w.eventCount = (e + E_SEQ) & E_MASK;
 						addWorker();
 						break;
-					}
-					else{
-						break;
+					}else{
+				break;
 					}
 				}
 		}
@@ -1422,26 +1414,12 @@ public class ForkJoinPool extends AbstractExecutorService {
 		int rs = runState, m; // volatile read order matters
 		int ec = w.eventCount; // ec is negative if inactive
 		int step = (r >>> 16) | 1; // relative prime
-		if ((ws = workQueues) != null && (m = ws.length - 1) > 0) {
-			for (int j = (m + 1) << 2;; r += step) {
+		while((rs == 0 || rs != runState) ||((ws = workQueues) != null && (m = ws.length - 1) > 0)) {
 				WorkQueue q;
 				ForkJoinTask<?> t;
 				ForkJoinTask<?>[] a;
-				int b;
-				if ((q = ws[r & m]) != null && (b = q.base) - q.top < 0 && (a = q.array) != null) { // probably nonempty
-					int i = (((a.length - 1) & b) << ASHIFT) + ABASE;
-					t = (ForkJoinTask<?>) U.getObjectVolatile(a, i);
-						return t;
-					} else if (ec < 0 || j <= m) {
-						rs = 0; // mark scan as imcomplete
-						break; // caller can retry after release
-					}
-				}
-			}
-
 			long c = ctl;
-			int e = (int) c, a = (int) (c >> AC_SHIFT), nr, ns;
-			while(rs == 0 || rs != runState) { // incomplete scan
+			int e = (int) c, a = (int) (c >> AC_SHIFT), nr, ns;		
 				WorkQueue v;
 				Thread p; // try to release a waiter
 				long nc = (long) ec | ((c - AC_UNIT) & (AC_MASK | TC_MASK));
@@ -1530,8 +1508,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 	private int tryHelpStealer(WorkQueue joiner, ForkJoinTask<?> task) {
 		int stat = 0, steps = 0; // bound to avoid cycles
 		boolean restart = true;
-
-		if (joiner != null && task != null) { // hoist null checks
+ // hoist null checks
 
 			while (restart = true) {
 					ForkJoinTask<?> subtask = task; // current target
@@ -1556,7 +1533,6 @@ public class ForkJoinPool extends AbstractExecutorService {
 							 }
 				 // stale
 				}
-			}
 		return stat;
 	}
 
@@ -1600,7 +1576,6 @@ public class ForkJoinPool extends AbstractExecutorService {
 		int pc = parallelism, e;
 		long c = ctl;
 		WorkQueue[] ws = workQueues;
-		if ((e = (int) c) >= 0 && ws != null) {
 			int u, a, ac, hc;
 			int tc = (short) ((u = (int) (c >>> 32)) >>> UTC_SHIFT) + pc;
 			boolean replace = false;
@@ -1613,11 +1588,10 @@ public class ForkJoinPool extends AbstractExecutorService {
 							replace = true;
 							break; // in compensation range and tasks available
 						}
-			if ((task == null || task.status >= 0) && // recheck need to block
-					(blocker == null || !blocker.isReleasable()) && ctl == c) 
+					}else if((task == null || task.status >= 0) && // recheck need to block
+					(blocker == null || !blocker.isReleasable()) && ctl == c) {
 						return true;
 					}
-				}
 		return false;
 	}
 
@@ -1637,7 +1611,6 @@ public class ForkJoinPool extends AbstractExecutorService {
 			joiner.currentJoin = task;
 			long startTime = 0L;
 			int k = 0;;
-			for (int k = 0;;) {
 					if ((k == 0) ||((k & (MAX_HELP - 1)) == 0 && System.nanoTime() - startTime >= COMPENSATION_DELAY
 							&& tryCompensate(task, null)))  {
 						startTime = System.nanoTime();
@@ -1659,7 +1632,6 @@ public class ForkJoinPool extends AbstractExecutorService {
 					Thread.yield(); // for politeness
 				}
 			}
-		}
 		return s;
 	}
 
@@ -1804,20 +1776,11 @@ public class ForkJoinPool extends AbstractExecutorService {
 				lock.lock();
 				runState |= SHUTDOWN;
 				lock.unlock();
-			}else if (!now) { // check if idle & no tasks
-				if ((int) (c >> AC_SHIFT) != -parallelism || hasQueuedSubmissions()) {
-					return false;
-				}
-				// Check for unqueued inactive workers. One pass suffices.			
-				if (ws != null) {
-					for (int i = 1; i < ws.length; i += 2) {
-						if ((w = ws[i]) != null && w.eventCount >= 0) {
+			}else if (ws != null) { // check if idle & no tasks
 							return false;
-						}
-				}
 			}
 		}
-	}
+
 	
 	private boolean sh_dwn(int r_state){
 		runState = r_state;
@@ -1900,7 +1863,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 			boolean asyncMode) {
 		checkPermission();
 		if (factory == null) {
-			throw new Error();
+			throw new NullPointerException();
 		}
 		if (parallelism <= 0 || parallelism > MAX_CAP) {
 			throw new IllegalArgumentException();
@@ -1955,7 +1918,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 	 */
 	public <T> T invoke(ForkJoinTask<T> task) {
 		if (task == null) {
-			throw new Error();
+			throw new NullPointerException();
 		}
 
 		doSubmit(task);
@@ -1974,7 +1937,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 	 */
 	public void execute(ForkJoinTask<?> task) {
 		if (task == null) {
-			throw new Error();
+			throw new NullPointerException();
 		}
 		doSubmit(task);
 	}
@@ -1989,7 +1952,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 	 */
 	public void execute(Runnable task) {
 		if (task == null) {
-			throw new Error();
+			throw new NullPointerException();
 		}
 
 		ForkJoinTask<?> job;
@@ -2013,7 +1976,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 	 */
 	public <T> ForkJoinTask<T> submit(ForkJoinTask<T> task) {
 		if (task == null) {
-			throw new Error();
+			throw new NullPointerException();
 		}
 		doSubmit(task);
 		return task;
@@ -2051,7 +2014,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 	 */
 	public ForkJoinTask<?> submit(Runnable task) {
 		if (task == null) {
-			throw new Error();
+			throw new NullPointerException();
 		}
 		ForkJoinTask<?> job;
 		if (task instanceof ForkJoinTask<?>) { // avoid re-wrap
