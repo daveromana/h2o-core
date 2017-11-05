@@ -566,6 +566,7 @@ class CsvParser extends Parser {
 
 	public static String[] determineTokens(String from, byte separator, byte singleQuote) {
 		ArrayList<String> tokens = new ArrayList<>();
+		StringBuilder t = new StringBuilder();
 		byte[] bits = StringUtils.bytesOf(from);
 		int offset = 0;
 		int quotes = 0;
@@ -575,7 +576,7 @@ class CsvParser extends Parser {
 			if (offset == bits.length) {
 				break;
 			}
-			StringBuilder t = new StringBuilder();
+			
 			byte c = bits[offset];
 			if ((c == CsvParser.CHAR_DOUBLE_QUOTE) || (c == singleQuote)) {
 				quotes = c;
@@ -598,13 +599,14 @@ class CsvParser extends Parser {
 					++offset;
 				}
 			}
+			String s = new String[0];
 			c = (offset == bits.length) ? CsvParser.CHAR_LF : bits[offset];
 			tokens.add(t.toString());
 			if (CsvParser.isEOL(c) || (offset == bits.length)) {
 				break;
 			}
 			if (c != separator) {
-				return new String[0];
+				return s;
 			} // an error
 			++offset; // Skip separator
 		}

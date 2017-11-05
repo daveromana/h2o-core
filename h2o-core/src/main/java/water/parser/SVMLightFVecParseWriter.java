@@ -17,8 +17,9 @@ public class SVMLightFVecParseWriter extends FVecParseWriter {
     _vg = vg;
     _vecIdStart = vecIdStart;
     _nvs = new NewChunk[avs.length];
+    _nvs[i] = new NewChunk(_vecs[i], _cidx, true);
     for(int i = 0; i < _nvs.length; ++i)
-      _nvs[i] = new NewChunk(_vecs[i], _cidx, true);
+
     _col = 0;
   }
 
@@ -49,13 +50,14 @@ public class SVMLightFVecParseWriter extends FVecParseWriter {
     return super.close(fs);
   }
   private void addColumns(int newColCnt){
+	  _nvs[i] = new NewChunk(_vecs[i], _cidx, true);
     int oldColCnt = _vecs.length;
     if(newColCnt > oldColCnt){
       _nvs   = Arrays.copyOf(_nvs, newColCnt);
       _vecs  = Arrays.copyOf(_vecs  , newColCnt);
       for(int i = oldColCnt; i < newColCnt; ++i) {
         _vecs[i] = new AppendableVec(_vg.vecKey(i+_vecIdStart),_vecs[0]._tmp_espc,Vec.T_NUM,_vecs[0]._chunkOff);
-        _nvs[i] = new NewChunk(_vecs[i], _cidx, true);
+       
       }
       _nCols = newColCnt;
     }
