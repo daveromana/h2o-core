@@ -166,9 +166,10 @@ public class AstIsax extends AstPrimitive {
 
 		@Override
 		public void map(Chunk cs[], NewChunk nc[]) {
+			StringBuffer sb = new StringBuffer("");
 			int csize = cs[0].len();
 			for (int c_i = 0; c_i < csize; c_i++) {
-				StringBuffer sb = new StringBuffer("");
+				
 				for (int cs_i = 0; cs_i < cs.length; cs_i++) {
 					sb.append(cs[cs_i].at8(c_i) + "^" + maxCards[cs_i] + "_");
 				}

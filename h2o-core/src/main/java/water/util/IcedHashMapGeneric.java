@@ -166,6 +166,7 @@ public  class IcedHashMapGeneric<K, V> extends Iced implements Map<K, V>, Clonea
       K key;
       V val;
       int mode;
+      Freezable[] vals = new Freezable[ab.get4()];
       while ((mode = ab.get1()) != -1) {
         key = isStringKey(mode)?(K)ab.getStr():(K)ab.get();
 
@@ -176,7 +177,7 @@ public  class IcedHashMapGeneric<K, V> extends Iced implements Map<K, V>, Clonea
           val = (V)ab.get();
           }
         else if (isFArrayVal(mode)) {
-          Freezable[] vals = new Freezable[ab.get4()];
+          
           for (int i = 0; i < vals.length; ++i) vals[i] = ab.get();
           val = (V)vals;
         } else if(isIntegrVal(mode)) {

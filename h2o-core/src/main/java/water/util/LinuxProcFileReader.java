@@ -195,15 +195,16 @@ public class LinuxProcFileReader {
   }
 
   private String readFile(File f) throws Exception {
-    char[] buffer = new char[16 * 1024];
-    FileReader fr = new FileReader(f);
-    int bytesRead = 0;
-    while (true) {
-      int n = fr.read(buffer, bytesRead, buffer.length - bytesRead);
-      if (n < 0) {
-        fr.close();
-        return new String (buffer, 0, bytesRead);
-      }
+		char[] buffer = new char[16 * 1024];
+	    FileReader fr = new FileReader(f);
+	    int bytesRead = 0;
+	   String s = new String (buffer, 0, bytesRead);
+	    while (true) {
+	      int n = fr.read(buffer, bytesRead, buffer.length - bytesRead);
+	      if (n < 0) {
+	        fr.close();
+	        return s;
+	      }
       else if (n == 0) {
         // This is weird.
         fr.close();

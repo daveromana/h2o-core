@@ -34,13 +34,14 @@ public class WaterMeterIo extends Iced {
   public IoStatsEntry persist_stats[];
 
   public void doIt(boolean aggregateAllNodes) {
+	  WaterMeterIo io = new WaterMeterIo();
     if (! aggregateAllNodes) {
       doIt(nodeidx);
       return;
     }
 
     for (int i = 0; i < H2O.CLOUD.size(); i++) {
-      WaterMeterIo io = new WaterMeterIo();
+     
       io.doIt(i);
       if (i == 0) {
         persist_stats = new IoStatsEntry[io.persist_stats.length];

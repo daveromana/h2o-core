@@ -57,6 +57,7 @@ public class ProfileCollectorTask extends MRTask<ProfileCollectorTask> {
    * This runs on each node in the cluster.
    */
   @Override public void setupLocal() {
+	  StringBuilder sb = new StringBuilder();
     int idx = H2O.SELF.index();
     _result = new NodeProfile[H2O.CLOUD.size()];
 
@@ -65,7 +66,7 @@ public class ProfileCollectorTask extends MRTask<ProfileCollectorTask> {
     for (int i=0; i<repeats; ++i) {
       Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
       for (Map.Entry<Thread, StackTraceElement[]> el : allStackTraces.entrySet()) {
-        StringBuilder sb = new StringBuilder();
+        
         int j=0;
         for (StackTraceElement ste : el.getValue()) {
           String val = ste.toString();
