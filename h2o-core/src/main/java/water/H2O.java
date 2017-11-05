@@ -869,9 +869,10 @@ final public class H2O {
 				}
 			}
 
-			if (ua.toString().length() > 0) {
-				sb.append(ua.toString()).append("_");
-			}
+			 int var = ua.length();
+		      if (var > 0) {
+		        sb.append(ua.toString()).append("_");
+		      }
 		}
 
 		// REST API needs some refactoring to avoid burning lots of extra numbers.
